@@ -2,6 +2,7 @@
 package com.laytonsmith.abstraction;
 
 import com.laytonsmith.abstraction.blocks.MCMaterial;
+import com.laytonsmith.abstraction.enums.MCPotionType;
 import com.laytonsmith.abstraction.enums.MCTone;
 import com.laytonsmith.commandhelper.CommandHelperPlugin;
 import java.util.concurrent.Callable;
@@ -159,4 +160,17 @@ public interface Convertor {
 	
 	public MCPluginMeta GetPluginMeta();
 	
+	/**
+	 * Returns a potion effect type object gotten by numeric ID
+	 * @param id
+	 * @return
+	 */
+	public MCPotionType getPotionEffectType(int id);
+	
+	/**
+	 * Returns a potion effect type object gotten by a name match
+	 * @param name
+	 * @return
+	 */
+	public MCPotionType getPotionEffectType(String name);
 }

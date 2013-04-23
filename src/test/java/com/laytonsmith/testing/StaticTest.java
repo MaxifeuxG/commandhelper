@@ -8,6 +8,7 @@ import com.laytonsmith.abstraction.blocks.MCMaterial;
 import com.laytonsmith.abstraction.bukkit.BukkitConvertor;
 import com.laytonsmith.abstraction.bukkit.BukkitMCLocation;
 import com.laytonsmith.abstraction.bukkit.BukkitMCWorld;
+import com.laytonsmith.abstraction.enums.MCPotionType;
 import com.laytonsmith.abstraction.enums.MCTone;
 import com.laytonsmith.annotations.convert;
 import com.laytonsmith.annotations.noboilerplate;
@@ -695,6 +696,14 @@ public class StaticTest {
 		@Override
 		public MCItemMeta GetCorrectMeta(MCItemMeta im) {
 			throw new UnsupportedOperationException("Not supported yet.");
+		}
+
+		public MCPotionType getPotionEffectType(int id) {
+			throw new UnsupportedOperationException("This method is not supported from a shell.");
+		}
+
+		public MCPotionType getPotionEffectType(String name) {
+			throw new UnsupportedOperationException("This method is not supported from a shell.");
 		}
         
     }

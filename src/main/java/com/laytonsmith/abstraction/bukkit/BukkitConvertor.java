@@ -9,6 +9,7 @@ import com.laytonsmith.abstraction.bukkit.blocks.BukkitMCMaterial;
 import com.laytonsmith.abstraction.bukkit.entities.*;
 import com.laytonsmith.abstraction.bukkit.events.BukkitAbstractEventMixin;
 import com.laytonsmith.abstraction.bukkit.events.drivers.*;
+import com.laytonsmith.abstraction.enums.MCPotionType;
 import com.laytonsmith.abstraction.enums.MCTone;
 import com.laytonsmith.annotations.convert;
 import com.laytonsmith.commandhelper.CommandHelperPlugin;
@@ -32,6 +33,7 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.*;
 import org.bukkit.material.MaterialData;
+import org.bukkit.potion.PotionEffectType;
 
 /**
  *
@@ -422,4 +424,11 @@ public class BukkitConvertor extends AbstractConvertor {
 		return pluginMeta;
 	}
 
+	public MCPotionType getPotionEffectType(int id) {
+		return BukkitMCPotionType.getEffectType(PotionEffectType.getById(id));
+	}
+
+	public MCPotionType getPotionEffectType(String name) {
+		return BukkitMCPotionType.getEffectType(PotionEffectType.getByName(name));
+	}
 }
