@@ -489,9 +489,8 @@ public class ObjectGenerator {
 					if (ma.containsKey("potions")) {
 						Construct effects = ma.get("potions", t);
 						if (effects instanceof CArray) {
-							for (MCLivingEntity.MCEffect e : potions((CArray) effects, t)) {
-								((MCPotionMeta) meta).addCustomEffect(e.getPotionID(), e.getStrength(),
-										e.getSecondsRemaining(), e.isAmbient(), true, t);
+							for (MCPotionEffect e : potions((CArray) effects, t)) {
+								((MCPotionMeta) meta).addCustomEffect(e);
 							}
 						} else {
 							throw new Exceptions.FormatException("Effects was expected to be an array of potion arrays.", t);
@@ -655,41 +654,60 @@ public class ObjectGenerator {
 		return ret;
 	}
 	
-	public CArray potions(List<MCLivingEntity.MCEffect> effectList, Target t) {
+	public CArray potions(List<MCPotionEffect> effectList, Target t) {
 		CArray ea = new CArray(t);
-		for (MCLivingEntity.MCEffect eff : effectList) {
+		for (MCPotionEffect eff : effectList) {
 			CArray effect = CArray.GetAssociativeArray(t);
-			effect.set("id", new CInt(eff.getPotionID(), t), t);
-			effect.set("strength", new CInt(eff.getStrength(), t), t);
-			effect.set("seconds", new CInt(eff.getSecondsRemaining(), t), t);
+			effect.set("id", new CInt(eff.getType().getID(), t), t);
+			effect.set("type", new CString(eff.getType().getName(), t), t);
+			effect.set("strength", new CInt(eff.getAmplifier(), t), t);
+			effect.set("seconds", new CInt(eff.getDuration(), t), t);
 			effect.set("ambient", new CBoolean(eff.isAmbient(), t), t);
 			ea.push(effect);
 		}
 		return ea;
 	}
 	
-	public List<MCLivingEntity.MCEffect> potions(CArray ea, Target t) {
-		List<MCLivingEntity.MCEffect> ret = new ArrayList<MCLivingEntity.MCEffect>();
+	public List<MCPotionEffect> potions(CArray ea, Target t) {
+		List<MCPotionEffect> ret = new ArrayList<MCPotionEffect>();
 		for (String key : ea.keySet()) {
 			if (ea.get(key, t) instanceof CArray) {
 				CArray effect = (CArray) ea.get(key, t);
-				int potionID = 0, strength = 0, seconds = 30;
+				MCPotionType type = null;
+				int potionID = 0, strength = 0, ticks = 1, seconds = 30;
 				boolean ambient = false;
-				if (effect.containsKey("id")) {
-					potionID = Static.getInt32(effect.get("id", t), t);
+				if (effect.containsKey("type")) {
+					String typeName = effect.get("type").val().toUpperCase();
+					if (MCPotionType.VALUES.containsKey(typeName)) {
+						type = MCPotionType.VALUES.get(typeName);
+					} else {
+						throw new Exceptions.FormatException("Unknown potion effect type: " + typeName, t);
+					}
 				} else {
-					throw new Exceptions.FormatException("No potion ID was given at index " + key, t);
+					if (effect.containsKey("id")) {
+						potionID = Static.getInt32(effect.get("id", t), t);
+					} else {
+						throw new Exceptions.FormatException("No potion ID was given at index " + key, t);
+					}
+					if (potionID < 1 || potionID > MCPotionType.VALUES.keySet().size()) {
+						throw new Exceptions.RangeException("Invalid effect ID recieved, must be from 1-"
+								+ MCPotionType.VALUES.keySet().size(), t);
+					}
+					type = StaticLayer.GetConvertor().getPotionEffectType(potionID);
 				}
 				if (effect.containsKey("strength")) {
 					strength = Static.getInt32(effect.get("strength", t), t);
 				}
-				if (effect.containsKey("seconds")) {
+				if (effect.containsKey("ticks")) {
+					ticks = Static.getInt32(effect.get("ticks", t), t);
+				} else if (effect.containsKey("seconds")) {
 					seconds = Static.getInt32(effect.get("seconds", t), t);
+					ticks = (int) Static.msToTicks(seconds * 1000);
 				}
 				if (effect.containsKey("ambient")) {
 					ambient = Static.getBoolean(effect.get("ambient", t));
 				}
-				ret.add(new MCLivingEntity.MCEffect(potionID, strength, seconds, ambient));
+				ret.add(type.createEffect(ticks, strength, ambient));
 			} else {
 				throw new Exceptions.FormatException("Expected a potion array at index" + key, t);
 			}

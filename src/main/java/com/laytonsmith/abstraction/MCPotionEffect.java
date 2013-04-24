@@ -1,6 +1,5 @@
 package com.laytonsmith.abstraction;
 
-import com.laytonsmith.abstraction.enums.MCPotionType;
 
 public interface MCPotionEffect extends AbstractionObject {
 

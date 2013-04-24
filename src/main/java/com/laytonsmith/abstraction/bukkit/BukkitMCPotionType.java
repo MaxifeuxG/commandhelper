@@ -3,7 +3,7 @@ package com.laytonsmith.abstraction.bukkit;
 import org.bukkit.potion.PotionEffectType;
 
 import com.laytonsmith.abstraction.MCPotionEffect;
-import com.laytonsmith.abstraction.enums.MCPotionType;
+import com.laytonsmith.abstraction.MCPotionType;
 
 /**
  * 
@@ -33,8 +33,8 @@ public class BukkitMCPotionType implements MCPotionType {
 		return type.isInstant();
 	}
 
-	public MCPotionEffect createEffect(int duration, int amplifier) {
-		return new BukkitMCPotionEffect(type.createEffect(duration, amplifier));
+	public MCPotionEffect createEffect(int duration, int amplifier, boolean ambient) {
+		return new BukkitMCPotionEffect(type, duration, amplifier, ambient);
 	}
 
 	public double getDurationMultiplier() {

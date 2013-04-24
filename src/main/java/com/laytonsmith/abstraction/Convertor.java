@@ -2,7 +2,6 @@
 package com.laytonsmith.abstraction;
 
 import com.laytonsmith.abstraction.blocks.MCMaterial;
-import com.laytonsmith.abstraction.enums.MCPotionType;
 import com.laytonsmith.abstraction.enums.MCTone;
 import com.laytonsmith.commandhelper.CommandHelperPlugin;
 import java.util.concurrent.Callable;

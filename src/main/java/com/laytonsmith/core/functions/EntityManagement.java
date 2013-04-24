@@ -516,11 +516,12 @@ public class EntityManagement {
 		}
 
 		public Integer[] numArgs() {
-			return new Integer[]{3, 4, 5};
+			return new Integer[]{2, 3, 4, 5};
 		}
 
 		public String docs() {
-			return "boolean {entityId, potionID, strength, [seconds], [ambient]} Effect is 1-19. Seconds defaults to 30."
+			return "boolean {entityID, effectArray | entityID, potionID, strength, [seconds], [ambient]}"
+					+ " Effect is 1-19. Seconds defaults to 30."
 					+ " If the potionID is out of range, a RangeException is thrown, because out of range potion effects"
 					+ " cause the client to crash, fairly hardcore. See http://www.minecraftwiki.net/wiki/Potion_effects"
 					+ " for a complete list of potions that can be added. To remove an effect, set the seconds to 0."
@@ -539,23 +540,33 @@ public class EntityManagement {
 				throws ConfigRuntimeException {
 			MCLivingEntity mob = Static.getLivingEntity(Static.getInt32(args[0], t), t);
 
-			int effect = Static.getInt32(args[1], t);
-
-			int strength = Static.getInt32(args[2], t);
-			int seconds = 30;
-			boolean ambient = false;
-			if (args.length >= 4) {
-				seconds = Static.getInt32(args[3], t);
-			}
-			if (args.length == 5) {
-				ambient = Static.getBoolean(args[4]);
-			}
-
-			if (seconds == 0) {
-				return new CBoolean(mob.removeEffect(effect), t);
+			if (args[1] instanceof CArray) {
+				boolean allWorked;
+				for (MCPotionEffect p : ObjectGenerator.GetGenerator().potions((CArray) args[1], t)) {
+					if (p.getDuration() <= 0) {
+						
+					}
+				}
+				return null;
 			} else {
-				mob.addEffect(effect, strength, seconds, ambient, t);
-				return new CBoolean(true, t);
+				int effect = Static.getInt32(args[1], t);
+				int strength = Static.getInt32(args[2], t);
+				int seconds = 30;
+				boolean ambient = false;
+
+				if (args.length >= 4) {
+					seconds = Static.getInt32(args[3], t);
+				}
+				if (args.length == 5) {
+					ambient = Static.getBoolean(args[4]);
+				}
+
+				if (seconds == 0) {
+					return new CBoolean(mob.removeEffect(effect), t);
+				} else {
+					mob.addEffect(effect, strength, seconds, ambient, t);
+					return new CBoolean(true, t);
+				}
 			}
 		}
 	}

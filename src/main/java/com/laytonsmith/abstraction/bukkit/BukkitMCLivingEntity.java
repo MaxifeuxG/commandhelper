@@ -5,6 +5,8 @@ import com.laytonsmith.abstraction.MCEntityEquipment;
 import com.laytonsmith.abstraction.MCLivingEntity;
 import com.laytonsmith.abstraction.MCLocation;
 import com.laytonsmith.abstraction.MCPlayer;
+import com.laytonsmith.abstraction.MCPotionEffect;
+import com.laytonsmith.abstraction.MCPotionType;
 import com.laytonsmith.abstraction.MCProjectile;
 import com.laytonsmith.abstraction.blocks.MCBlock;
 import com.laytonsmith.abstraction.bukkit.blocks.BukkitMCBlock;
@@ -180,6 +182,10 @@ public class BukkitMCLivingEntity extends BukkitMCEntity implements MCLivingEnti
 		return blocks;
 	}
 
+	public void addEffect(MCPotionEffect effect) {
+		le.addPotionEffect((PotionEffect) effect.getHandle(), true);
+	}
+
 	public void addEffect(int potionID, int strength, int seconds, boolean ambient, Target t) {
 		//To work around a bug in bukkit/vanilla, if the effect is invalid, throw an exception
 		//otherwise the client crashes, and requires deletion of
@@ -234,13 +240,24 @@ public class BukkitMCLivingEntity extends BukkitMCEntity implements MCLivingEnti
 		le.removePotionEffect(t);
 		return hasIt;
     }
+    
+    public boolean removeEffect(MCPotionType type) {
+    	PotionEffectType t = BukkitMCPotionType.getEffectType(type);
+    	boolean hasIt = false;
+		for(PotionEffect pe : le.getActivePotionEffects()) {
+			if (pe.getType() == t) {
+				hasIt = true;
+				break;
+			}
+		}
+		le.removePotionEffect(t);
+		return hasIt;
+    }
 
-	public List<MCEffect> getEffects(){
-		List<MCEffect> effects = new ArrayList<MCEffect>();
+	public List<MCPotionEffect> getEffects(){
+		List<MCPotionEffect> effects = new ArrayList<MCPotionEffect>();
 		for(PotionEffect pe : le.getActivePotionEffects()){
-			MCEffect e = new MCEffect(pe.getType().getId(), pe.getAmplifier(), 
-					(int)(Static.ticksToMs(pe.getDuration()) / 1000), pe.isAmbient());
-			effects.add(e);
+			effects.add(new BukkitMCPotionEffect(pe));
 		}
 		return effects;
 	}

@@ -14,8 +14,10 @@ import java.util.List;
 public interface MCLivingEntity extends MCEntity {
 
 	public void addEffect(int potionID, int strength, int seconds, boolean ambient, Target t);
+	public void addEffect(MCPotionEffect effect);
 	public boolean removeEffect(int potionID);
-	public List<MCEffect> getEffects();
+	public boolean removeEffect(MCPotionType type);
+	public List<MCPotionEffect> getEffects();
     public void damage(int amount);
     public void damage(int amount, MCEntity source);
 	public boolean getCanPickupItems();
