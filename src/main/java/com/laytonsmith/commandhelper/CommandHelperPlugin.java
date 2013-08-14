@@ -28,11 +28,21 @@ import com.laytonsmith.PureUtilities.TermColors;
 import com.laytonsmith.abstraction.*;
 import com.laytonsmith.abstraction.bukkit.BukkitMCBlockCommandSender;
 import com.laytonsmith.abstraction.bukkit.BukkitMCPlayer;
+import com.laytonsmith.abstraction.bukkit.events.BukkitMiscEvents;
+import com.laytonsmith.abstraction.bukkit.events.BukkitMiscEvents.BukkitMCCommandTabCompleteEvent;
 import com.laytonsmith.abstraction.enums.MCChatColor;
 import com.laytonsmith.core.*;
+import com.laytonsmith.core.constructs.CArray;
+import com.laytonsmith.core.constructs.CClosure;
+import com.laytonsmith.core.constructs.CString;
+import com.laytonsmith.core.constructs.Construct;
 import com.laytonsmith.core.constructs.Target;
+import com.laytonsmith.core.events.Driver;
 import com.laytonsmith.core.events.EventList;
+import com.laytonsmith.core.events.EventUtils;
 import com.laytonsmith.core.exceptions.ConfigCompileException;
+import com.laytonsmith.core.exceptions.FunctionReturnException;
+import com.laytonsmith.core.functions.Commands;
 import com.laytonsmith.core.profiler.Profiler;
 import com.laytonsmith.persistance.DataSourceException;
 import com.laytonsmith.persistance.PersistanceNetwork;
@@ -42,7 +52,9 @@ import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -296,6 +308,28 @@ public class CommandHelperPlugin extends JavaPlugin {
 	public void registerEvent(Listener listener) {
 		getServer().getPluginManager().registerEvents(listener, this);
 	}
+	
+	@Override
+	public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+		if (Commands.onTabComplete.containsKey(command.getName().toLowerCase())) {
+			try {
+				Commands.onTabComplete.get(command.getName().toLowerCase());
+			} catch (FunctionReturnException e) {
+				Construct fret = e.getReturn();
+				if (fret instanceof CArray) {
+					List<String> ret = new ArrayList<String>();
+					for (Construct key : ((CArray) fret).asList()) {
+						ret.add(key.val());
+					}
+					return ret;
+				}
+			}
+		}
+		BukkitMCCommandTabCompleteEvent event = new BukkitMCCommandTabCompleteEvent(sender, command, alias, args);
+		EventUtils.TriggerExternal(event);
+		EventUtils.TriggerListener(Driver.TAB_COMPLETE, "tab_complete_command", event);
+		return event.getCompletions();
+	}
 
 	/**
 	 * Called when a command registered by this plugin is received.
@@ -307,9 +341,10 @@ public class CommandHelperPlugin extends JavaPlugin {
 	 */
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
+		String cmdName = cmd.getName().toLowerCase(); 
 		if ((sender.isOp() || (sender instanceof Player && (permissionsResolver.hasPermission(((Player) sender).getName(), "commandhelper.reloadaliases")
 				|| permissionsResolver.hasPermission(((Player) sender).getName(), "ch.reloadaliases"))))
-				&& (cmd.getName().equals("reloadaliases") || cmd.getName().equals("reloadalias") || cmd.getName().equals("recompile"))) {
+				&& (cmdName.equals("reloadaliases") || cmdName.equals("reloadalias") || cmdName.equals("recompile"))) {
 			MCPlayer player = null;
 			if (sender instanceof Player) {
 				player = new BukkitMCPlayer((Player) sender);
@@ -327,9 +362,9 @@ public class CommandHelperPlugin extends JavaPlugin {
 //                System.out.println(TermColors.RED + "An error occured when trying to compile the script. Check the console for more information." + TermColors.reset());
 //            }
 			return true;
-		} else if (cmd.getName().equals("commandhelper") && args.length >= 1 && args[0].equalsIgnoreCase("null")) {
+		} else if (cmdName.equals("commandhelper") && args.length >= 1 && args[0].equalsIgnoreCase("null")) {
 			return true;
-		} else if (cmd.getName().equals("runalias")) {
+		} else if (cmdName.equals("runalias")) {
 			//Hardcoded alias rebroadcast
 			if (sender instanceof Player) {
 				PlayerCommandPreprocessEvent pcpe = new PlayerCommandPreprocessEvent((Player) sender, StringUtils.Join(args, " "));
@@ -358,9 +393,10 @@ public class CommandHelperPlugin extends JavaPlugin {
 				sender.sendMessage("This command can only be run from console.");
 			}
 			return true;
-		} else if (sender instanceof Player) {
+		} else if (sender instanceof Player && Arrays.asList(new String[]{"commandhelper", "repeat",
+				"viewalias", "delalias", "interpreter"}).contains(cmdName)) {
 			try {
-				return runCommand(new BukkitMCPlayer((Player) sender), cmd.getName(), args);
+				return runCommand(new BukkitMCPlayer((Player) sender), cmdName, args);
 			} catch (DataSourceException ex) {
 				Logger.getLogger(CommandHelperPlugin.class.getName()).log(Level.SEVERE, null, ex);
 			} catch (ReadOnlyException ex) {
@@ -369,6 +405,26 @@ public class CommandHelperPlugin extends JavaPlugin {
 				Logger.getLogger(CommandHelperPlugin.class.getName()).log(Level.SEVERE, null, ex);
 			}
 			return true;
+		} else if (Commands.onCommand.containsKey(cmdName)) {
+			Target t = Target.UNKNOWN;
+			boolean ret = true;
+			String csender = sender.getName();
+			if (sender instanceof ConsoleCommandSender) {
+				csender = Static.getConsoleName();
+			} else if (sender instanceof BlockCommandSender) {
+				csender = Static.getBlockPrefix() + csender;
+			}
+			CArray cargs = new CArray(t);
+			for (String arg : args) {
+				cargs.push(new CString(arg, t));
+			}
+			try {
+				Commands.onCommand.get(cmdName).execute(new Construct[]{new CString(csender, t), cargs,
+						new CArray(t), new CString(commandLabel, t)});
+			} catch (FunctionReturnException e) {
+				ret = Static.getBoolean(e.getReturn());
+			}
+			return ret;
 		} else {
 			return false;
 		}
