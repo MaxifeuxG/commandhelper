@@ -44,19 +44,19 @@ public class BukkitMCLivingEntity extends BukkitMCEntity implements MCLivingEnti
 		this.le = le;
 	}
 
-	public double getHealth() {
+	public int getHealth() {
 		return le.getHealth();
 	}
 
-	public void setHealth(double i) {
+	public void setHealth(int i) {
 		le.setHealth(i);
 	}
 
-	public double getMaxHealth() {
+	public int getMaxHealth() {
 		return le.getMaxHealth();
 	}
 	
-	public void setMaxHealth(double health) {
+	public void setMaxHealth(int health) {
 		le.setMaxHealth(health);
 	}
 	
@@ -64,11 +64,11 @@ public class BukkitMCLivingEntity extends BukkitMCEntity implements MCLivingEnti
 		le.resetMaxHealth();
 	}
 
-	public void damage(double i) {
+	public void damage(int i) {
 		le.damage(i);
 	}
 
-	public void damage(double amount, MCEntity source) {
+	public void damage(int amount, MCEntity source) {
 		le.damage(amount, ((BukkitMCEntity) source).asEntity());
 	}
 
@@ -88,7 +88,7 @@ public class BukkitMCLivingEntity extends BukkitMCEntity implements MCLivingEnti
 		return new BukkitMCPlayer(le.getKiller());
 	}
 
-	public double getLastDamage() {
+	public int getLastDamage() {
 		return le.getLastDamage();
 	}
 
@@ -263,7 +263,7 @@ public class BukkitMCLivingEntity extends BukkitMCEntity implements MCLivingEnti
 		}
 	}
 
-	public void setLastDamage(double damage) {
+	public void setLastDamage(int damage) {
 		le.setLastDamage(damage);
 	}
 
@@ -342,18 +342,18 @@ public class BukkitMCLivingEntity extends BukkitMCEntity implements MCLivingEnti
 	
 	public void kill(){
 		le.setLastDamageCause(new EntityDamageEvent(le, EntityDamageEvent.DamageCause.CUSTOM, le.getHealth()));
-		le.setHealth(0D);
+		le.setHealth(0);
 	}
 
 	public MCEntity getLeashHolder() {
-		return le.isLeashed() ? BukkitConvertor.BukkitGetCorrectEntity(le.getLeashHolder()) : null;
+		return null;
 	}
 
 	public boolean isLeashed() {
-		return le.isLeashed();
+		return false;
 	}
 
 	public void setLeashHolder(MCEntity holder) {
-		le.setLeashHolder(holder == null ? null : ((BukkitMCEntity) holder).asEntity());
+		
 	}
 }

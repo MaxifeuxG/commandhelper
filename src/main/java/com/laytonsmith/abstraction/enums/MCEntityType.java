@@ -56,8 +56,6 @@ public enum MCEntityType {
 	OCELOT(true),
 	IRON_GOLEM(true),
 	VILLAGER(true),
-	HORSE(true),
-	LEASH_HITCH(false),
 	ENDER_CRYSTAL(true),
 	// These don't have an entity ID in nms.EntityTypes.
 	SPLASH_POTION(true),

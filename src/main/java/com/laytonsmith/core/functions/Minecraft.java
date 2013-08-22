@@ -609,12 +609,12 @@ public class Minecraft {
 
 		public Construct exec(Target t, Environment environment, Construct... args) throws ConfigRuntimeException {
 			MCLivingEntity e = Static.getLivingEntity(Static.getInt32(args[0], t), t);
-			double percent = Static.getDouble(args[1], t);
+			int percent = Static.getInt32(args[1], t);
 			if (percent < 0 || percent > 100) {
 				throw new ConfigRuntimeException("Health was expected to be a percentage between 0 and 100",
 						ExceptionType.RangeException, t);
 			} else {
-				e.setHealth(percent / 100.0 * e.getMaxHealth());
+				e.setHealth(percent / 100 * e.getMaxHealth());
 			}
 			return new CVoid(t);
 		}
@@ -632,7 +632,7 @@ public class Minecraft {
 		}
 
 		public String docs() {
-			return "double {entityID} Returns the entity's health as a percentage of its maximum health."
+			return "int {entityID} Returns the entity's health as a percentage of its maximum health."
 					+ " If the specified entity doesn't exist, or is not a LivingEntity, a format exception is thrown.";
 		}
 
@@ -654,7 +654,7 @@ public class Minecraft {
 
 		public Construct exec(Target t, Environment environment, Construct... args) throws ConfigRuntimeException {
 			MCLivingEntity e = Static.getLivingEntity(Static.getInt32(args[0], t), t);
-			return new CDouble(e.getHealth() / e.getMaxHealth() * 100.0, t);
+			return new CInt(e.getHealth() / e.getMaxHealth() * 100, t);
 		}
 	}
 

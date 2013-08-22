@@ -880,7 +880,7 @@ public class EntityManagement {
 		public Construct exec(Target t, Environment environment,
 				Construct... args) throws ConfigRuntimeException {
 			MCLivingEntity le = Static.getLivingEntity(Static.getInt32(args[0], t), t);
-			return new CDouble(le.getMaxHealth(), t);
+			return new CInt(le.getMaxHealth(), t);
 		}
 
 		public String getName() {
@@ -888,7 +888,7 @@ public class EntityManagement {
 		}
 
 		public String docs() {
-			return "double {entityID} Returns the maximum health of this living entity.";
+			return "int {entityID} Returns the maximum health of this living entity.";
 		}
 	}
 
@@ -898,7 +898,7 @@ public class EntityManagement {
 		public Construct exec(Target t, Environment environment,
 				Construct... args) throws ConfigRuntimeException {
 			MCLivingEntity le = Static.getLivingEntity(Static.getInt32(args[0], t), t);
-			le.setMaxHealth(Static.getDouble(args[1], t));
+			le.setMaxHealth(Static.getInt32(args[1], t));
 			return new CVoid(t);
 		}
 
@@ -907,7 +907,7 @@ public class EntityManagement {
 		}
 
 		public String docs() {
-			return "void {entityID, double} Sets the max health of a living entity, players included."
+			return "void {entityID, int} Sets the max health of a living entity, players included."
 					+ " This value is persistent, and will not reset even after server restarts.";
 		}
 

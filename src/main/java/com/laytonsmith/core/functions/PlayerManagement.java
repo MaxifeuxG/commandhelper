@@ -1884,12 +1884,12 @@ public class PlayerManagement {
 			if (p instanceof MCPlayer) {
 				m = (MCPlayer) p;
 			}
-			double health;
+			int health;
 			if (args.length == 2) {
 				m = Static.GetPlayer(args[0].val(), t);
-				health = Static.getDouble(args[1], t);
+				health = Static.getInt32(args[1], t);
 			} else {
-				health = Static.getDouble(args[0], t);
+				health = Static.getInt32(args[0], t);
 			}
 			Static.AssertPlayerNonNull(m, t);
 			if (health < 0 || health > m.getMaxHealth()) {

@@ -21,8 +21,8 @@ public interface MCLivingEntity extends MCEntity {
 	 */
 	public int getMaxEffect();
 	public List<MCEffect> getEffects();
-    public void damage(double amount);
-    public void damage(double amount, MCEntity source);
+    public void damage(int amount);
+    public void damage(int amount, MCEntity source);
 	public boolean getCanPickupItems();
 	public boolean getRemoveWhenFarAway();
 	public String getCustomName();
@@ -30,16 +30,16 @@ public interface MCLivingEntity extends MCEntity {
     public double getEyeHeight();
     public double getEyeHeight(boolean ignoreSneaking);
     public MCLocation getEyeLocation();
-    public double getHealth();
+    public int getHealth();
     public MCPlayer getKiller();
-    public double getLastDamage();
+    public int getLastDamage();
     public MCEntity getLeashHolder();
 	public MCLivingEntity getTarget(Target t);
 	public MCBlock getTargetBlock(HashSet<Short> transparent, int maxDistance, boolean castToByte);
 	public MCBlock getTargetBlock(HashSet<Byte> transparent, int maxDistance);
     public List<MCBlock> getLastTwoTargetBlocks(HashSet<Byte> transparent, int maxDistance);
     public List<MCBlock> getLineOfSight(HashSet<Byte> transparent, int maxDistance);
-    public double getMaxHealth();
+    public int getMaxHealth();
     public int getMaximumAir();
     public int getMaximumNoDamageTicks();
     public int getNoDamageTicks();
@@ -52,10 +52,10 @@ public interface MCLivingEntity extends MCEntity {
 	public void setRemoveWhenFarAway(boolean remove);
 	public void setCustomName(String name);
 	public void setCustomNameVisible(boolean visible);
-    public void setHealth(double health);
-    public void setLastDamage(double damage);
+    public void setHealth(int health);
+    public void setLastDamage(int damage);
     public void setLeashHolder(MCEntity holder);
-	public void setMaxHealth(double health);
+	public void setMaxHealth(int health);
     public void setMaximumAir(int ticks);
     public void setMaximumNoDamageTicks(int ticks);
     public void setNoDamageTicks(int ticks);

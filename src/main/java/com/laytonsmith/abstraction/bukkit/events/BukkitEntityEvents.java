@@ -389,11 +389,11 @@ public class BukkitEntityEvents {
             return BukkitConvertor.BukkitGetCorrectEntity(event.getEntity());
         }
 
-        public double getDamage() {
+        public int getDamage() {
             return event.getDamage();
         }
 
-        public void setDamage(double damage) {
+        public void setDamage(int damage) {
             event.setDamage(damage);
         }
     }

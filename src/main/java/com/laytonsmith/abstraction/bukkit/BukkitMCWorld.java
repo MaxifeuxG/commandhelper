@@ -7,8 +7,6 @@ import com.laytonsmith.abstraction.blocks.MCBlock;
 import com.laytonsmith.abstraction.blocks.MCFallingBlock;
 import com.laytonsmith.abstraction.bukkit.blocks.BukkitMCBlock;
 import com.laytonsmith.abstraction.bukkit.blocks.BukkitMCFallingBlock;
-import com.laytonsmith.abstraction.bukkit.entities.BukkitMCHorse;
-import com.laytonsmith.abstraction.entities.MCHorse;
 import com.laytonsmith.abstraction.enums.MCBiomeType;
 import com.laytonsmith.abstraction.enums.MCCreeperType;
 import com.laytonsmith.abstraction.enums.MCDyeColor;
@@ -323,9 +321,6 @@ public class BukkitMCWorld implements MCWorld {
 				case WITCH:
 					mobType = Witch.class;
 					break;
-				case HORSE:
-					mobType = Horse.class;
-					break;
 			}
         } catch (IllegalArgumentException e) {
             throw new ConfigRuntimeException("No mob of type " + name + " exists",
@@ -497,28 +492,6 @@ public class BukkitMCWorld implements MCWorld {
 						} catch (IllegalArgumentException ex){
 							throw new ConfigRuntimeException(type + " is not a pig state",
 									ExceptionType.FormatException, t);
-						}
-					}
-				}
-				if(((BukkitMCEntity) e).asEntity() instanceof Horse) {
-					Horse h = (Horse) ((BukkitMCEntity) e).asEntity();
-					for (String type : subTypes) {
-						try {
-							MCHorse.MCHorseVariant htype = MCHorse.MCHorseVariant.valueOf(type);
-							h.setVariant(BukkitMCHorse.BukkitMCHorseVariant.getConvertor().getConcreteEnum(htype));
-						} catch (IllegalArgumentException notVar) {
-							try {
-								MCHorse.MCHorseColor hcolor = MCHorse.MCHorseColor.valueOf(type);
-								h.setColor(BukkitMCHorse.BukkitMCHorseColor.getConvertor().getConcreteEnum(hcolor));
-							} catch (IllegalArgumentException notColor) {
-								try {
-									MCHorse.MCHorsePattern hpattern = MCHorse.MCHorsePattern.valueOf(type);
-									h.setStyle(BukkitMCHorse.BukkitMCHorsePattern.getConvertor().getConcreteEnum(hpattern));
-								} catch (IllegalArgumentException notAnything) {
-									throw new ConfigRuntimeException("Type " + type + " did not match any horse variants,"
-											+ " colors, or patterns.", ExceptionType.FormatException, t);
-								}
-							}
 						}
 					}
 				}
