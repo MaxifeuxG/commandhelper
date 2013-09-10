@@ -186,4 +186,11 @@ public interface Convertor {
 	 * @return specific type
 	 */
 	public MCRecipe GetRecipe(MCRecipe unspecific);
+	
+	/**
+	 * 
+	 * @param name
+	 * @return a new MCCommand instance
+	 */
+	public MCCommand getNewCommand(String name);
 }

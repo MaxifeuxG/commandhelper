@@ -499,4 +499,9 @@ public class BukkitConvertor extends AbstractConvertor {
 			return null;
 		}
 	}
+	
+	@Override
+	public MCCommand getNewCommand(String name) {
+		return BukkitMCCommand.newCommand(name);
+	}
 }
