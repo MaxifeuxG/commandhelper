@@ -118,10 +118,9 @@ public class ServerEvents {
 
 		@Override
 		public String docs() {
-			// TODO Auto-generated method stub
 			return "{}"
 					+ " This will fire if a tab completer has not been set, or if the set tab completer doesn't return an array."
-					+ " {}"
+					+ " {command | alias | completions | args | sender}"
 					+ " {completions}"
 					+ " {}";
 		}
@@ -151,6 +150,13 @@ public class ServerEvents {
 					comp.push(new CString(c, t));
 				}
 				ret.put("completions", comp);
+				ret.put("command", new CString(e.getCommand().getName(), t));
+				CArray args = new CArray(t);
+				for (String a : e.getArguments()) {
+					args.push(new CString(a, t));
+				}
+				ret.put("args", args);
+				ret.put("alias", new CString(e.getAlias(), t));
 				return ret;
 			} else {
 				throw new EventException("Could not convert to MCCommandTabCompleteEvent");

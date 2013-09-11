@@ -139,7 +139,6 @@ public class BukkitMiscEvents {
 			if (sender instanceof Player) {
 				return new BukkitMCPlayer((Player) sender);
 			} else if (sender instanceof ConsoleCommandSender) {
-				// There is an open PR that will make this possible
 				return new BukkitMCConsoleCommandSender((ConsoleCommandSender) sender);
 			} else {
 				return null;
