@@ -14,7 +14,7 @@ public class BukkitMCMinecart extends BukkitMCVehicle
 	}
 
 	public void setDamage(double damage) {
-		m.setDamage(damage);
+		m.setDamage((int) damage);
 	}
 
 	public double getDamage() {

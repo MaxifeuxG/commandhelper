@@ -49,7 +49,7 @@ public class BukkitMCLivingEntity extends BukkitMCEntity implements MCLivingEnti
 	}
 
 	public void setHealth(double i) {
-		le.setHealth(i);
+		le.setHealth((int) i);
 	}
 
 	public double getMaxHealth() {
@@ -57,7 +57,7 @@ public class BukkitMCLivingEntity extends BukkitMCEntity implements MCLivingEnti
 	}
 	
 	public void setMaxHealth(double health) {
-		le.setMaxHealth(health);
+		le.setMaxHealth((int) health);
 	}
 	
 	public void resetMaxHealth() {
@@ -65,11 +65,11 @@ public class BukkitMCLivingEntity extends BukkitMCEntity implements MCLivingEnti
 	}
 
 	public void damage(double i) {
-		le.damage(i);
+		le.damage((int) i);
 	}
 
 	public void damage(double amount, MCEntity source) {
-		le.damage(amount, ((BukkitMCEntity) source).asEntity());
+		le.damage((int) amount, ((BukkitMCEntity) source).asEntity());
 	}
 
 	public double getEyeHeight() {
@@ -268,7 +268,7 @@ public class BukkitMCLivingEntity extends BukkitMCEntity implements MCLivingEnti
 	}
 
 	public void setLastDamage(double damage) {
-		le.setLastDamage(damage);
+		le.setLastDamage((int) damage);
 	}
 
 	public void setMaximumAir(int ticks) {
@@ -346,18 +346,18 @@ public class BukkitMCLivingEntity extends BukkitMCEntity implements MCLivingEnti
 	
 	public void kill(){
 		le.setLastDamageCause(new EntityDamageEvent(le, EntityDamageEvent.DamageCause.CUSTOM, le.getHealth()));
-		le.setHealth(0D);
+		le.setHealth(0);
 	}
 
 	public MCEntity getLeashHolder() {
-		return le.isLeashed() ? BukkitConvertor.BukkitGetCorrectEntity(le.getLeashHolder()) : null;
+		return null;
 	}
 
 	public boolean isLeashed() {
-		return le.isLeashed();
+		return false;
 	}
 
 	public void setLeashHolder(MCEntity holder) {
-		le.setLeashHolder(holder == null ? null : ((BukkitMCEntity) holder).asEntity());
+		return;
 	}
 }

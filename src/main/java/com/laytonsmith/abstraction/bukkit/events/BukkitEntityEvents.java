@@ -424,7 +424,7 @@ public class BukkitEntityEvents {
         }
 
         public void setDamage(double damage) {
-            event.setDamage(damage);
+            event.setDamage((int) damage);
         }
     }
 
