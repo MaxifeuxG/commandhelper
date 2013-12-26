@@ -4,6 +4,8 @@ import com.laytonsmith.abstraction.AbstractionObject;
 import com.laytonsmith.abstraction.MCBlockCommandSender;
 import com.laytonsmith.abstraction.blocks.MCBlock;
 import com.laytonsmith.abstraction.bukkit.blocks.BukkitMCBlock;
+import com.laytonsmith.core.Static;
+
 import org.bukkit.command.BlockCommandSender;
 
 /**
@@ -31,4 +33,8 @@ public class BukkitMCBlockCommandSender extends BukkitMCCommandSender implements
 		return new BukkitMCBlock(bcs.getBlock());
 	}
 
+	@Override
+	public String getName() {
+		return Static.getBlockPrefix() + bcs.getName();
+	}
 }

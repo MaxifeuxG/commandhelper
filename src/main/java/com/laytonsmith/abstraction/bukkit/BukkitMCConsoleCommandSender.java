@@ -3,6 +3,8 @@
 package com.laytonsmith.abstraction.bukkit;
 
 import com.laytonsmith.abstraction.MCConsoleCommandSender;
+import com.laytonsmith.core.Static;
+
 import org.bukkit.command.ConsoleCommandSender;
 
 /**
@@ -17,4 +19,8 @@ public class BukkitMCConsoleCommandSender extends BukkitMCCommandSender implemen
         this.ccs = ccs;
     }
     
+    @Override
+    public String getName() {
+    	return Static.getConsoleName();
+    }
 }
