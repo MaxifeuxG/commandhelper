@@ -82,7 +82,7 @@ public class Scoreboards {
 	/**
 	 * Adds a scoreboard to the cache
 	 * @param id The name to save the new scoreboard as
-	 * @param board Scoreboard, either from {@link MCServer#getNewScoreboard} or {@link MCPlayer#getScoreboard()}
+	 * @param board Scoreboard, either from {@link com.laytonsmith.abstraction.MCServer#getNewScoreboard()} or {@link MCPlayer#getScoreboard()}
 	 * @param t
 	 * @throws ConfigRuntimeException if the cache already contains the board or the id
 	 */
@@ -788,12 +788,10 @@ public class Scoreboards {
 			}
 			if (nullify) {
 				MCScoreboard s = getBoard(id, t);
-				for (String p : s.getEntries()) {
-					s.resetScores(p);
-					try {
-						Static.GetPlayer(p, t).setScoreboard(getBoard(MAIN, t));
-					} catch (ConfigRuntimeException ex){
-						// Not an exception in this case
+				for (MCPlayer p : Static.getServer().getOnlinePlayers()) {
+					s.resetScores(p.getName());
+					if (s.equals(p.getScoreboard())) {
+						p.setScoreboard(getBoard(MAIN, t));
 					}
 				}
 				for (MCTeam g : s.getTeams()) {
