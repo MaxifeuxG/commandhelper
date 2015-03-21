@@ -13,16 +13,16 @@ import com.laytonsmith.abstraction.MVector3D;
 import com.laytonsmith.abstraction.blocks.MCBlock;
 import com.laytonsmith.abstraction.blocks.MCMaterial;
 import com.laytonsmith.abstraction.bukkit.BukkitConvertor;
-import com.laytonsmith.abstraction.bukkit.BukkitMCEntity;
-import com.laytonsmith.abstraction.bukkit.BukkitMCHanging;
-import com.laytonsmith.abstraction.bukkit.BukkitMCItem;
 import com.laytonsmith.abstraction.bukkit.BukkitMCItemStack;
-import com.laytonsmith.abstraction.bukkit.BukkitMCLivingEntity;
 import com.laytonsmith.abstraction.bukkit.BukkitMCLocation;
-import com.laytonsmith.abstraction.bukkit.BukkitMCPlayer;
-import com.laytonsmith.abstraction.bukkit.BukkitMCProjectile;
 import com.laytonsmith.abstraction.bukkit.blocks.BukkitMCBlock;
 import com.laytonsmith.abstraction.bukkit.blocks.BukkitMCMaterial;
+import com.laytonsmith.abstraction.bukkit.entities.BukkitMCEntity;
+import com.laytonsmith.abstraction.bukkit.entities.BukkitMCHanging;
+import com.laytonsmith.abstraction.bukkit.entities.BukkitMCItem;
+import com.laytonsmith.abstraction.bukkit.entities.BukkitMCLivingEntity;
+import com.laytonsmith.abstraction.bukkit.entities.BukkitMCPlayer;
+import com.laytonsmith.abstraction.bukkit.entities.BukkitMCProjectile;
 import com.laytonsmith.abstraction.enums.MCDamageCause;
 import com.laytonsmith.abstraction.enums.MCEntityType;
 import com.laytonsmith.abstraction.enums.MCMobs;
@@ -53,10 +53,6 @@ import com.laytonsmith.abstraction.events.MCPotionSplashEvent;
 import com.laytonsmith.abstraction.events.MCProjectileHitEvent;
 import com.laytonsmith.abstraction.events.MCProjectileLaunchEvent;
 import com.laytonsmith.annotations.abstraction;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
@@ -84,6 +80,11 @@ import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  *
@@ -210,7 +211,7 @@ public class BukkitEntityEvents {
 
 		@Override
 		public MCEntityType getEntityType() {
-			return BukkitMCEntityType.getConvertor().getAbstractedEnum(phe.getEntityType());
+			return BukkitMCEntityType.valueOfConcrete(phe.getEntityType());
 		}
 		
 		public static BukkitMCProjectileHitEvent _instantiate(MCProjectile p) {
@@ -242,7 +243,7 @@ public class BukkitEntityEvents {
 
 		@Override
 		public MCEntityType getEntityType() {
-			return BukkitMCEntityType.getConvertor().getAbstractedEnum(ple.getEntityType());
+			return BukkitMCEntityType.valueOfConcrete(ple.getEntityType());
 		}
 	}
 

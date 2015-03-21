@@ -1,7 +1,9 @@
 package com.laytonsmith.abstraction;
 
 import com.laytonsmith.abstraction.enums.MCInventoryType;
+import com.laytonsmith.abstraction.enums.MCVersion;
 import com.laytonsmith.abstraction.pluginmessages.MCMessenger;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -54,9 +56,14 @@ public interface MCServer extends AbstractionObject{
 
     /* Boring information get methods -.- */
     public String getServerName();
-    public String getModVersion();
-    public String getVersion();
-    public int getPort();
+
+	public String getAPIVersion();
+
+	public String getServerVersion();
+
+	public MCVersion getMinecraftVersion();
+
+	public int getPort();
     public String getIp();
     public Boolean getAllowEnd();
     public Boolean getAllowFlight();

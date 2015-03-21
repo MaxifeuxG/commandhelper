@@ -35,8 +35,9 @@ import com.laytonsmith.abstraction.StaticLayer;
 import com.laytonsmith.abstraction.bukkit.BukkitConvertor;
 import com.laytonsmith.abstraction.bukkit.BukkitMCBlockCommandSender;
 import com.laytonsmith.abstraction.bukkit.BukkitMCCommand;
-import com.laytonsmith.abstraction.bukkit.BukkitMCPlayer;
+import com.laytonsmith.abstraction.bukkit.entities.BukkitMCPlayer;
 import com.laytonsmith.abstraction.enums.MCChatColor;
+import com.laytonsmith.abstraction.enums.bukkit.BukkitMCEntityType;
 import com.laytonsmith.core.AliasCore;
 import com.laytonsmith.core.CHLog;
 import com.laytonsmith.core.Installer;
@@ -275,6 +276,7 @@ public class CommandHelperPlugin extends JavaPlugin {
 		System.out.println("[CommandHelper] Running initial class discovery,"
 				+ " this will probably take a few seconds...");
 		myServer = StaticLayer.GetServer();
+		BukkitMCEntityType.build();
 
 		System.out.println("[CommandHelper] Loading extensions in the background...");
 

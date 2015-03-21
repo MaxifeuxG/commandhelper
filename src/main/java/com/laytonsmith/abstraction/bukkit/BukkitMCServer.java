@@ -16,22 +16,14 @@ import com.laytonsmith.abstraction.MCRecipe;
 import com.laytonsmith.abstraction.MCScoreboard;
 import com.laytonsmith.abstraction.MCServer;
 import com.laytonsmith.abstraction.MCWorld;
+import com.laytonsmith.abstraction.bukkit.entities.BukkitMCHumanEntity;
+import com.laytonsmith.abstraction.bukkit.entities.BukkitMCPlayer;
 import com.laytonsmith.abstraction.bukkit.pluginmessages.BukkitMCMessenger;
 import com.laytonsmith.abstraction.enums.MCInventoryType;
+import com.laytonsmith.abstraction.enums.MCVersion;
 import com.laytonsmith.abstraction.pluginmessages.MCMessenger;
 import com.laytonsmith.core.Static;
 import com.laytonsmith.core.constructs.Target;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Server;
@@ -42,6 +34,17 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.Recipe;
+
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  *
@@ -273,14 +276,20 @@ public class BukkitMCServer implements MCServer {
 
     /* Boring information get methods -.- */
 	@Override
-    public String getModVersion() {
-        return s.getBukkitVersion();
+	public String getAPIVersion() {
+		return s.getBukkitVersion();
     }
 
 	@Override
-    public String getVersion() {
-        return s.getVersion();
+	public String getServerVersion() {
+		return s.getVersion();
     }
+
+	@Override
+	public MCVersion getMinecraftVersion() {
+		int temp = s.getBukkitVersion().indexOf('-');
+		return MCVersion.valueOf("MC" + s.getBukkitVersion().substring(0, temp).replace('.', '_'));
+	}
 
 	@Override
     public int getPort() {
