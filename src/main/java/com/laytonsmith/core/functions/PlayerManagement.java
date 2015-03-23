@@ -11,8 +11,8 @@ import com.laytonsmith.abstraction.MCOfflinePlayer;
 import com.laytonsmith.abstraction.MCPlayer;
 import com.laytonsmith.abstraction.MCServer;
 import com.laytonsmith.abstraction.MCWorld;
-import com.laytonsmith.abstraction.StaticLayer;
 import com.laytonsmith.abstraction.MVector3D;
+import com.laytonsmith.abstraction.StaticLayer;
 import com.laytonsmith.abstraction.blocks.MCBlock;
 import com.laytonsmith.abstraction.enums.MCGameMode;
 import com.laytonsmith.annotations.api;
@@ -43,6 +43,7 @@ import com.laytonsmith.core.exceptions.CancelCommandException;
 import com.laytonsmith.core.exceptions.ConfigCompileException;
 import com.laytonsmith.core.exceptions.ConfigRuntimeException;
 import com.laytonsmith.core.functions.Exceptions.ExceptionType;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -159,18 +160,23 @@ public class PlayerManagement {
 		@Override
 		public Construct exec(Target t, Environment environment, Construct... args) throws ConfigRuntimeException {
 			MCOfflinePlayer pl = environment.getEnv(CommandHelperEnvironment.class).GetPlayer();
-			if (args.length == 1) {
+			boolean dashless = false;
+			if (args.length >= 1) {
 				try {
 					pl = Static.GetPlayer(args[0], t);
 				} catch (ConfigRuntimeException cre) {
 					pl = Static.GetUser(args[0], t);
 				}
 			}
+			if (args.length == 2) {
+				dashless = Static.getBoolean(args[1]);
+			}
 			if (pl == null) {
 				throw new ConfigRuntimeException("No matching player could be found.",
 						ExceptionType.PlayerOfflineException, t);
 			}
-			return new CString(pl.getUniqueID().toString(), t);
+			String uuid = pl.getUniqueID().toString();
+			return new CString(dashless ? uuid.replace("-", "") : uuid, t);
 		}
 
 		@Override
@@ -180,12 +186,12 @@ public class PlayerManagement {
 
 		@Override
 		public Integer[] numArgs() {
-			return new Integer[]{0, 1};
+			return new Integer[]{0, 1, 2};
 		}
 
 		@Override
 		public String docs() {
-			return "UUID {[player]} Returns the uuid of the current player or the specified player."
+			return "UUID {[player], [dashless]} Returns the uuid of the current player or the specified player."
 					+ " This will attempt to find an offline player, but if that also fails,"
 					+ " a PlayerOfflineException will be thrown.";
 		}
@@ -518,16 +524,20 @@ public class PlayerManagement {
 
 		@Override
 		public Integer[] numArgs() {
-			return new Integer[]{0, 1, 2};
+			return new Integer[]{0, 1, 2, 3};
 		}
 
 		@Override
 		public String docs() {
-			return "array {[player], [array]} Returns an array with the (x, y, z, world) coordinates of the block the player has highlighted"
-					+ " in their crosshairs. If player is omitted, the current player is used. If the block is too far, a"
-					+ " RangeException is thrown. An array of ids to be considered transparent can be supplied, otherwise"
-					+ " only air will be considered transparent. Providing an empty array will cause air to be considered"
-					+ " a potential target, allowing a way to get the block containing the player's head.";
+			return "array {[player], [array], [range]|[player], [range]} Returns an array with the (x, y, z, world)"
+					+ " coordinates of the block the player has highlighted in their crosshairs. If player is omitted,"
+					+ " the current player is used. If the block is too far, a RangeException is thrown."
+					+ " An array of ids to be considered transparent can be supplied,"
+					+ " otherwise only air will be considered transparent. Providing an empty array will"
+					+ " cause air to be considered a potential target, allowing a way to get the block"
+					+ " containing the player's head. The third argument is the range in blocks to check,"
+					+ " which defaults to the block equivalent of the view distance set in server.properties."
+					+ " For convenience, the second argument can either be the array of tranparent ids or the range.";
 		}
 
 		@Override
@@ -549,6 +559,7 @@ public class PlayerManagement {
 		@Override
 		public Construct exec(Target t, Environment env, Construct... args) throws CancelCommandException, ConfigRuntimeException {
 			MCPlayer p = env.getEnv(CommandHelperEnvironment.class).GetPlayer();
+			int range = Static.getServer().getViewDistance() * 16;
 			HashSet<Short> trans = null;
 			if (args.length == 1) {
 				if(args[0] instanceof CArray) {
@@ -561,21 +572,34 @@ public class PlayerManagement {
 					p = Static.GetPlayer(args[0], t);
 				}
 			} else if (args.length == 2) {
-				p = Static.GetPlayer(args[0], t);
-				if(args[1] instanceof CArray) {
-					CArray ta = (CArray) args[1];
+				if (args[0] instanceof CArray) {
+					CArray ta = (CArray) args[0];
 					trans = new HashSet<Short>();
 					for (int i=0; i < ta.size(); i++) {
 						trans.add(Static.getInt16(ta.get(i, t), t));
 					}
+					range = Static.getInt32(args[1], t);
 				} else {
-					throw new Exceptions.FormatException("An array was expected for argument 2 but received " + args[1], t);
+					p = Static.GetPlayer(args[0], t);
+					CArray ta = Static.getArray(args[1], t);
+					trans = new HashSet<Short>();
+					for (int i = 0; i < ta.size(); i++) {
+						trans.add(Static.getInt16(ta.get(i, t), t));
+					}
 				}
+			} else if (args.length == 3) {
+				p = Static.GetPlayer(args[0], t);
+				CArray ta = Static.getArray(args[1], t);
+				trans = new HashSet<Short>();
+				for (int i = 0; i < ta.size(); i++) {
+					trans.add(Static.getInt16(ta.get(i, t), t));
+				}
+				range = Static.getInt32(args[2], t);
 			}
 			Static.AssertPlayerNonNull(p, t);
 			MCBlock b;
 			try {
-				b = p.getTargetBlock(trans, 10000, false);
+				b = p.getTargetBlock(trans, range, false);
 			} catch (IllegalStateException ise) {
 				throw new ConfigRuntimeException("The server's method of finding the target block has failed."
 						+ " There is nothing that can be done about this except standing somewhere else.",

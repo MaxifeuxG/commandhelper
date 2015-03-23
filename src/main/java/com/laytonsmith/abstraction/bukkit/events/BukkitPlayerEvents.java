@@ -41,6 +41,8 @@ import org.bukkit.TravelAgent;
 import org.bukkit.World;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
+import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
@@ -603,10 +605,10 @@ public class BukkitPlayerEvents {
     		implements MCPlayerDeathEvent {
         PlayerDeathEvent pde;
 
-        public BukkitMCPlayerDeathEvent(PlayerDeathEvent event) {
-        	super(event);
-            pde = event;
-        }
+		public BukkitMCPlayerDeathEvent(Event event) {
+			super(event);
+			pde = (PlayerDeathEvent) event;
+		}
 
         public static BukkitMCPlayerDeathEvent _instantiate(MCPlayer entity, List<MCItemStack> listOfDrops,
                 int droppedExp, String deathMessage){

@@ -1374,10 +1374,13 @@ public class EntityManagement {
 	public static class get_mob_name extends EntityGetterFunction {
 
 		@Override
-		public Construct exec(Target t, Environment environment,
-				Construct... args) throws ConfigRuntimeException {
-			MCLivingEntity le = Static.getLivingEntity(Static.getInt32(args[0], t), t);
-			return new CString(le.getCustomName(), t);
+		public Construct exec(Target t, Environment environment, Construct... args) throws ConfigRuntimeException {
+			MCEntity le = Static.getEntity(Static.getInt32(args[0], t), t);
+			try {
+				return new CString(le.getCustomName(), t);
+			} catch (IllegalArgumentException e) {
+				throw new ConfigRuntimeException(e.getMessage(), ExceptionType.CastException, t);
+			}
 		}
 
 		@Override
@@ -1395,10 +1398,13 @@ public class EntityManagement {
 	public static class set_mob_name extends EntitySetterFunction {
 
 		@Override
-		public Construct exec(Target t, Environment environment,
-				Construct... args) throws ConfigRuntimeException {
-			MCLivingEntity le = Static.getLivingEntity(Static.getInt32(args[0], t), t);
-			le.setCustomName(args[1].val());
+		public Construct exec(Target t, Environment environment, Construct... args) throws ConfigRuntimeException {
+			MCEntity le = Static.getEntity(Static.getInt32(args[0], t), t);
+			try {
+				le.setCustomName(args[1].val());
+			} catch (IllegalArgumentException e) {
+				throw new ConfigRuntimeException(e.getMessage(), ExceptionType.CastException, t);
+			}
 			return CVoid.VOID;
 		}
 
@@ -1747,7 +1753,11 @@ public class EntityManagement {
 
 		@Override
 		public Construct exec(Target t, Environment environment, Construct... args) throws ConfigRuntimeException {
-			return CBoolean.get(Static.getLivingEntity(Static.getInt32(args[0], t), t).isCustomNameVisible());
+			try {
+				return CBoolean.get(Static.getEntity(Static.getInt32(args[0], t), t).isCustomNameVisible());
+			} catch (IllegalArgumentException e) {
+				throw new ConfigRuntimeException(e.getMessage(), ExceptionType.CastException, t);
+			}
 		}
 
 		@Override
@@ -1768,7 +1778,11 @@ public class EntityManagement {
 
 		@Override
 		public Construct exec(Target t, Environment environment, Construct... args) throws ConfigRuntimeException {
-			Static.getLivingEntity(Static.getInt32(args[0], t), t).setCustomNameVisible(Static.getBoolean(args[1]));
+			try {
+				Static.getEntity(Static.getInt32(args[0], t), t).setCustomNameVisible(Static.getBoolean(args[1]));
+			} catch (IllegalArgumentException e) {
+				throw new ConfigRuntimeException(e.getMessage(), ExceptionType.CastException, t);
+			}
 			return CVoid.VOID;
 		}
 

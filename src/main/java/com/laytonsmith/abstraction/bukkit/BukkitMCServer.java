@@ -53,7 +53,9 @@ import java.util.UUID;
 public class BukkitMCServer implements MCServer {
 
     Server s;
-    public BukkitMCServer(){
+	MCVersion version;
+
+	public BukkitMCServer(){
         this.s = Bukkit.getServer();
     }
 
@@ -287,8 +289,11 @@ public class BukkitMCServer implements MCServer {
 
 	@Override
 	public MCVersion getMinecraftVersion() {
-		int temp = s.getBukkitVersion().indexOf('-');
-		return MCVersion.valueOf("MC" + s.getBukkitVersion().substring(0, temp).replace('.', '_'));
+		if (version == null) {
+			int temp = s.getBukkitVersion().indexOf('-');
+			version = MCVersion.valueOf("MC" + s.getBukkitVersion().substring(0, temp).replace('.', '_'));
+		}
+		return version;
 	}
 
 	@Override
@@ -320,6 +325,11 @@ public class BukkitMCServer implements MCServer {
     public Boolean getOnlineMode() {
     	return s.getOnlineMode();
     }
+
+	@Override
+	public int getViewDistance() {
+		return s.getViewDistance();
+	}
 
 	@Override
     public String getWorldContainer() {
