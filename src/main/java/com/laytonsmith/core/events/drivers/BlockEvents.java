@@ -38,6 +38,7 @@ import com.laytonsmith.core.events.Prefilters;
 import com.laytonsmith.core.events.Prefilters.PrefilterType;
 import com.laytonsmith.core.exceptions.EventException;
 import com.laytonsmith.core.exceptions.PrefilterNonMatchException;
+
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
@@ -90,16 +91,16 @@ public class BlockEvents {
             int blkdata = event.getBlock().getData();
             blk.set("data", new CInt(blkdata, Target.UNKNOWN), Target.UNKNOWN);
 
-            blk.set("X", new CInt(event.getBlock().getX(), Target.UNKNOWN), Target.UNKNOWN);
-            blk.set("Y", new CInt(event.getBlock().getY(), Target.UNKNOWN), Target.UNKNOWN);
-            blk.set("Z", new CInt(event.getBlock().getZ(), Target.UNKNOWN), Target.UNKNOWN);
+            blk.set("X", new CInt(event.getBlock().getBlockX(), Target.UNKNOWN), Target.UNKNOWN);
+            blk.set("Y", new CInt(event.getBlock().getBlockY(), Target.UNKNOWN), Target.UNKNOWN);
+            blk.set("Z", new CInt(event.getBlock().getBlockZ(), Target.UNKNOWN), Target.UNKNOWN);
             blk.set("world", new CString(event.getBlock().getWorld().getName(), Target.UNKNOWN), Target.UNKNOWN);
 
             map.put("block", blk);
 
 			CArray location = ObjectGenerator.GetGenerator()
-					.location(StaticLayer.GetLocation(event.getBlock().getWorld(), event.getBlock().getX(), event.getBlock().getY(), event.getBlock().getZ()));
-			map.put("location", location);
+                    .location(StaticLayer.GetLocation(event.getBlock().getWorld(), event.getBlock().getBlockX(), event.getBlock().getBlockY(), event.getBlock().getBlockZ()));
+            map.put("location", location);
 
             CBoolean isSticky = CBoolean.get(event.isSticky());
 			map.put("isSticky", isSticky);
@@ -156,10 +157,10 @@ public class BlockEvents {
 				int blkdata = block.getData();
 				blk.set("data", new CInt(blkdata, Target.UNKNOWN), Target.UNKNOWN);
 
-				blk.set("X", new CInt(block.getX(), Target.UNKNOWN), Target.UNKNOWN);
-				blk.set("Y", new CInt(block.getY(), Target.UNKNOWN), Target.UNKNOWN);
-				blk.set("Z", new CInt(block.getZ(), Target.UNKNOWN), Target.UNKNOWN);
-				blk.set("world", new CString(block.getWorld().getName(), Target.UNKNOWN), Target.UNKNOWN);
+                blk.set("X", new CInt(block.getBlockX(), Target.UNKNOWN), Target.UNKNOWN);
+                blk.set("Y", new CInt(block.getBlockY(), Target.UNKNOWN), Target.UNKNOWN);
+                blk.set("Z", new CInt(block.getBlockZ(), Target.UNKNOWN), Target.UNKNOWN);
+                blk.set("world", new CString(block.getWorld().getName(), Target.UNKNOWN), Target.UNKNOWN);
 				
 				affected.push(blk);
 			}
@@ -314,16 +315,16 @@ public class BlockEvents {
             int blkdata = event.getBlock().getData();
             blk.set("data", new CInt(blkdata, Target.UNKNOWN), Target.UNKNOWN);
 
-            blk.set("X", new CInt(event.getBlock().getX(), Target.UNKNOWN), Target.UNKNOWN);
-            blk.set("Y", new CInt(event.getBlock().getY(), Target.UNKNOWN), Target.UNKNOWN);
-            blk.set("Z", new CInt(event.getBlock().getZ(), Target.UNKNOWN), Target.UNKNOWN);
+            blk.set("X", new CInt(event.getBlock().getBlockX(), Target.UNKNOWN), Target.UNKNOWN);
+            blk.set("Y", new CInt(event.getBlock().getBlockY(), Target.UNKNOWN), Target.UNKNOWN);
+            blk.set("Z", new CInt(event.getBlock().getBlockZ(), Target.UNKNOWN), Target.UNKNOWN);
             blk.set("world", new CString(event.getBlock().getWorld().getName(), Target.UNKNOWN), Target.UNKNOWN);
 
             map.put("block", blk);
 
 			CArray location = ObjectGenerator.GetGenerator()
-					.location(StaticLayer.GetLocation(event.getBlock().getWorld(), event.getBlock().getX(), event.getBlock().getY(), event.getBlock().getZ()));
-			map.put("location", location);
+                    .location(StaticLayer.GetLocation(event.getBlock().getWorld(), event.getBlock().getBlockX(), event.getBlock().getBlockY(), event.getBlock().getBlockZ()));
+            map.put("location", location);
 
             CArray drops = new CArray(Target.UNKNOWN);
             Collection<MCItemStack> items = event.getBlock().getDrops(event.getPlayer().getItemInHand());
@@ -359,9 +360,9 @@ public class BlockEvents {
                         blk.getWorld().dropItemNaturally(
                             StaticLayer.GetLocation(
                                     blk.getWorld(),
-                                    blk.getX(),
-                                    blk.getY(),
-                                    blk.getZ()),
+                                    blk.getBlockX(),
+                                    blk.getBlockY(),
+                                    blk.getBlockZ()),
                             stk);
                     }
 
@@ -475,14 +476,14 @@ public class BlockEvents {
 
             map.put("player", new CString(event.getPlayer().getName(), Target.UNKNOWN));
 
-            map.put("X", new CInt(blk.getX(), Target.UNKNOWN));
-            map.put("Y", new CInt(blk.getY(), Target.UNKNOWN));
-            map.put("Z", new CInt(blk.getZ(), Target.UNKNOWN));
+            map.put("X", new CInt(blk.getBlockX(), Target.UNKNOWN));
+            map.put("Y", new CInt(blk.getBlockY(), Target.UNKNOWN));
+            map.put("Z", new CInt(blk.getBlockZ(), Target.UNKNOWN));
             map.put("world", new CString(blk.getWorld().getName(), Target.UNKNOWN));
 
 			CArray location = ObjectGenerator.GetGenerator()
-					.location(StaticLayer.GetLocation(blk.getWorld(), blk.getX(), blk.getY(), blk.getZ()));
-			map.put("location", location);
+                    .location(StaticLayer.GetLocation(blk.getWorld(), blk.getBlockX(), blk.getBlockY(), blk.getBlockZ()));
+            map.put("location", location);
 
             int blktype = event.getBlock().getTypeId();
             map.put("type", new CInt(blktype, Target.UNKNOWN));
@@ -496,9 +497,9 @@ public class BlockEvents {
             agst.set("type", new CInt(againsttype, Target.UNKNOWN), Target.UNKNOWN);
             int againstdata = agstblk.getData();
             agst.set("data", new CInt(againstdata, Target.UNKNOWN), Target.UNKNOWN);
-            agst.set("X", new CInt(agstblk.getX(), Target.UNKNOWN), Target.UNKNOWN);
-            agst.set("Y", new CInt(agstblk.getY(), Target.UNKNOWN), Target.UNKNOWN);
-            agst.set("Z", new CInt(agstblk.getZ(), Target.UNKNOWN), Target.UNKNOWN);
+            agst.set("X", new CInt(agstblk.getBlockX(), Target.UNKNOWN), Target.UNKNOWN);
+            agst.set("Y", new CInt(agstblk.getBlockY(), Target.UNKNOWN), Target.UNKNOWN);
+            agst.set("Z", new CInt(agstblk.getBlockZ(), Target.UNKNOWN), Target.UNKNOWN);
             map.put("against", agst);
 
             MCBlockState old = event.getBlockReplacedState();
@@ -634,16 +635,16 @@ public class BlockEvents {
             int blkdata = event.getBlock().getData();
             blk.set("data", new CInt(blkdata, Target.UNKNOWN), Target.UNKNOWN);
 
-            blk.set("X", new CInt(event.getBlock().getX(), Target.UNKNOWN), Target.UNKNOWN);
-            blk.set("Y", new CInt(event.getBlock().getY(), Target.UNKNOWN), Target.UNKNOWN);
-            blk.set("Z", new CInt(event.getBlock().getZ(), Target.UNKNOWN), Target.UNKNOWN);
+            blk.set("X", new CInt(event.getBlock().getBlockX(), Target.UNKNOWN), Target.UNKNOWN);
+            blk.set("Y", new CInt(event.getBlock().getBlockY(), Target.UNKNOWN), Target.UNKNOWN);
+            blk.set("Z", new CInt(event.getBlock().getBlockZ(), Target.UNKNOWN), Target.UNKNOWN);
             blk.set("world", new CString(event.getBlock().getWorld().getName(), Target.UNKNOWN), Target.UNKNOWN);
 
             map.put("block", blk);
 
 			CArray location = ObjectGenerator.GetGenerator()
-					.location(StaticLayer.GetLocation(event.getBlock().getWorld(), event.getBlock().getX(), event.getBlock().getY(), event.getBlock().getZ()));
-			map.put("location", location);
+                    .location(StaticLayer.GetLocation(event.getBlock().getWorld(), event.getBlock().getBlockX(), event.getBlock().getBlockY(), event.getBlock().getBlockZ()));
+            map.put("location", location);
 
             return map;
         }
@@ -807,8 +808,8 @@ public class BlockEvents {
 
                 MCBlock blc = sce.getBlock();
                 CArray location = ObjectGenerator.GetGenerator()
-    					.location(StaticLayer.GetLocation(blc.getWorld(), blc.getX(), blc.getY(), blc.getZ()));
-    			map.put("location", location);
+                        .location(StaticLayer.GetLocation(blc.getWorld(), blc.getBlockX(), blc.getBlockY(), blc.getBlockZ()));
+                map.put("location", location);
 
                 return map;
             } else {
@@ -943,8 +944,8 @@ public class BlockEvents {
 			map.put("velocity", velocity);
 
 			CArray location = ObjectGenerator.GetGenerator()
-					.location(StaticLayer.GetLocation(blk.getWorld(), blk.getX(), blk.getY(), blk.getZ()));
-			map.put("location", location);
+                    .location(StaticLayer.GetLocation(blk.getWorld(), blk.getBlockX(), blk.getBlockY(), blk.getBlockZ()));
+            map.put("location", location);
 
 			return map;
 		}

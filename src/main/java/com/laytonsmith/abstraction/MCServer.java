@@ -1,7 +1,6 @@
 package com.laytonsmith.abstraction;
 
 import com.laytonsmith.abstraction.enums.MCInventoryType;
-import com.laytonsmith.abstraction.enums.MCVersion;
 import com.laytonsmith.abstraction.pluginmessages.MCMessenger;
 
 import java.util.Collection;
@@ -14,8 +13,8 @@ import java.util.UUID;
  *
  *
  */
-public interface MCServer extends AbstractionObject{
-    public String getName();
+public interface MCServer extends MCGame {
+	public String getName();
     public Collection<MCPlayer> getOnlinePlayers();
     public boolean dispatchCommand(MCCommandSender cs, String string) throws MCCommandException;
     public MCPluginManager getPluginManager();
@@ -30,7 +29,8 @@ public interface MCServer extends AbstractionObject{
 	public void broadcastMessage(String message, String permission);
 	public MCConsoleCommandSender getConsole();
 	public MCItemFactory getItemFactory();
-	public MCCommandMap getCommandMap();
+
+	public MCCommandManager getCommandMap();
 	public MCInventory createInventory(MCInventoryHolder owner, MCInventoryType type);
 	public MCInventory createInventory(MCInventoryHolder owner, int size, String title);
 	public MCInventory createInventory(MCInventoryHolder owner, int size);
@@ -56,12 +56,6 @@ public interface MCServer extends AbstractionObject{
 
     /* Boring information get methods -.- */
     public String getServerName();
-
-	public String getAPIVersion();
-
-	public String getServerVersion();
-
-	public MCVersion getMinecraftVersion();
 
 	public int getPort();
     public String getIp();

@@ -48,15 +48,15 @@ import java.util.logging.Logger;
 public class CommandHelperInterpreterListener implements Listener {
 
     private Set<String> interpreterMode = Collections.synchronizedSet(new HashSet<String>());
-	private CommandHelperPlugin plugin;
+    private CommandHelperBukkit plugin;
     Map<String, String> multilineMode = new HashMap<String, String>();
 
     public boolean isInInterpreterMode(String player){
         return (interpreterMode.contains(player));
     }
 
-	public CommandHelperInterpreterListener(CommandHelperPlugin plugin){
-		this.plugin = plugin;
+    public CommandHelperInterpreterListener(CommandHelperBukkit plugin) {
+        this.plugin = plugin;
 	}
 
     @EventHandler(priority= EventPriority.LOWEST)
@@ -150,8 +150,8 @@ public class CommandHelperInterpreterListener implements Listener {
         interpreterMode.remove(p.getName());
 		GlobalEnv gEnv;
 		try {
-			gEnv = new GlobalEnv(plugin.executionQueue, plugin.profiler, plugin.persistenceNetwork,
-					CommandHelperFileLocations.getDefault().getConfigDirectory(),
+            gEnv = new GlobalEnv(plugin.common.executionQueue, plugin.common.profiler, plugin.common.persistenceNetwork,
+                    CommandHelperFileLocations.getDefault().getConfigDirectory(),
 					new Profiles(MethodScriptFileLocations.getDefault().getSQLProfilesFile()),
 					new TaskManager());
 		} catch (IOException ex) {

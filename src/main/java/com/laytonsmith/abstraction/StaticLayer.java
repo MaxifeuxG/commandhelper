@@ -5,7 +5,8 @@ import com.laytonsmith.PureUtilities.DaemonManager;
 import com.laytonsmith.abstraction.blocks.MCMaterial;
 import com.laytonsmith.abstraction.enums.MCRecipeType;
 import com.laytonsmith.annotations.convert;
-import com.laytonsmith.commandhelper.CommandHelperPlugin;
+import com.laytonsmith.commandhelper.CommandHelperMainClass;
+
 import java.util.Set;
 
 
@@ -83,9 +84,13 @@ public final class StaticLayer {
 	public static MCItemStack GetItemStack(MCMaterial type, int data, int qty){
 		return convertor.GetItemStack(type, data, qty);
 	}
-    
-    public static MCServer GetServer(){
+
+    public static MCServer GetServer() {
         return convertor.GetServer();
+    }
+
+    public static MCGame GetGame() {
+        return convertor.GetGame();
     }
     
     public static MCEnchantment GetEnchantmentByName(String name){
@@ -100,8 +105,8 @@ public final class StaticLayer {
         return convertor.GetEnchantmentValues();
     }
 
-    public static void Startup(CommandHelperPlugin chp) {
-        convertor.Startup(chp);
+    public static void Startup(CommandHelperMainClass mainClass) {
+        convertor.Startup();
     }
 
 	public static MCMetadataValue GetMetadataValue(Object value, MCPlugin plugin) {
@@ -122,6 +127,7 @@ public final class StaticLayer {
      * @param id
      * @return 
      */
+    @Deprecated
     public static String LookupMaterialName(int id){
         return convertor.LookupMaterialName(id);
     }

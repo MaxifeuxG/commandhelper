@@ -4,6 +4,7 @@ import com.laytonsmith.PureUtilities.DaemonManager;
 import com.laytonsmith.core.events.BindableEvent;
 import com.laytonsmith.core.events.Driver;
 import com.laytonsmith.core.events.EventUtils;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -18,9 +19,11 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * 
  */
-public abstract class AbstractConvertor implements Convertor{
+public abstract class AbstractConvertor implements Convertor {
 	
 	private final List<Runnable> shutdownHooks = new ArrayList<>();
+
+	protected MCGame game;
 
 	@Override
 	public void addShutdownHook(Runnable r) {

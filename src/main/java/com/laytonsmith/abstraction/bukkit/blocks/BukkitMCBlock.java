@@ -17,14 +17,15 @@ import com.laytonsmith.abstraction.bukkit.BukkitMCLocation;
 import com.laytonsmith.abstraction.bukkit.BukkitMCMetadatable;
 import com.laytonsmith.abstraction.bukkit.BukkitMCWorld;
 import com.laytonsmith.abstraction.enums.bukkit.BukkitMCBlockFace;
-import java.util.ArrayList;
-import java.util.Collection;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.CommandBlock;
 import org.bukkit.block.CreatureSpawner;
 import org.bukkit.block.Sign;
 import org.bukkit.inventory.ItemStack;
+
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  *
@@ -97,17 +98,17 @@ public class BukkitMCBlock extends BukkitMCMetadatable implements MCBlock {
     }
 
 	@Override
-    public int getX() {
+    public int getBlockX() {
         return b.getX();
     }
 
 	@Override
-    public int getY() {
+    public int getBlockY() {
         return b.getY();
     }
 
 	@Override
-    public int getZ() {
+    public int getBlockZ() {
         return b.getZ();
     }
 

@@ -11,6 +11,7 @@ import com.laytonsmith.abstraction.MCCommandSender;
 import com.laytonsmith.abstraction.MCEnchantment;
 import com.laytonsmith.abstraction.MCEntity;
 import com.laytonsmith.abstraction.MCFireworkBuilder;
+import com.laytonsmith.abstraction.MCGame;
 import com.laytonsmith.abstraction.MCInventory;
 import com.laytonsmith.abstraction.MCItemMeta;
 import com.laytonsmith.abstraction.MCItemStack;
@@ -77,7 +78,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.Tameable;
 import org.bukkit.entity.Vehicle;
-import org.bukkit.event.Listener;
 import org.bukkit.inventory.FurnaceRecipe;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
@@ -112,6 +112,10 @@ import java.util.logging.Level;
 public class BukkitConvertor extends AbstractConvertor {
 
 	private static BukkitMCPluginMeta pluginMeta = null;
+
+	public BukkitConvertor() {
+		game = BukkitMCServer.Get();
+	}
 
 	@Override
 	public MCLocation GetLocation(MCWorld w, double x, double y, double z, float yaw, float pitch) {
@@ -157,7 +161,12 @@ public class BukkitConvertor extends AbstractConvertor {
 
 	@Override
 	public MCServer GetServer() {
-		return BukkitMCServer.Get();
+		return game.getServer();
+	}
+
+	@Override
+	public MCGame GetGame() {
+		return game;
 	}
 
 	@Override
@@ -216,18 +225,19 @@ public class BukkitConvertor extends AbstractConvertor {
 	public static final BukkitWorldListener WorldListener = new BukkitWorldListener();
 
 	@Override
-	public void Startup(CommandHelperPlugin chp) {
-		chp.registerEvents((Listener) BlockListener);
-		chp.registerEventsDynamic((Listener) EntityListener);
-		chp.registerEvents((Listener) InventoryListener);
-		chp.registerEvents((Listener) PlayerListener);
-		chp.registerEvents((Listener) ServerListener);
-		chp.registerEvents((Listener) VehicleListener);
-		chp.registerEvents((Listener) WeatherListener);
-		chp.registerEvents((Listener) WorldListener);
+	public void Startup() {
+		game.getEventManager().registerEvents(BlockListener);
+		game.getEventManager().registerEventsDynamic(EntityListener);
+		game.getEventManager().registerEvents(InventoryListener);
+		game.getEventManager().registerEvents(PlayerListener);
+		game.getEventManager().registerEvents(ServerListener);
+		game.getEventManager().registerEvents(VehicleListener);
+		game.getEventManager().registerEvents(WeatherListener);
+		game.getEventManager().registerEvents(WorldListener);
 	}
 
 	@Override
+	@Deprecated
 	public int LookupItemId(String materialName) {
 		if (Material.matchMaterial(materialName) != null) {
 			return new MaterialData(Material.matchMaterial(materialName)).getItemTypeId();
@@ -237,6 +247,7 @@ public class BukkitConvertor extends AbstractConvertor {
 	}
 
 	@Override
+	@Deprecated
 	public String LookupMaterialName(int id) {
 		return Material.getMaterial(id).toString();
 	}
@@ -306,52 +317,62 @@ public class BukkitConvertor extends AbstractConvertor {
 			return null;
 		}
 
-		Class<? extends MCEntity> clazz = BukkitMCEntityType.getWrapperClass(be.getType());
-		if (clazz != null) {
-			return ReflectionUtils.newInstance(clazz, new Class[]{Entity.class}, new Object[]{be});
+		BukkitMCEntityType type = BukkitMCEntityType.valueOfConcrete(be.getType());
+		if (type.getWrapperClass() != null) {
+			return ReflectionUtils.newInstance(type.getWrapperClass(), new Class[]{Entity.class}, new Object[]{be});
 		}
 
 		if (be instanceof Hanging) {
+			type.setWrapperClass(BukkitMCHanging.class);
 			return new BukkitMCHanging(be);
 		}
 
 		if (be instanceof Minecart) {
 			// Must come before Vehicle
+			type.setWrapperClass(BukkitMCMinecart.class);
 			return new BukkitMCMinecart(be);
 		}
 
 		if (be instanceof Projectile) {
+			type.setWrapperClass(BukkitMCProjectile.class);
 			return new BukkitMCProjectile(be);
 		}
 
 		if (be instanceof Tameable) {
 			// Must come before LivingEntity
+			type.setWrapperClass(BukkitMCTameable.class);
 			return new BukkitMCTameable(be);
 		}
 
 		if (be instanceof HumanEntity) {
 			// Must come before LivingEntity
+			type.setWrapperClass(BukkitMCHumanEntity.class);
 			return new BukkitMCHumanEntity(be);
 		}
 
 		if (be instanceof ComplexEntityPart) {
+			type.setWrapperClass(BukkitMCComplexEntityPart.class);
 			return new BukkitMCComplexEntityPart(be);
 		}
 
 		if (be instanceof ComplexLivingEntity) {
 			// Must come before LivingEntity
+			type.setWrapperClass(BukkitMCComplexLivingEntity.class);
 			return new BukkitMCComplexLivingEntity(be);
 		}
 
 		if (be instanceof LivingEntity) {
+			type.setWrapperClass(BukkitMCLivingEntity.class);
 			return new BukkitMCLivingEntity(be);
 		}
 
 		if (be instanceof Vehicle) {
+			type.setWrapperClass(BukkitMCVehicle.class);
 			return new BukkitMCVehicle(be);
 		}
 
 		// Handle generically if we can't find a more specific type
+		type.setWrapperClass(BukkitMCEntity.class);
 		return new BukkitMCEntity(be);
 	}
 

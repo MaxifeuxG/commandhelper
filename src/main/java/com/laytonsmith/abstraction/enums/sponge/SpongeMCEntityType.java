@@ -1,73 +1,64 @@
-
-package com.laytonsmith.abstraction.enums.bukkit;
+package com.laytonsmith.abstraction.enums.sponge;
 
 import com.laytonsmith.abstraction.MCEntity;
-import com.laytonsmith.abstraction.bukkit.blocks.BukkitMCFallingBlock;
-import com.laytonsmith.abstraction.bukkit.entities.BukkitMCCommandMinecart;
-import com.laytonsmith.abstraction.bukkit.entities.BukkitMCEntity;
-import com.laytonsmith.abstraction.bukkit.entities.BukkitMCFishHook;
-import com.laytonsmith.abstraction.bukkit.entities.BukkitMCItem;
-import com.laytonsmith.abstraction.bukkit.entities.BukkitMCLightningStrike;
-import com.laytonsmith.abstraction.bukkit.entities.BukkitMCMinecart;
-import com.laytonsmith.abstraction.bukkit.entities.BukkitMCTNT;
-import com.laytonsmith.abstraction.bukkit.entities.BukkitMCThrownPotion;
 import com.laytonsmith.abstraction.enums.MCEntityType;
 import com.laytonsmith.core.CHLog;
 import com.laytonsmith.core.constructs.Target;
-import org.bukkit.entity.EntityType;
+import org.spongepowered.api.GameRegistry;
+import org.spongepowered.api.entity.EntityType;
+import org.spongepowered.api.entity.EntityTypes;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- *
- * 
+ * Created by jb_aero on 4/6/2015.
  */
-public class BukkitMCEntityType extends MCEntityType {
+public class SpongeMCEntityType extends MCEntityType {
 
 	private EntityType concrete;
 
-	public BukkitMCEntityType(EntityType concreteType, MCVanillaEntityType abstractedType) {
+	public SpongeMCEntityType(EntityType concreteType, MCEntityType.MCVanillaEntityType abstractedType) {
 		super(abstractedType);
 		concrete = concreteType;
 	}
 
 	// This way we don't take up extra memory on non-bukkit implementations
-	public static void build() {
+	public static void build(GameRegistry registry) {
 		vanilla = new HashMap<>();
 		mappings = new HashMap<>();
-		NULL = new BukkitMCEntityType(EntityType.UNKNOWN, MCVanillaEntityType.UNKNOWN);
+		NULL = new SpongeMCEntityType(EntityTypes.UNKNOWN, MCEntityType.MCVanillaEntityType.UNKNOWN);
 		ArrayList<EntityType> counted = new ArrayList<>();
-		for (MCVanillaEntityType v : MCVanillaEntityType.values()) {
+		for (MCEntityType.MCVanillaEntityType v : MCEntityType.MCVanillaEntityType.values()) {
 			if (v.existsInCurrent()) {
-				EntityType type = getBukkitType(v);
+				EntityType type = getSpongeType(registry, v);
 				if (type == null) {
 					CHLog.GetLogger().e(CHLog.Tags.RUNTIME, "Could not find a matching entity type for " + v.name()
 							+ ". This is an error, please report this to the bug tracker.", Target.UNKNOWN);
 					continue;
 				}
-				BukkitMCEntityType wrapper = new BukkitMCEntityType(type, v);
+				SpongeMCEntityType wrapper = new SpongeMCEntityType(type, v);
 				wrapper.setWrapperClass();
 				vanilla.put(v, wrapper);
 				mappings.put(v.name(), wrapper);
 				counted.add(type);
 			}
 		}
-		for (EntityType b : EntityType.values()) {
+		for (EntityType b : registry.getEntities()) {
 			if (!counted.contains(b)) {
-				mappings.put(b.name(), new BukkitMCEntityType(b, MCVanillaEntityType.UNKNOWN));
+				mappings.put(b.getId(), new SpongeMCEntityType(b, MCEntityType.MCVanillaEntityType.UNKNOWN));
 			}
 		}
 	}
 
 	@Override
 	public String name() {
-		return abstracted == MCVanillaEntityType.UNKNOWN ? concrete.name() : abstracted.name();
+		return abstracted == MCEntityType.MCVanillaEntityType.UNKNOWN ? concrete.getId() : abstracted.name();
 	}
 
 	@Override
 	public String concreteName() {
-		return concrete.name();
+		return concrete.getId();
 	}
 
 	@Override
@@ -77,38 +68,44 @@ public class BukkitMCEntityType extends MCEntityType {
 
 	@Override
 	public boolean isSpawnable() {
-		return (abstracted == MCVanillaEntityType.UNKNOWN) ? (concrete
-				!= EntityType.UNKNOWN) : abstracted.isSpawnable();
+		return (abstracted == MCEntityType.MCVanillaEntityType.UNKNOWN) ? (concrete
+				!= EntityTypes.UNKNOWN) : abstracted.isSpawnable();
 	}
 
-	public static BukkitMCEntityType valueOfConcrete(EntityType test) {
+	public static MCEntityType valueOfConcrete(EntityType test) {
+		return valueOfConcrete(test.getId());
+	}
+
+	public static MCEntityType valueOfConcrete(String test) {
 		for (MCEntityType t : mappings.values()) {
-			if (((BukkitMCEntityType) t).getConcrete().equals(test)) {
-				return (BukkitMCEntityType) t;
+			if (((SpongeMCEntityType) t).concreteName().equals(test)) {
+				return t;
 			}
 		}
-		return (BukkitMCEntityType) NULL;
-	}
-
-	public static BukkitMCEntityType valueOfConcrete(String test) {
-		try {
-			return valueOfConcrete(EntityType.valueOf(test));
-		} catch (IllegalArgumentException iae) {
-			return (BukkitMCEntityType) NULL;
-		}
+		return NULL;
 	}
 
 	// Add exceptions here
-	public static EntityType getBukkitType(MCVanillaEntityType v) {
+	public static EntityType getSpongeType(GameRegistry reg, MCEntityType.MCVanillaEntityType v) {
 		switch (v) {
 			case ENDER_EYE:
-				return EntityType.ENDER_SIGNAL;
+				return EntityTypes.EYE_OF_ENDER;
+			case MINECART:
+				return EntityTypes.RIDEABLE_MINECART;
+			case MINECART_CHEST:
+				return EntityTypes.CHESTED_MINECART;
+			case MINECART_COMMAND:
+				return EntityTypes.COMMANDBLOCK_MINECART;
+			case MINECART_FURNACE:
+				return EntityTypes.FURNACE_MINECART;
+			case MINECART_HOPPER:
+				return EntityTypes.HOPPER_MINECART;
+			case MINECART_MOB_SPAWNER:
+				return EntityTypes.MOB_SPAWNER_MINECART;
+			case MINECART_TNT:
+				return EntityTypes.TNT_MINECART;
 		}
-		try {
-			return EntityType.valueOf(v.name());
-		} catch (IllegalArgumentException iae) {
-			return null;
-		}
+		return reg.getEntity(v.name()).orNull();
 	}
 
 	// This is here because it shouldn't be getting changed from API
@@ -120,40 +117,40 @@ public class BukkitMCEntityType extends MCEntityType {
 	private void setWrapperClass() {
 		switch (abstracted) {
 			case UNKNOWN:
-				wrapperClass = BukkitMCEntity.class;
+				//wrapperClass = BukkitMCEntity.class;
 				break;
 			case DROPPED_ITEM:
-				wrapperClass = BukkitMCItem.class;
+				//wrapperClass = BukkitMCItem.class;
 				break;
 			case PRIMED_TNT:
-				wrapperClass = BukkitMCTNT.class;
+				//wrapperClass = BukkitMCTNT.class;
 				break;
 			case LIGHTNING:
-				wrapperClass = BukkitMCLightningStrike.class;
+				//wrapperClass = BukkitMCLightningStrike.class;
 				break;
 			case FALLING_BLOCK:
-				wrapperClass = BukkitMCFallingBlock.class;
+				//wrapperClass = BukkitMCFallingBlock.class;
 				break;
 			case SPLASH_POTION:
-				wrapperClass = BukkitMCThrownPotion.class;
+				//wrapperClass = BukkitMCThrownPotion.class;
 				break;
 			default:
 				String[] split = abstracted.name().toLowerCase().split("_");
 				if (split.length == 0 || "".equals(split[0])) {
 					break;
 				}
-				String name = "com.laytonsmith.abstraction.bukkit.entities.BukkitMC";
+				String name = "com.laytonsmith.abstraction.sponge.entities.SpongeMC";
 				if ("minecart".equals(split[0])) {
 					if (split.length == 1 || !"command".equals(split[1])) {
-						wrapperClass = BukkitMCMinecart.class;
+						//wrapperClass = BukkitMCMinecart.class;
 						break;
 					} else {
-						wrapperClass = BukkitMCCommandMinecart.class;
+						//wrapperClass = BukkitMCCommandMinecart.class;
 						break;
 					}
 				}
 				if (split[0].startsWith("fish")) { // Bukkit enum matches neither the old class or the new
-					wrapperClass = BukkitMCFishHook.class;
+					//wrapperClass = BukkitMCFishHook.class;
 					break;
 				}
 				for (String s : split) {
@@ -163,7 +160,7 @@ public class BukkitMCEntityType extends MCEntityType {
 					wrapperClass = (Class<? extends MCEntity>) Class.forName(name);
 				} catch (ClassNotFoundException e) {
 					String url = "https://github.com/sk89q/CommandHelper/tree/master/src/main/java/"
-							+ "com/laytonsmith/abstraction/bukkit/entities";
+							+ "com/laytonsmith/abstraction/sponge/entities";
 					CHLog.GetLogger().d(CHLog.Tags.RUNTIME, "While trying to find the correct entity class for "
 							+ abstracted.name() + "(attempted " + name + "), we were unable to find a wrapper class."
 							+ " This is not necessarily an error, we just don't have any special handling for"

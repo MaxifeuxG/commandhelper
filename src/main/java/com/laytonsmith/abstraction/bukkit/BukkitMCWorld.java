@@ -199,7 +199,7 @@ public class BukkitMCWorld extends BukkitMCMetadatable implements MCWorld {
 	}
 
 	@Override
-	public String getGenerator() {
+	public String getGeneratorName() {
 		try {
 			return w.getGenerator().toString();
 		} catch (NullPointerException npe) {

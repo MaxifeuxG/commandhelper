@@ -2,7 +2,7 @@ package com.laytonsmith.abstraction;
 
 import java.util.List;
 
-public interface MCCommandMap extends AbstractionObject {
+public interface MCCommandManager extends AbstractionObject {
 
 	public void clearCommands();
 	

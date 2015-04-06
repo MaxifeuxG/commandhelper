@@ -5,12 +5,11 @@ import com.laytonsmith.PureUtilities.DaemonManager;
 import com.laytonsmith.abstraction.blocks.MCMaterial;
 import com.laytonsmith.abstraction.enums.MCRecipeType;
 import com.laytonsmith.abstraction.enums.MCTone;
-import com.laytonsmith.commandhelper.CommandHelperPlugin;
 import com.laytonsmith.core.constructs.Target;
 import com.laytonsmith.core.functions.Exceptions;
+
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
 
 /**
  * This should be implemented once for each server type. It mostly wraps
@@ -35,6 +34,8 @@ public interface Convertor {
 	 */
     public MCEnchantment GetEnchantmentByName(String name);
 
+	MCGame GetGame();
+
     public MCServer GetServer();
 
 	public MCItemStack GetItemStack(int type, int qty);
@@ -49,7 +50,7 @@ public interface Convertor {
 
 	public MCItemStack GetItemStack(String type, int data, int qty);
 
-    public void Startup(CommandHelperPlugin chp);
+	public void Startup();
 
     public int LookupItemId(String materialName);
 
@@ -175,18 +176,21 @@ public interface Convertor {
 	 * Returns the max block ID number supported by this server.
 	 * @return
 	 */
+	@Deprecated
 	public int getMaxBlockID();
 
 	/**
 	 * Returns the max item ID number supported by this server.
 	 * @return
 	 */
+	@Deprecated
 	public int getMaxItemID();
 
 	/**
 	 * Returns the max record ID number supported by this server.
 	 * @return
 	 */
+	@Deprecated
 	public int getMaxRecordID();
 
 	/**

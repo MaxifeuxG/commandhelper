@@ -797,7 +797,7 @@ public class Minecraft {
 					+ " information with the following pieces of information in the specified index: "
 					+ "<ul><li>0 - Server name; the name of the server in server.properties.</li>"
 					+ "<li>1 - API version; The version of the plugin API this server is implementing.</li>"
-					+ "<li>2 - Server version; The bare version string of the server implementation.</li>"
+					+ "<li>2 - Implementation version; The bare version string of the plugin api implementation.</li>"
 					+ "<li>3 - Allow flight; If true, Minecraft's inbuilt anti fly check is enabled.</li>"
 					+ "<li>4 - Allow nether; is true, the Nether dimension is enabled</li>"
 					+ "<li>5 - Allow end; if true, the End is enabled</li>"
@@ -858,8 +858,8 @@ public class Minecraft {
 				retVals.add(new CString(server.getAPIVersion(), t));
 			}
 			if (index == 2 || index == -1) {
-				// Server Version
-				retVals.add(new CString(server.getServerVersion(), t));
+				// API Implementation Version
+				retVals.add(new CString(server.getImplementationVersion(), t));
 			}
 			if (index == 3 || index == -1) {
 				//Allow flight

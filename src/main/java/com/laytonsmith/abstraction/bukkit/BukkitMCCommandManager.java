@@ -2,21 +2,23 @@ package com.laytonsmith.abstraction.bukkit;
 
 import com.laytonsmith.PureUtilities.Common.ReflectionUtils;
 import com.laytonsmith.abstraction.MCCommand;
-import com.laytonsmith.abstraction.MCCommandMap;
+import com.laytonsmith.abstraction.MCCommandManager;
+import org.bukkit.command.Command;
+import org.bukkit.command.SimpleCommandMap;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import org.bukkit.command.Command;
-import org.bukkit.command.SimpleCommandMap;
 
 /**
  * 
  * @author jb_aero
  */
-public class BukkitMCCommandMap implements MCCommandMap {
+public class BukkitMCCommandManager implements MCCommandManager {
 
 	SimpleCommandMap scm;
-	public BukkitMCCommandMap(SimpleCommandMap invokeMethod) {
+
+	public BukkitMCCommandManager(SimpleCommandMap invokeMethod) {
 		scm = invokeMethod;
 	}
 

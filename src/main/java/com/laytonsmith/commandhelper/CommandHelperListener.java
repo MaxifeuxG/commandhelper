@@ -62,9 +62,9 @@ public class CommandHelperListener implements Listener {
      * List of global aliases.
      */
     private AliasCore ac;
-    private CommandHelperPlugin plugin;
+    private CommandHelperBukkit plugin;
 
-    public CommandHelperListener(CommandHelperPlugin plugin) {
+    public CommandHelperListener(CommandHelperBukkit plugin) {
         this.plugin = plugin;
     }
 
@@ -72,7 +72,7 @@ public class CommandHelperListener implements Listener {
      * Load global aliases.
      */
     public void loadGlobalAliases() {
-        ac = CommandHelperPlugin.getCore();
+        ac = plugin.common.getCore();
     }
 
     /**
@@ -83,9 +83,9 @@ public class CommandHelperListener implements Listener {
      */
     public boolean runAlias(String command, MCPlayer player) throws DataSourceException {
         UserManager um = UserManager.GetUserManager(player.getName());
-        List<Script> scripts = um.getAllScripts(plugin.persistenceNetwork);
+        List<Script> scripts = um.getAllScripts(plugin.common.persistenceNetwork);
 
-        return CommandHelperPlugin.getCore().alias(command, player, scripts);
+        return plugin.common.getCore().alias(command, player, scripts);
     }
 
     /**

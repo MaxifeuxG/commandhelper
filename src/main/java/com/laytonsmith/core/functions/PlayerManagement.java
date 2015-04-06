@@ -897,7 +897,7 @@ public class PlayerManagement {
 				if (b == null) {
 					retVals.add(CNull.NULL);
 				} else {
-					retVals.add(new CArray(t, new CInt(b.getX(), t), new CInt(b.getY(), t), new CInt(b.getZ(), t)));
+					retVals.add(new CArray(t, new CInt(b.getBlockX(), t), new CInt(b.getBlockY(), t), new CInt(b.getBlockZ(), t)));
 				}
 			}
 			if (index == 3 || index == -1) {

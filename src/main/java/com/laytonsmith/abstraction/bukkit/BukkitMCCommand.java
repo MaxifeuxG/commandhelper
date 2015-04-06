@@ -4,7 +4,7 @@ import com.laytonsmith.PureUtilities.Common.ReflectionUtils;
 import com.laytonsmith.PureUtilities.Common.StringUtils;
 import com.laytonsmith.abstraction.MCBlockCommandSender;
 import com.laytonsmith.abstraction.MCCommand;
-import com.laytonsmith.abstraction.MCCommandMap;
+import com.laytonsmith.abstraction.MCCommandManager;
 import com.laytonsmith.abstraction.MCCommandSender;
 import com.laytonsmith.abstraction.MCPlugin;
 import com.laytonsmith.abstraction.bukkit.events.BukkitMiscEvents.BukkitMCCommandTabCompleteEvent;
@@ -16,17 +16,17 @@ import com.laytonsmith.core.constructs.CString;
 import com.laytonsmith.core.constructs.Construct;
 import com.laytonsmith.core.constructs.Target;
 import com.laytonsmith.core.environments.CommandHelperEnvironment;
-import com.laytonsmith.core.environments.Environment;
 import com.laytonsmith.core.events.Driver;
 import com.laytonsmith.core.events.EventUtils;
 import com.laytonsmith.core.exceptions.ConfigRuntimeException;
 import com.laytonsmith.core.exceptions.FunctionReturnException;
 import com.laytonsmith.core.functions.Commands;
-import java.util.ArrayList;
-import java.util.List;
 import org.bukkit.command.Command;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.Plugin;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 
@@ -126,8 +126,8 @@ public class BukkitMCCommand implements MCCommand {
 	}
 
 	@Override
-	public boolean register(MCCommandMap map) {
-		return cmd.register(((BukkitMCCommandMap) map).scm);
+	public boolean register(MCCommandManager map) {
+		return cmd.register(((BukkitMCCommandManager) map).scm);
 	}
 
 	@Override
@@ -136,8 +136,8 @@ public class BukkitMCCommand implements MCCommand {
 	}
 
 	@Override
-	public boolean unregister(MCCommandMap map) {
-		return cmd.unregister(((BukkitMCCommandMap) map).scm);
+	public boolean unregister(MCCommandManager map) {
+		return cmd.unregister(((BukkitMCCommandManager) map).scm);
 	}
 	
 	public static MCCommand newCommand(String name) {

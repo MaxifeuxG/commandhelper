@@ -20,7 +20,7 @@ import com.laytonsmith.abstraction.MCWorld;
 import com.laytonsmith.abstraction.StaticLayer;
 import com.laytonsmith.abstraction.blocks.MCBlock;
 import com.laytonsmith.annotations.typeof;
-import com.laytonsmith.commandhelper.CommandHelperPlugin;
+import com.laytonsmith.commandhelper.CommandHelperMainClass;
 import com.laytonsmith.core.constructs.CArray;
 import com.laytonsmith.core.constructs.CBoolean;
 import com.laytonsmith.core.constructs.CByteArray;
@@ -81,7 +81,7 @@ public final class Static {
 	private Static() {
 	}
 
-	private static final Logger logger = Logger.getLogger("CommandHelper");
+	private static final Logger logger = Logger.getLogger(Implementation.GetServerType().getBranding());
 
 	private static Map<String, String> hostCache = new HashMap<String, String>();
 
@@ -304,7 +304,7 @@ public final class Static {
 	 * @throws NotInitializedYetException
 	 */
 	public static MCServer getServer() throws NotInitializedYetException {
-		MCServer s = com.laytonsmith.commandhelper.CommandHelperPlugin.myServer;
+		MCServer s = StaticLayer.GetServer();
 		if (s == null) {
 			throw new NotInitializedYetException("The server has not been initialized yet");
 		}
@@ -318,7 +318,7 @@ public final class Static {
 	 * @throws NotInitializedYetException
 	 */
 	public static AliasCore getAliasCore() throws NotInitializedYetException {
-		AliasCore ac = com.laytonsmith.commandhelper.CommandHelperPlugin.getCore();
+		AliasCore ac = CommandHelperMainClass.getCore();
 		if (ac == null) {
 			throw new NotInitializedYetException("The core has not been initialized yet");
 		}
@@ -332,7 +332,7 @@ public final class Static {
 	 * @throws NotInitializedYetException
 	 */
 	public static SimpleVersion getVersion() throws NotInitializedYetException {
-		SimpleVersion v = com.laytonsmith.commandhelper.CommandHelperPlugin.version;
+		SimpleVersion v = CommandHelperMainClass.version;
 		if (v == null) {
 			throw new NotInitializedYetException("The plugin has not been initialized yet");
 		}
@@ -1070,7 +1070,9 @@ public final class Static {
 			if (commandSender.isOp()) {
 				perm = true;
 			} else if (commandSender instanceof MCPlayer) {
-				perm = player.hasPermission("ch.func.use." + functionName)
+				perm = player.hasPermission("ch.func.use." + GLOBAL_PERMISSION)
+						|| player.hasPermission("commandhelper.func.use." + GLOBAL_PERMISSION)
+						|| player.hasPermission("ch.func.use." + functionName)
 						|| player.hasPermission("commandhelper.func.use." + functionName);
 				if (label != null && label.startsWith("~")) {
 					String[] groups = label.substring(1).split("/");
@@ -1088,7 +1090,9 @@ public final class Static {
 							if (player.hasPermission(label)) {
 								perm = true;
 							}
-						} else if ((player.hasPermission("ch.alias." + label))
+						} else if ((player.hasPermission("ch.alias." + GLOBAL_PERMISSION))
+								|| player.hasPermission("commandhelper.alias." + GLOBAL_PERMISSION)
+								|| player.hasPermission("ch.alias." + label)
 								|| player.hasPermission("commandhelper.alias." + label)) {
 							perm = true;
 						}
@@ -1188,17 +1192,16 @@ public final class Static {
 	public static MCCommandSender UninjectPlayer(MCCommandSender player) {
 		String name = player.getName();
 		if ("CONSOLE".equals(name)) {
-			name = "~console";
+			name = consoleName;
 		}
 		return injectedPlayers.remove(name);
 	}
 
 	public static void HostnameCache(final MCPlayer p) {
-		CommandHelperPlugin.hostnameLookupThreadPool.submit(new Runnable() {
+		CommandHelperMainClass.hostnameLookupThreadPool.submit(new Runnable() {
 			@Override
 			public void run() {
-				CommandHelperPlugin.hostnameLookupCache.put(p.getName(),
-						p.getAddress().getHostName());
+				CommandHelperMainClass.hostnameLookupCache.put(p.getName(), p.getAddress().getHostName());
 			}
 		});
 	}
@@ -1558,5 +1561,23 @@ public final class Static {
 		} else {
 			return construct;
 		}
+	}
+
+	/**
+	 * Joins a string from an array of strings.
+	 *
+	 * @param str
+	 * @param delimiter
+	 * @return
+	 */
+	public static String joinString(String[] str, String delimiter) {
+		if (str.length == 0) {
+			return "";
+		}
+		StringBuilder buffer = new StringBuilder(str[0]);
+		for (int i = 1; i < str.length; i++) {
+			buffer.append(delimiter).append(str[i]);
+		}
+		return buffer.toString();
 	}
 }

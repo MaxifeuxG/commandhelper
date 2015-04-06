@@ -9,7 +9,7 @@ import com.laytonsmith.abstraction.MCPlayer;
 import com.laytonsmith.abstraction.StaticLayer;
 import com.laytonsmith.abstraction.enums.MCChatColor;
 import com.laytonsmith.commandhelper.CommandHelperFileLocations;
-import com.laytonsmith.commandhelper.CommandHelperPlugin;
+import com.laytonsmith.commandhelper.CommandHelperMainClass;
 import com.laytonsmith.core.constructs.Target;
 import com.laytonsmith.core.environments.CommandHelperEnvironment;
 import com.laytonsmith.core.environments.Environment;
@@ -74,11 +74,10 @@ public class AliasCore {
 	static final Logger logger = Logger.getLogger("Minecraft");
 	private Set<String> echoCommand = new HashSet<String>();
 	public List<File> autoIncludes;
-	public static CommandHelperPlugin parent;
+	public static CommandHelperMainClass parent;
 
-	/**
-	 * This constructor accepts the configuration settings for the plugin, and
-	 * ensures that the manager uses these settings.
+	/*
+	 * Old javadoc... maybe reimplement these somewhere?
 	 *
 	 * @param allowCustomAliases Whether or not to allow users to add their own
 	 * personal aliases
@@ -87,7 +86,12 @@ public class AliasCore {
 	 * @param maxCommands How many commands an alias may contain. Since aliases
 	 * can be used like a macro, this can help prevent command spamming.
 	 */
-	public AliasCore(File aliasConfig, File auxAliases, File prefFile, File mainFile, CommandHelperPlugin parent) {
+
+	/**
+	 * This constructor accepts the configuration settings for the plugin, and ensures that the manager uses these
+	 * settings.
+	 */
+	public AliasCore(File aliasConfig, File auxAliases, File prefFile, File mainFile, CommandHelperMainClass parent) {
 		this.aliasConfig = aliasConfig;
 		this.auxAliases = auxAliases;
 		this.prefFile = prefFile;
@@ -113,7 +117,7 @@ public class AliasCore {
 
 		GlobalEnv gEnv;
 		try {
-			gEnv = new GlobalEnv(parent.executionQueue, parent.profiler, parent.persistenceNetwork,
+			gEnv = new GlobalEnv(parent.getExecutionQueue(), parent.getProfiler(), parent.getPersistenceNetwork(),
 					MethodScriptFileLocations.getDefault().getConfigDirectory(),
 					new Profiles(MethodScriptFileLocations.getDefault().getSQLProfilesFile()),
 					new TaskManager());
@@ -363,11 +367,11 @@ public class AliasCore {
 						+ CommandHelperFileLocations.getDefault().getProfilerConfigFile().getName() + " you should set this to false, except during development.", Target.UNKNOWN);
 			}
 
-			if (parent.profiler == null || reloadProfiler) {
-				parent.profiler = new Profiler(MethodScriptFileLocations.getDefault().getProfilerConfigFile());
+			if (parent.getProfiler() == null || reloadProfiler) {
+				parent.setProfiler(new Profiler(MethodScriptFileLocations.getDefault().getProfilerConfigFile()));
 			}
 
-			ProfilePoint extensionPreReload = parent.profiler.start("Extension PreReloadAliases call", LogLevel.VERBOSE);
+			ProfilePoint extensionPreReload = parent.getProfiler().start("Extension PreReloadAliases call", LogLevel.VERBOSE);
 			try {
 				// Allow new-style extensions know we are about to reload aliases.
 				ExtensionManager.PreReloadAliases(reloadGlobals, reloadTimeouts,
@@ -377,7 +381,7 @@ public class AliasCore {
 				extensionPreReload.stop();
 			}
 
-			ProfilePoint shutdownHooks = parent.profiler.start("Shutdown hooks call", LogLevel.VERBOSE);
+			ProfilePoint shutdownHooks = parent.getProfiler().start("Shutdown hooks call", LogLevel.VERBOSE);
 			try {
 				StaticLayer.GetConvertor().runShutdownHooks();
 			} finally {
@@ -391,7 +395,7 @@ public class AliasCore {
 			PacketJumper.startup();
 
 			if (reloadExtensions) {
-				ProfilePoint extensionManagerStartup = parent.profiler.start("Extension manager startup", LogLevel.VERBOSE);
+				ProfilePoint extensionManagerStartup = parent.getProfiler().start("Extension manager startup", LogLevel.VERBOSE);
 				try {
 					ExtensionManager.Startup();
 				} finally {
@@ -399,22 +403,22 @@ public class AliasCore {
 				}
 			}
 			CHLog.GetLogger().Log(CHLog.Tags.GENERAL, LogLevel.VERBOSE, "Scripts reloading...", Target.UNKNOWN);
-			if (parent.persistenceNetwork == null || reloadPersistenceConfig) {
-				ProfilePoint persistenceConfigReload = parent.profiler.start("Reloading persistence configuration", LogLevel.VERBOSE);
+			if (parent.getPersistenceNetwork() == null || reloadPersistenceConfig) {
+				ProfilePoint persistenceConfigReload = parent.getProfiler().start("Reloading persistence configuration", LogLevel.VERBOSE);
 				try {
 					MemoryDataSource.ClearDatabases();
 					ConnectionMixinFactory.ConnectionMixinOptions options = new ConnectionMixinFactory.ConnectionMixinOptions();
 					options.setWorkingDirectory(MethodScriptFileLocations.getDefault().getConfigDirectory());
-					parent.persistenceNetwork = new PersistenceNetwork(MethodScriptFileLocations.getDefault().getPersistenceConfig(),
+					parent.setPersistenceNetwork(new PersistenceNetwork(MethodScriptFileLocations.getDefault().getPersistenceConfig(),
 							new URI("sqlite:/" + MethodScriptFileLocations.getDefault().getDefaultPersistenceDBFile()
-							.getCanonicalFile().toURI().getRawSchemeSpecificPart().replace("\\", "/")), options);
+									.getCanonicalFile().toURI().getRawSchemeSpecificPart().replace("\\", "/")), options));
 				} finally {
 					persistenceConfigReload.stop();
 				}
 			}
 			GlobalEnv gEnv;
 			try {
-				gEnv = new GlobalEnv(parent.executionQueue, parent.profiler, parent.persistenceNetwork,
+				gEnv = new GlobalEnv(parent.getExecutionQueue(), parent.getProfiler(), parent.getPersistenceNetwork(),
 						MethodScriptFileLocations.getDefault().getConfigDirectory(),
 						new Profiles(MethodScriptFileLocations.getDefault().getSQLProfilesFile()),
 						new TaskManager());
@@ -424,9 +428,9 @@ public class AliasCore {
 				return;
 			}
 			if (reloadExecutionQueue) {
-				ProfilePoint stoppingExecutionQueue = parent.profiler.start("Stopping execution queues", LogLevel.VERBOSE);
+				ProfilePoint stoppingExecutionQueue = parent.getProfiler().start("Stopping execution queues", LogLevel.VERBOSE);
 				try {
-					parent.executionQueue.stopAllNow();
+					parent.getExecutionQueue().stopAllNow();
 				} finally {
 					stoppingExecutionQueue.stop();
 				}
@@ -434,7 +438,7 @@ public class AliasCore {
 			CommandHelperEnvironment cEnv = new CommandHelperEnvironment();
 			Environment env = Environment.createEnvironment(gEnv, cEnv);
 			if (reloadGlobals) {
-				ProfilePoint clearingGlobals = parent.profiler.start("Clearing globals", LogLevel.VERBOSE);
+				ProfilePoint clearingGlobals = parent.getProfiler().start("Clearing globals", LogLevel.VERBOSE);
 				try {
 					Globals.clear();
 				} finally {
@@ -442,7 +446,7 @@ public class AliasCore {
 				}
 			}
 			if (reloadTimeouts) {
-				ProfilePoint clearingTimeouts = parent.profiler.start("Clearing timeouts/intervals", LogLevel.VERBOSE);
+				ProfilePoint clearingTimeouts = parent.getProfiler().start("Clearing timeouts/intervals", LogLevel.VERBOSE);
 				try {
 					Scheduling.ClearScheduledRunners();
 				} finally {
@@ -480,13 +484,13 @@ public class AliasCore {
 			}
 
 			if (reloadScripts) {
-				ProfilePoint unregisteringEvents = parent.profiler.start("Unregistering events", LogLevel.VERBOSE);
+				ProfilePoint unregisteringEvents = parent.getProfiler().start("Unregistering events", LogLevel.VERBOSE);
 				try {
 					EventUtils.UnregisterAll();
 				} finally {
 					unregisteringEvents.stop();
 				}
-				ProfilePoint runningExtensionHooks = parent.profiler.start("Running event hooks", LogLevel.VERBOSE);
+				ProfilePoint runningExtensionHooks = parent.getProfiler().start("Running event hooks", LogLevel.VERBOSE);
 				try {
 					ExtensionManager.RunHooks();
 				} finally {
@@ -511,13 +515,13 @@ public class AliasCore {
 
 				autoIncludes = localPackages.getAutoIncludes();
 
-				ProfilePoint compilerMS = parent.profiler.start("Compilation of MS files in Local Packages", LogLevel.VERBOSE);
+				ProfilePoint compilerMS = parent.getProfiler().start("Compilation of MS files in Local Packages", LogLevel.VERBOSE);
 				try {
 					localPackages.compileMS(player, env);
 				} finally {
 					compilerMS.stop();
 				}
-				ProfilePoint compilerMSA = parent.profiler.start("Compilation of MSA files in Local Packages", LogLevel.VERBOSE);
+				ProfilePoint compilerMSA = parent.getProfiler().start("Compilation of MSA files in Local Packages", LogLevel.VERBOSE);
 				try {
 					localPackages.compileMSA(scripts, player);
 				} finally {
@@ -531,7 +535,7 @@ public class AliasCore {
 			t.printStackTrace();
 		}
 
-		ProfilePoint postReloadAliases = parent.profiler.start("Extension manager post reload aliases", LogLevel.VERBOSE);
+		ProfilePoint postReloadAliases = parent.getProfiler().start("Extension manager post reload aliases", LogLevel.VERBOSE);
 		try {
 			ExtensionManager.PostReloadAliases();
 		} finally {

@@ -31,7 +31,7 @@ public interface MCWorld extends MCMetadatable {
     public String getName();
 	public long getSeed();
 	public MCWorldEnvironment getEnvironment();
-	public String getGenerator();
+	public String getGeneratorName();
 	public MCWorldType getWorldType();
 
 	public MCDifficulty getDifficulty();

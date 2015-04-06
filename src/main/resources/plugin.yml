@@ -1,5 +1,5 @@
 name: CommandHelper
-main: com.laytonsmith.commandhelper.CommandHelperPlugin
+main: com.laytonsmith.commandhelper.CommandHelperBukkit
 version: "${project.version}"
 softdepend: [Vault]
 commands:

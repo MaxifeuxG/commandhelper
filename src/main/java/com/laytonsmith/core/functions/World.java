@@ -1138,7 +1138,7 @@ public class World {
 			ret.set("name", new CString(w.getName(), t), t);
 			ret.set("seed", new CInt(w.getSeed(), t), t);
 			ret.set("environment", new CString(w.getEnvironment().name(), t), t);
-			ret.set("generator", new CString(w.getGenerator(), t), t);
+			ret.set("generator", new CString(w.getGeneratorName(), t), t);
 			ret.set("worldtype", new CString(w.getWorldType().name(), t), t);
 			return ret;
 		}

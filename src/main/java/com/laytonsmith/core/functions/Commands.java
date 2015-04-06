@@ -3,7 +3,7 @@ package com.laytonsmith.core.functions;
 import com.laytonsmith.PureUtilities.Version;
 import com.laytonsmith.abstraction.Implementation;
 import com.laytonsmith.abstraction.MCCommand;
-import com.laytonsmith.abstraction.MCCommandMap;
+import com.laytonsmith.abstraction.MCCommandManager;
 import com.laytonsmith.abstraction.MCServer;
 import com.laytonsmith.abstraction.StaticLayer;
 import com.laytonsmith.annotations.api;
@@ -134,7 +134,7 @@ public class Commands {
 
 		@Override
 		public Construct exec(Target t, Environment environment, Construct... args) throws ConfigRuntimeException {
-			MCCommandMap map = Static.getServer().getCommandMap();
+			MCCommandManager map = Static.getServer().getCommandMap();
 			MCCommand cmd = map.getCommand(args[0].val());
 			if (cmd == null) {
 				throw new ConfigRuntimeException("Command not found did you forget to register it?",
@@ -184,7 +184,7 @@ public class Commands {
 
 		@Override
 		public Construct exec(Target t, Environment environment, Construct... args) throws ConfigRuntimeException {
-			MCCommandMap map = Static.getServer().getCommandMap();
+			MCCommandManager map = Static.getServer().getCommandMap();
 			MCCommand cmd = map.getCommand(args[0].val().toLowerCase());
 			boolean isnew = false;
 			if (cmd == null) {
@@ -356,7 +356,7 @@ public class Commands {
 
 		@Override
 		public Construct exec(Target t, Environment environment, Construct... args) throws ConfigRuntimeException {
-			MCCommandMap map = Static.getServer().getCommandMap();
+			MCCommandManager map = Static.getServer().getCommandMap();
 			Collection<MCCommand> commands = map.getCommands();
 			CArray ret = CArray.GetAssociativeArray(t);
 			for(MCCommand command : commands) {
@@ -425,7 +425,7 @@ public class Commands {
 
 		@Override
 		public Construct exec(Target t, Environment environment, Construct... args) throws ConfigRuntimeException {
-			MCCommandMap map = Static.getServer().getCommandMap();
+			MCCommandManager map = Static.getServer().getCommandMap();
 			map.clearCommands();
 			return CVoid.VOID;
 		}

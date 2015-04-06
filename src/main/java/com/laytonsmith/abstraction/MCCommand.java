@@ -33,12 +33,12 @@ public interface MCCommand extends AbstractionObject {
 	public boolean testPermission(MCCommandSender target);
 	
 	public boolean testPermissionSilent(MCCommandSender target);
-	
-	public boolean register(MCCommandMap map);
+
+	public boolean register(MCCommandManager map);
 	
 	public boolean isRegistered();
-	
-	public boolean unregister(MCCommandMap map);
+
+	public boolean unregister(MCCommandManager map);
 
 	public MCPlugin getPlugin();
 	

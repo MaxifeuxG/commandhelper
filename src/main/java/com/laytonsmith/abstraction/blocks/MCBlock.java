@@ -6,6 +6,7 @@ import com.laytonsmith.abstraction.MCItemStack;
 import com.laytonsmith.abstraction.MCLocation;
 import com.laytonsmith.abstraction.MCMetadatable;
 import com.laytonsmith.abstraction.MCWorld;
+
 import java.util.Collection;
 
 /**
@@ -32,11 +33,11 @@ public interface MCBlock extends MCMetadatable {
 
     public MCWorld getWorld();
 
-    public int getX();
+	public int getBlockX();
 
-    public int getY();
+	public int getBlockY();
 
-    public int getZ();
+	public int getBlockZ();
 
     public MCSign getSign();
 	

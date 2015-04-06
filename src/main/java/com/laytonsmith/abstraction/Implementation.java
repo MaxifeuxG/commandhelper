@@ -5,6 +5,7 @@ import com.laytonsmith.PureUtilities.Common.ReflectionUtils;
 import com.laytonsmith.abstraction.enums.EnumConvertor;
 import com.laytonsmith.annotations.abstractionenum;
 import com.laytonsmith.core.Prefs;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Set;
@@ -160,7 +161,8 @@ public final class Implementation {
 
 		TEST("test-backend"),
 		BUKKIT("CommandHelper"),
-		SHELL("MethodScript");
+		SHELL("MethodScript"),
+		SPONGE("CommandHelper");
 		//GLOWSTONE,
 		//SINGLE_PLAYER
 		private final String branding;
