@@ -37,8 +37,8 @@ public class Commands {
 		return "A series of functions for creating and managing custom commands.";
 	}
 
-	public static Map<String, CClosure> onCommand = new HashMap<String, CClosure>();
-	public static Map<String, CClosure> onTabComplete = new HashMap<String, CClosure>();
+	public static Map<String, CClosure> onCommand = new HashMap<>();
+	public static Map<String, CClosure> onTabComplete = new HashMap<>();
 
 	@api
 	public static class set_tabcompleter extends AbstractFunction {
@@ -83,6 +83,8 @@ public class Commands {
 				onTabComplete.put(cmd.getName(), (CClosure) arg);
 				cmd.setTabCompleter(Static.getServer().getPluginManager()
 						.getPlugin(Implementation.GetServerType().getBranding()));
+			} else if (arg instanceof CString) {
+
 			} else {
 				throw new ConfigRuntimeException("At this time, only closures are accepted as tabcompleters",
 						ExceptionType.FormatException, t);
@@ -106,6 +108,50 @@ public class Commands {
 					+ " otherwise the tab_complete_command event will be fired and used to send completions."
 					+ " The closure is passed the following information in this order:"
 					+ " alias used, name of the sender, array of arguments used, array of command info.";
+		}
+
+		@Override
+		public Version since() {
+			return CHVersion.V3_3_1;
+		}
+	}
+
+	@api
+	public static class reset_command extends AbstractFunction {
+
+		@Override
+		public ExceptionType[] thrown() {
+			return new ExceptionType[0];
+		}
+
+		@Override
+		public boolean isRestricted() {
+			return true;
+		}
+
+		@Override
+		public Boolean runAsync() {
+			return false;
+		}
+
+		@Override
+		public Construct exec(Target t, Environment environment, Construct... args) throws ConfigRuntimeException {
+			return null;
+		}
+
+		@Override
+		public String getName() {
+			return "reset_command";
+		}
+
+		@Override
+		public Integer[] numArgs() {
+			return new Integer[0];
+		}
+
+		@Override
+		public String docs() {
+			return null;
 		}
 
 		@Override

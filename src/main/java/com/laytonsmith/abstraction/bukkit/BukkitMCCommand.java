@@ -16,17 +16,17 @@ import com.laytonsmith.core.constructs.CString;
 import com.laytonsmith.core.constructs.Construct;
 import com.laytonsmith.core.constructs.Target;
 import com.laytonsmith.core.environments.CommandHelperEnvironment;
-import com.laytonsmith.core.environments.Environment;
 import com.laytonsmith.core.events.Driver;
 import com.laytonsmith.core.events.EventUtils;
 import com.laytonsmith.core.exceptions.ConfigRuntimeException;
 import com.laytonsmith.core.exceptions.FunctionReturnException;
 import com.laytonsmith.core.functions.Commands;
-import java.util.ArrayList;
-import java.util.List;
 import org.bukkit.command.Command;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.Plugin;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 
@@ -35,12 +35,24 @@ import org.bukkit.plugin.Plugin;
 public class BukkitMCCommand implements MCCommand {
 
 	Command cmd;
+	PluginCommand original;
+
 	public BukkitMCCommand(Command command) {
 		cmd = command;
+		original = ReflectionUtils.newInstance(PluginCommand.class,
+				new Class[]{String.class, Plugin.class}, new Object[]{cmd.getName(), CommandHelperPlugin.self});
+		original.setLabel(cmd.getLabel());
+		original.setDescription(cmd.getDescription());
+		original.setUsage(cmd.getUsage());
+		original.setPermission(cmd.getPermission());
+		original.setPermissionMessage(cmd.getPermissionMessage());
+		original.setAliases(cmd.getAliases());
+		original.setExecutor(cmd instanceof PluginCommand ? ((PluginCommand) cmd).getExecutor() : null);
+		original.setTabCompleter(cmd instanceof PluginCommand ? ((PluginCommand) cmd).getTabCompleter() : null);
 	}
 	
 	@Override
-	public Object getHandle() {
+	public Command getHandle() {
 		return cmd;
 	}
 

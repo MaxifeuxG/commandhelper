@@ -4,18 +4,18 @@ import java.util.List;
 
 public interface MCCommandMap extends AbstractionObject {
 
-	public void clearCommands();
-	
-	public boolean isCommand(String name);
+	void clearCommands();
+
+	boolean isCommand(String name);
 	
 	/**
 	 * 
 	 * @param name name of the command
 	 * @return a command if found, or null if one isn't
 	 */
-	public MCCommand getCommand(String name);
-	
-	public List<MCCommand> getCommands();
+	MCCommand getCommand(String name);
+
+	List<MCCommand> getCommands();
 	
 	/**
 	 * 
@@ -23,7 +23,7 @@ public interface MCCommandMap extends AbstractionObject {
 	 * @param cmd
 	 * @return
 	 */
-	public boolean register(String fallback, MCCommand cmd);
+	boolean register(String fallback, MCCommand cmd);
 	
 	/**
 	 * 
@@ -32,7 +32,7 @@ public interface MCCommandMap extends AbstractionObject {
 	 * @param cmd
 	 * @return
 	 */
-	public boolean register(String label, String fallback, MCCommand cmd);
-	
-	public boolean unregister(MCCommand cmd);
+	boolean register(String label, String fallback, MCCommand cmd);
+
+	boolean unregister(MCCommand cmd);
 }

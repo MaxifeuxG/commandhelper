@@ -35,8 +35,8 @@ public class BukkitMCCommandSender implements MCCommandSender {
     }
     
 	@Override
-    public Object getHandle(){
-        return c;
+	public CommandSender getHandle() {
+		return c;
     }        
     
 	@Override

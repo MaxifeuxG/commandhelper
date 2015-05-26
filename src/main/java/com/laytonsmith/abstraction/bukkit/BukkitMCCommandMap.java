@@ -3,11 +3,13 @@ package com.laytonsmith.abstraction.bukkit;
 import com.laytonsmith.PureUtilities.Common.ReflectionUtils;
 import com.laytonsmith.abstraction.MCCommand;
 import com.laytonsmith.abstraction.MCCommandMap;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import org.bukkit.command.Command;
 import org.bukkit.command.SimpleCommandMap;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 
@@ -16,12 +18,14 @@ import org.bukkit.command.SimpleCommandMap;
 public class BukkitMCCommandMap implements MCCommandMap {
 
 	SimpleCommandMap scm;
+	Map<String, BukkitMCCommand> cached = new HashMap<>();
+
 	public BukkitMCCommandMap(SimpleCommandMap invokeMethod) {
 		scm = invokeMethod;
 	}
 
 	@Override
-	public Object getHandle() {
+	public SimpleCommandMap getHandle() {
 		return scm;
 	}
 
@@ -51,12 +55,12 @@ public class BukkitMCCommandMap implements MCCommandMap {
 
 	@Override
 	public boolean register(String fallback, MCCommand cmd) {
-		return scm.register(fallback, ((BukkitMCCommand) cmd).cmd);
+		return scm.register(fallback, ((BukkitMCCommand) cmd).getHandle());
 	}
 
 	@Override
 	public boolean register(String label, String fallback, MCCommand cmd) {
-		return scm.register(label, fallback, ((BukkitMCCommand) cmd).cmd);
+		return scm.register(label, fallback, ((BukkitMCCommand) cmd).getHandle());
 	}
 
 	@SuppressWarnings("unchecked")
