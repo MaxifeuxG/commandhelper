@@ -1,6 +1,7 @@
 package com.laytonsmith.core.functions;
 
 import com.laytonsmith.PureUtilities.Common.StringUtils;
+import com.laytonsmith.PureUtilities.Vector3D;
 import com.laytonsmith.PureUtilities.Version;
 import com.laytonsmith.abstraction.MCChunk;
 import com.laytonsmith.abstraction.MCCommandSender;
@@ -10,8 +11,7 @@ import com.laytonsmith.abstraction.MCPlayer;
 import com.laytonsmith.abstraction.MCWorld;
 import com.laytonsmith.abstraction.MCWorldCreator;
 import com.laytonsmith.abstraction.StaticLayer;
-import com.laytonsmith.abstraction.MVector3D;
-import com.laytonsmith.abstraction.blocks.MCFallingBlock;
+import com.laytonsmith.abstraction.entities.MCFallingBlock;
 import com.laytonsmith.abstraction.enums.MCDifficulty;
 import com.laytonsmith.abstraction.enums.MCGameRule;
 import com.laytonsmith.abstraction.enums.MCWorldEnvironment;
@@ -1076,7 +1076,7 @@ public class World {
 				double y = Double.valueOf(vect.get(1, t).val());
 				double z = Double.valueOf(vect.get(2, t).val());
 
-				MVector3D v = new MVector3D(x, y, z);
+				Vector3D v = new Vector3D(x, y, z);
 
 				block.setVelocity(v);
 			}
@@ -1626,7 +1626,7 @@ public class World {
 
 			MCLocation shifted_from = from;
 
-			MVector3D velocity = to.toVector().subtract(from.toVector()).normalize();
+			Vector3D velocity = to.toVector().subtract(from.toVector()).normalize();
 
 			for (int i = 0; i < distance; i++) {
 				shifted_from = shifted_from.add(velocity);
@@ -1686,13 +1686,13 @@ public class World {
 			double dZ = subtract.getZ();
 
 			double yaw = java.lang.Math.atan(dX/dZ) * 180 / java.lang.Math.PI; // In degrees [-90:90].
-            if(dZ < 0) { // Bottom circle kwadrant.
+            if(dZ < 0) { // Bottom circle quadrant.
                 yaw += 180;
-            } else if(dX < 0) { // Top left half kwadrant.
+            } else if(dX < 0) { // Top left half quadrant.
                 yaw += 360;
             }
 
-			return new CDouble(yaw, t);
+			return new CDouble(360 - yaw, t);
 		}
 	}
 
@@ -1749,7 +1749,7 @@ public class World {
 
 			double distanceXZ = java.lang.Math.sqrt(dX * dX + dZ * dZ);
 
-			double pitch = java.lang.Math.atan(dY/distanceXZ) * 180 / java.lang.Math.PI;
+			double pitch = java.lang.Math.atan(dY/distanceXZ) * -180 / java.lang.Math.PI;
 
 			return new CDouble(pitch, t);
 		}

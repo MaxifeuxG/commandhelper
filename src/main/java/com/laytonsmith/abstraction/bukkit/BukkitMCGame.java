@@ -38,8 +38,8 @@ public abstract class BukkitMCGame implements MCGame {
 	@Override
 	public MCVersion getMinecraftVersion() {
 		if (version == null) {
-			int temp = server.getBukkitVersion().indexOf('-');
-			version = MCVersion.valueOf("MC" + server.getBukkitVersion().substring(0, temp).replace('.', '_'));
+			int temp = s.getBukkitVersion().indexOf('-');
+			version = MCVersion.match(s.getBukkitVersion().substring(0, temp).split("."));
 		}
 		return version;
 	}

@@ -10,7 +10,6 @@ import com.laytonsmith.core.constructs.Construct;
 import com.laytonsmith.core.constructs.Target;
 import com.laytonsmith.core.environments.CommandHelperEnvironment;
 import com.laytonsmith.core.exceptions.CancelCommandException;
-import com.laytonsmith.core.exceptions.ConfigCompileException;
 import com.laytonsmith.core.exceptions.ConfigRuntimeException;
 import com.laytonsmith.testing.C;
 import com.laytonsmith.testing.StaticTest;
@@ -306,4 +305,110 @@ public class ArrayHandlingTest {
 	@Test public void testArrayUnique4() throws Exception {
 		assertEquals("{1, 1}", SRun("array_unique(array(1, '1', 1), true)", fakePlayer));
 	}
+	
+	@Test public void testArrayGetClone() throws Exception { // This is expected to be a deep clone.
+		Run("@a = array(array(array('value'))); @b = @a[]; @b[0][0][0] = 'changedValue'; msg(@a[0][0][0]); msg(@b[0][0][0]);", fakePlayer);
+		verify(fakePlayer).sendMessage("value");
+		verify(fakePlayer).sendMessage("changedValue");
+	}
+	
+	@Test public void testArrayDeepClone() throws Exception {
+		Run("@a = array(array(array('value'))); @b = array_deep_clone(@a); @b[0][0][0] = 'changedValue'; msg(@a[0][0][0]); msg(@b[0][0][0]);", fakePlayer);
+		verify(fakePlayer).sendMessage("value");
+		verify(fakePlayer).sendMessage("changedValue");
+	}
+	
+	@Test public void testArrayShallowClone() throws Exception {
+		Run("@a = array(array('value')); @b = array_shallow_clone(@a); @b[0][0] = 'changedValue'; msg(equals(@a[0][0], @b[0][0]));"
+				+ "msg(ref_equals(@a, @b)); msg(@a[0][0])", fakePlayer);
+		verify(fakePlayer).sendMessage("true");
+		verify(fakePlayer).sendMessage("false");
+		verify(fakePlayer).sendMessage("changedValue");
+	}
+	
+	@Test public void testArrayGetCloneRefCouples() throws Exception {
+		Run("@a = array('Meow'); @b = array(@a, @a, array(@a)); @c = @b[]; msg((ref_equals(@c[0], @c[1]) && ref_equals(@c[0], @c[2][0])));", fakePlayer);
+		verify(fakePlayer).sendMessage("true");
+	}
+	
+	@Test public void testArrayGetCloneRecursiveArray() throws Exception {
+		Run("@a = array(); @b = array(); @a[0] = @b; @b[0] = @a; @c = @a[]; msg((ref_equals(@c[0], @c[0][0][0]) && ref_equals(@c, @c[0][0])));", fakePlayer);
+		verify(fakePlayer).sendMessage("true");
+	}
+
+	@Test public void testArrayIterate() throws Exception {
+		Run("@a = array(1, 2, 3); array_iterate(@a, closure(@k, @v){ msg(@v); });", fakePlayer);
+		verify(fakePlayer).sendMessage("1");
+		verify(fakePlayer).sendMessage("2");
+		verify(fakePlayer).sendMessage("3");
+	}
+
+	@Test public void testArrayIterateAssociative() throws Exception {
+		Run("@a = array(a: 1, b: 2, c: 3); array_iterate(@a, closure(@k, @v){ msg(\"@k: @v\"); });", fakePlayer);
+		verify(fakePlayer).sendMessage("a: 1");
+		verify(fakePlayer).sendMessage("b: 2");
+		verify(fakePlayer).sendMessage("c: 3");
+	}
+
+	@Test public void testArrayReduce() throws Exception {
+		Run("msg(array_reduce(array(1, 2, 3), closure(@soFar, @next){ return(@soFar + @next); }));", fakePlayer);
+		verify(fakePlayer).sendMessage("6");
+	}
+
+	@Test public void testArrayReduce2() throws Exception {
+		Run("msg(array_reduce(array('a', 'b', 'c'), closure(@soFar, @next){ return(@soFar . @next); }));", fakePlayer);
+		verify(fakePlayer).sendMessage("abc");
+	}
+
+	@Test public void testArrayReduceRight() throws Exception {
+		Run("msg(array_reduce_right(array(1, 2, 3), closure(@soFar, @next){ return(@soFar + @next); }));", fakePlayer);
+		verify(fakePlayer).sendMessage("6");
+	}
+
+	@Test public void testArrayReduceRight2() throws Exception {
+		Run("msg(array_reduce_right(array('a', 'b', 'c'), closure(@soFar, @next){ return(@soFar . @next); }));", fakePlayer);
+		verify(fakePlayer).sendMessage("cba");
+	}
+
+	@Test public void testArrayEvery1() throws Exception {
+		Run("msg(array_every(array(1, 1, 1), closure(@value){ return(@value == 1); }));", fakePlayer);
+		verify(fakePlayer).sendMessage("true");
+	}
+
+	@Test public void testArrayEvery2() throws Exception {
+		Run("msg(array_every(array(1, 1, 2), closure(@value){ return(@value == 1); }));", fakePlayer);
+		verify(fakePlayer).sendMessage("false");
+	}
+
+	@Test public void testArrayEvery3() throws Exception {
+		Run("msg(array_every(array(), closure(@value){ return(@value == 1); }));", fakePlayer);
+		verify(fakePlayer).sendMessage("true");
+	}
+
+	@Test public void testArraySome1() throws Exception {
+		Run("msg(array_some (array(1, 1, 2), closure(@value){ return(@value == 1); }));", fakePlayer);
+		verify(fakePlayer).sendMessage("true");
+	}
+
+	@Test public void testArraySome2() throws Exception {
+		Run("msg(array_some (array(2, 2, 2), closure(@value){ return(@value == 1); }));", fakePlayer);
+		verify(fakePlayer).sendMessage("false");
+	}
+
+	@Test public void testArraySome3() throws Exception {
+		Run("msg(array_some (array(), closure(@value){ return(@value == 1); }));", fakePlayer);
+		verify(fakePlayer).sendMessage("false");
+	}
+
+	@Test public void testArrayMap() throws Exception {
+		Run("@areaOfSquare = closure(@sideLength){\n"
+						+ "\treturn(@sideLength * @sideLength);\n"
+						+ "};\n"
+						+ "// A collection of square sides\n"
+						+ "@squares = array(1, 4, 8);\n"
+						+ "@areas = array_map(@squares, @areaOfSquare);\n"
+						+ "msg(@areas);", fakePlayer);
+		verify(fakePlayer).sendMessage("{1, 16, 64}");
+	}
+
 }

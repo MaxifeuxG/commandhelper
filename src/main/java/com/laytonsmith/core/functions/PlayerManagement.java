@@ -5,13 +5,14 @@ import com.laytonsmith.PureUtilities.Version;
 import com.laytonsmith.abstraction.MCBlockCommandSender;
 import com.laytonsmith.abstraction.MCCommandSender;
 import com.laytonsmith.abstraction.MCConsoleCommandSender;
+import com.laytonsmith.abstraction.MCEntity;
 import com.laytonsmith.abstraction.MCItemStack;
 import com.laytonsmith.abstraction.MCLocation;
 import com.laytonsmith.abstraction.MCOfflinePlayer;
 import com.laytonsmith.abstraction.MCPlayer;
 import com.laytonsmith.abstraction.MCServer;
 import com.laytonsmith.abstraction.MCWorld;
-import com.laytonsmith.abstraction.MVector3D;
+import com.laytonsmith.PureUtilities.Vector3D;
 import com.laytonsmith.abstraction.StaticLayer;
 import com.laytonsmith.abstraction.blocks.MCBlock;
 import com.laytonsmith.abstraction.enums.MCGameMode;
@@ -867,9 +868,8 @@ public class PlayerManagement {
 				player = args[0].val();
 				index = Static.getInt32(args[1], t);
 			}
-
 			MCPlayer p = Static.GetPlayer(player, t);
-
+			
 			Static.AssertPlayerNonNull(p, t);
 			int maxIndex = 20;
 			if (index < -1 || index > maxIndex) {
@@ -1391,7 +1391,14 @@ public class PlayerManagement {
 			MCLocation l = toSet.getLocation().clone();
 			l.setPitch(pitch);
 			l.setYaw(yaw);
+			MCEntity vehicle = null;
+			if(toSet.isInsideVehicle()) {
+				vehicle = toSet.getVehicle();
+			}
 			toSet.teleport(l);
+			if(vehicle != null) {
+				vehicle.setPassenger(toSet);
+			}
 			return CVoid.VOID;
 		}
 	}
@@ -3571,11 +3578,11 @@ public class PlayerManagement {
 				p = Static.GetPlayer(args[0], t);
 			}
 			CArray vector = CArray.GetAssociativeArray(t);
-			MVector3D velocity = p.getVelocity();
+			Vector3D velocity = p.getVelocity();
 			vector.set("magnitude", new CDouble(velocity.length(), t), t);
-			vector.set("x", new CDouble(velocity.x, t), t);
-			vector.set("y", new CDouble(velocity.y, t), t);
-			vector.set("z", new CDouble(velocity.z, t), t);
+			vector.set("x", new CDouble(velocity.X(), t), t);
+			vector.set("y", new CDouble(velocity.Y(), t), t);
+			vector.set("z", new CDouble(velocity.Z(), t), t);
 			return vector;
 		}
 
@@ -3642,7 +3649,7 @@ public class PlayerManagement {
 				default:
 					throw new RuntimeException();
 			}
-			MVector3D v = new MVector3D(x, y, z);
+			Vector3D v = new Vector3D(x, y, z);
 			// TODO: consider removing this and updating the switch above
 			if (v.length() > 10) {
 				CHLog.GetLogger().Log(CHLog.Tags.GENERAL, LogLevel.WARNING,
@@ -4655,10 +4662,10 @@ public class PlayerManagement {
 			// This is needed in order for the player to enter flight mode whilst standing on the ground.
 			if(flight
 			&& p.isOnGround()) {
-				MVector3D v = p.getVelocity();
+				Vector3D v = p.getVelocity();
 				// 0.08 was chosen as it does not change the player's position, whereas higher values do.
-				v.y += 0.08;
-				p.setVelocity(v);
+				Vector3D newV = v.add(new Vector3D(v.X(), v.Y() + 0.08, v.Z()));
+				p.setVelocity(newV);
 			}
 			p.setFlying(flight);
 			// We only want to set whether the player is flying; not whether the player can fly.

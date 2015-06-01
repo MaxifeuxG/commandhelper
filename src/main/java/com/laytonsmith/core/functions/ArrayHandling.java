@@ -10,7 +10,6 @@ import com.laytonsmith.annotations.core;
 import com.laytonsmith.annotations.seealso;
 import com.laytonsmith.core.CHLog;
 import com.laytonsmith.core.CHVersion;
-import com.laytonsmith.core.LogLevel;
 import com.laytonsmith.core.Optimizable;
 import com.laytonsmith.core.ParseTree;
 import com.laytonsmith.core.Script;
@@ -33,6 +32,7 @@ import com.laytonsmith.core.exceptions.CancelCommandException;
 import com.laytonsmith.core.exceptions.ConfigCompileException;
 import com.laytonsmith.core.exceptions.ConfigRuntimeException;
 import com.laytonsmith.core.exceptions.FunctionReturnException;
+import com.laytonsmith.core.exceptions.ProgramFlowManipulationException;
 import com.laytonsmith.core.functions.BasicLogic.equals;
 import com.laytonsmith.core.functions.BasicLogic.equals_ic;
 import com.laytonsmith.core.functions.DataHandling.array;
@@ -132,6 +132,9 @@ public class ArrayHandling {
 
 		@Override
 		public Construct exec(Target t, Environment env, Construct... args) throws CancelCommandException, ConfigRuntimeException {
+			if(args.length == 0) {
+				throw new ConfigRuntimeException("Argument 1 of array_get must be an array", ExceptionType.CastException, t);
+			}
 			Construct index = new CSlice(0, -1, t);
 			Construct defaultConstruct = null;
 			if (args.length >= 2) {
@@ -144,21 +147,14 @@ public class ArrayHandling {
 			if (args[0] instanceof CArray) {
 				CArray ca = (CArray) args[0];
 				if (index instanceof CSlice) {
-					if (ca.inAssociativeMode()) {
-						if (((CSlice) index).getStart() == 0 && ((CSlice) index).getFinish() == -1) {
-							//Special exception, we want to clone the whole array
-							CArray na = CArray.GetAssociativeArray(t);
-							for (Construct key : ca.keySet()) {
-								try {
-									na.set(key, ca.get(key, t).clone(), t);
-								} catch (CloneNotSupportedException ex) {
-									na.set(key, ca.get(key, t), t);
-								}
-							}
-							return na;
-						}
+						
+					// Deep clone the array if the "index" is the initial one.
+					if (((CSlice) index).getStart() == 0 && ((CSlice) index).getFinish() == -1) {
+						return ca.deepClone(t);
+					} else if(ca.inAssociativeMode()) {
 						throw new ConfigRuntimeException("Array slices are not allowed with an associative array", ExceptionType.CastException, t);
 					}
+					
 					//It's a range
 					long start = ((CSlice) index).getStart();
 					long finish = ((CSlice) index).getFinish();
@@ -309,6 +305,9 @@ public class ArrayHandling {
 
 		@Override
 		public Construct optimize(Target t, Construct... args) throws ConfigCompileException {
+			if(args.length == 0) {
+				throw new ConfigRuntimeException("Argument 1 of array_get must be an array", ExceptionType.CastException, t);
+			}
 			if (args[0] instanceof ArrayAccess) {
 				ArrayAccess aa = (ArrayAccess) args[0];
 				if (!aa.canBeAssociative()) {
@@ -444,10 +443,10 @@ public class ArrayHandling {
 
 		@Override
 		public Construct exec(Target t, Environment env, Construct... args) throws CancelCommandException, ConfigRuntimeException {
+			if(args.length < 2) {
+				throw new ConfigRuntimeException("At least 2 arguments must be provided to array_push", ExceptionType.InsufficientArgumentsException, t);
+			}
 			if (args[0] instanceof CArray) {
-				if (args.length < 2) {
-					throw new ConfigRuntimeException("At least 2 arguments must be provided to array_push", ExceptionType.InsufficientArgumentsException, t);
-				}
 				CArray array = (CArray)args[0];
 				int initialSize = (int)array.size();
 				for (int i = 1; i < args.length; i++) {
@@ -1524,8 +1523,8 @@ public class ArrayHandling {
 					+ " in place sort instead of explicitely cloning the array is because in most cases, you may not need"
 					+ " to actually clone the array, an expensive operation. Due to this, it has slightly different behavior"
 					+ " than array_normalize, which could have also been implemented in place.\n\n"
-					+ "If the sortType is a closure, it will perform a custom sort type, and the array may be associative, and"
-					+ " may even contain sub array values. The closure should accept two values, @left and @right, and should"
+					+ "If the sortType is a closure, it will perform a custom sort type, and the array may contain any values, including"
+					+ " sub array values. The closure should accept two values, @left and @right, and should"
 					+ " return true if the left value is larger than the right, and false if the left value is smaller than the"
 					+ " right, and null if they are equal. The array will then be re-ordered using a merge sort, using your custom"
 					+ " comparator to determine the sort order.";
@@ -1569,7 +1568,7 @@ public class ArrayHandling {
 						+ "\tarray(name: 'Jack', age: 20),\n"
 						+ "\tarray(name: 'Jill', age: 19)\n"
 						+ ");\n"
-						+ "msg(\"Before sort: @array\");"
+						+ "msg(\"Before sort: @array\");\n"
 						+ "array_sort(@array, closure(@left, @right){\n"
 						+ "\t return(@left['age'] > @right['age']);\n"
 						+ "});\n"
@@ -1625,7 +1624,7 @@ public class ArrayHandling {
 			startup();
 			final CArray array = Static.getArray(args[0], t);
 			final CString sortType = new CString(args.length > 2?args[1].val():CArray.SortType.REGULAR.name(), t);
-			final CClosure callback = Static.getObject((args.length==2?args[1]:args[2]), t, "closure", CClosure.class);
+			final CClosure callback = Static.getObject((args.length==2?args[1]:args[2]), t, CClosure.class);
 			queue.invokeLater(environment.getEnv(GlobalEnv.class).GetDaemonManager(), new Runnable() {
 
 				@Override
@@ -1847,6 +1846,66 @@ public class ArrayHandling {
 			return new ExampleScript[]{
 				new ExampleScript("Basic usage", "assign(@array, array(1, 2, 2, 3))\nmsg(array_index(@array, 2))"),
 				new ExampleScript("Not found", "assign(@array, array(1, 2, 2, 3))\nmsg(array_index(@array, 5))"),
+			};
+		}
+
+	}
+
+	@api
+	public static class array_last_index extends AbstractFunction {
+
+		@Override
+		public ExceptionType[] thrown() {
+			return new ExceptionType[]{ExceptionType.CastException};
+		}
+
+		@Override
+		public boolean isRestricted() {
+			return false;
+		}
+
+		@Override
+		public Boolean runAsync() {
+			return null;
+		}
+
+		@Override
+		public Construct exec(Target t, Environment environment, Construct... args) throws ConfigRuntimeException {
+			CArray ca = (CArray)new array_indexes().exec(t, environment, args);
+			if(ca.isEmpty()){
+				return CNull.NULL;
+			} else {
+				return ca.get(ca.size() - 1, t);
+			}
+		}
+
+		@Override
+		public String getName() {
+			return "array_last_index";
+		}
+
+		@Override
+		public Integer[] numArgs() {
+			return new Integer[]{2};
+		}
+
+		@Override
+		public String docs() {
+			return "mixed {array, value} Finds the index in the array where value occurs last. If"
+					+ " the value is not found, returns null. That is to say, if the value is contained in an"
+					+ " array (even multiple times) the index of the last element is returned.";
+		}
+
+		@Override
+		public CHVersion since() {
+			return CHVersion.V3_3_1;
+		}
+
+		@Override
+		public ExampleScript[] examples() throws ConfigCompileException {
+			return new ExampleScript[]{
+				new ExampleScript("Basic usage", "assign(@array, array(1, 2, 2, 3))\nmsg(array_last_index(@array, 2))"),
+				new ExampleScript("Not found", "assign(@array, array(1, 2, 2, 3))\nmsg(array_last_index(@array, 5))"),
 			};
 		}
 
@@ -2207,56 +2266,641 @@ public class ArrayHandling {
 
 	}
 
-//	@api
-//	public static class array_deep_clone extends AbstractFunction {
-//
-//		@Override
-//		public ExceptionType[] thrown() {
-//			return new ExceptionType[]{ExceptionType.CastException};
-//		}
-//
-//		@Override
-//		public boolean isRestricted() {
-//			return false;
-//		}
-//
-//		@Override
-//		public Boolean runAsync() {
-//			return null;
-//		}
-//
-//		@Override
-//		public Construct exec(Target t, Environment environment, Construct... args) throws ConfigRuntimeException {
-//			throw new UnsupportedOperationException("TODO: Not supported yet.");
-//		}
-//
-//		@Override
-//		public String getName() {
-//			return "array_deep_clone";
-//		}
-//
-//		@Override
-//		public Integer[] numArgs() {
-//			return new Integer[]{1};
-//		}
-//
-//		@Override
-//		public String docs() {
-//			return "array {array} Performs a deep clone on an array (as opposed to a shallow clone). This is useful"
-//					+ " for multidimensional arrays. See the examples for more info.";
-//		}
-//
-//		@Override
-//		public Version since() {
-//			return CHVersion.V3_3_1;
-//		}
-//
-//		@Override
-//		public ExampleScript[] examples() throws ConfigCompileException {
-//			return new ExampleScript[]{
-//				new ExampleScript("", "")
-//			};
-//		}
-//
-//	}
+	@api
+	public static class array_deep_clone extends AbstractFunction {
+
+		@Override
+		public ExceptionType[] thrown() {
+			return new ExceptionType[]{ExceptionType.CastException, ExceptionType.InsufficientArgumentsException};
+		}
+
+		@Override
+		public boolean isRestricted() {
+			return false;
+		}
+
+		@Override
+		public Boolean runAsync() {
+			return null;
+		}
+
+		@Override
+		public Construct exec(Target t, Environment environment, Construct... args) throws ConfigRuntimeException {
+			if(args.length != 1) {
+				throw new ConfigRuntimeException("Expecting exactly one argument", ExceptionType.InsufficientArgumentsException, t);
+			}
+			if(!(args[0] instanceof CArray)) {
+				throw new ConfigRuntimeException("Expecting argument 1 to be an array", ExceptionType.CastException, t);
+			}
+			return ((CArray) args[0]).deepClone(t);
+		}
+
+		@Override
+		public String getName() {
+			return "array_deep_clone";
+		}
+
+		@Override
+		public Integer[] numArgs() {
+			return new Integer[]{1};
+		}
+
+		@Override
+		public String docs() {
+			return "array {array} Performs a deep clone on an array (as opposed to a shallow clone). This is useful"
+					+ " for multidimensional arrays. See the examples for more info.";
+		}
+
+		@Override
+		public Version since() {
+			return CHVersion.V3_3_1;
+		}
+
+		@Override
+		public ExampleScript[] examples() throws ConfigCompileException {
+			return new ExampleScript[]{
+				new ExampleScript("Demonstrates that the array is cloned.",
+						"@array = array(1, 2, 3, 4)\n" +
+						"@deepClone = array_deep_clone(@array)\n" +
+						"@deepClone[1] = 'newValue'\n" +
+						"msg(@array)\nmsg(@deepClone)"),
+				new ExampleScript("Demonstrated that arrays within the array are also cloned by a deep clone.",
+						"@array = array(array('value'))\n" +
+						"@deepClone = array_deep_clone(@array)\n" +
+						"@deepClone[0][0] = 'newValue'\n" +
+						"msg(@array)\nmsg(@deepClone)")
+			};
+		}
+
+	}
+	
+	@api
+	public static class array_shallow_clone extends AbstractFunction {
+
+		@Override
+		public ExceptionType[] thrown() {
+			return new ExceptionType[]{ExceptionType.CastException, ExceptionType.InsufficientArgumentsException};
+		}
+
+		@Override
+		public boolean isRestricted() {
+			return false;
+		}
+
+		@Override
+		public Boolean runAsync() {
+			return null;
+		}
+
+		@Override
+		public Construct exec(Target t, Environment environment, Construct... args) throws ConfigRuntimeException {
+			if(args.length != 1) {
+				throw new ConfigRuntimeException("Expecting exactly one argument", ExceptionType.InsufficientArgumentsException, t);
+			}
+			if(!(args[0] instanceof CArray)) {
+				throw new ConfigRuntimeException("Expecting argument 1 to be an array", ExceptionType.CastException, t);
+			}
+			CArray array = (CArray) args[0];
+			CArray shallowClone = (array.isAssociative() ? CArray.GetAssociativeArray(t) : new CArray(t));
+			for(Construct key : array.keySet()) {
+				shallowClone.set(key, array.get(key, t), t);
+			}
+			return shallowClone;
+		}
+
+		@Override
+		public String getName() {
+			return "array_shallow_clone";
+		}
+
+		@Override
+		public Integer[] numArgs() {
+			return new Integer[]{1};
+		}
+
+		@Override
+		public String docs() {
+			return "array {array} Performs a shallow clone on an array (as opposed to a deep clone). See the examples for more info.";
+		}
+
+		@Override
+		public Version since() {
+			return CHVersion.V3_3_1;
+		}
+
+		@Override
+		public ExampleScript[] examples() throws ConfigCompileException {
+			return new ExampleScript[]{
+				new ExampleScript("Demonstrates that the array is cloned.",
+						"@array = array(1, 2, 3, 4)\n" +
+						"@shallowClone = array_shallow_clone(@array)\n" +
+						"@shallowClone[1] = 'newValue'\n" +
+						"msg(@array)\nmsg(@shallowClone)"),
+				new ExampleScript("Demonstrated that arrays within the array are not cloned by a shallow clone.",
+						"@array = array(array('value'))\n" +
+						"@shallowClone = array_shallow_clone(@array)\n" +
+						"@shallowClone[0][0] = 'newValue'\n" +
+						"msg(@array)\nmsg(@shallowClone)")
+			};
+		}
+
+	}
+
+	@api
+	public static class array_iterate extends AbstractFunction {
+
+		@Override
+		public ExceptionType[] thrown() {
+			return new ExceptionType[]{ExceptionType.CastException};
+		}
+
+		@Override
+		public boolean isRestricted() {
+			return false;
+		}
+
+		@Override
+		public Boolean runAsync() {
+			return null;
+		}
+
+		@Override
+		public Construct exec(Target t, Environment environment, Construct... args) throws ConfigRuntimeException {
+			CArray array = Static.getArray(args[0], t);
+			CClosure closure = Static.getObject(args[1], t, CClosure.class);
+			for(Construct key : array.keySet()){
+				try {
+					closure.execute(key, array.get(key, t));
+				} catch(ProgramFlowManipulationException ex){
+					// Ignored
+				}
+			}
+			return array;
+		}
+
+		@Override
+		public String getName() {
+			return "array_iterate";
+		}
+
+		@Override
+		public Integer[] numArgs() {
+			return new Integer[]{2};
+		}
+
+		@Override
+		public String docs() {
+			return "array {array, closure} Iterates across an array, calling the closure for each value of the array. The closure"
+					+ " should accept two arguments, the key and the value."
+					+ " This method can be used in some code to increase readability, to increase re-usability, or keep variables"
+					+ " created in a loop in an isolated scope. Note that this runs at approximately the same speed as a for loop,"
+					+ " which is slower than a foreach loop. Any values returned from the closure are silently ignored. Returns a"
+					+ " reference to the original array.";
+		}
+
+		@Override
+		public Version since() {
+			return CHVersion.V3_3_1;
+		}
+
+		@Override
+		public ExampleScript[] examples() throws ConfigCompileException {
+			return new ExampleScript[]{
+				new ExampleScript("Basic use with normal arrays", "@array = array(1, 2, 3);\n"
+						+ "array_iterate(@array, closure(@key, @value){\n"
+						+ "\tmsg(@value);\n"
+						+ "});"),
+				new ExampleScript("Use with associative arrays", "@array = array(one: 1, two: 2, three: 3);\n"
+						+ "array_iterate(@array, closure(@key, @value){\n"
+						+ "\tmsg(\"@key: @value\");\n"
+						+ "});")
+			};
+		}
+
+
+	}
+
+	@api
+	public static class array_reduce extends AbstractFunction {
+
+		@Override
+		public ExceptionType[] thrown() {
+			return new ExceptionType[]{ExceptionType.CastException, ExceptionType.IllegalArgumentException};
+		}
+
+		@Override
+		public boolean isRestricted() {
+			return false;
+		}
+
+		@Override
+		public Boolean runAsync() {
+			return null;
+		}
+
+		@Override
+		public Construct exec(Target t, Environment environment, Construct... args) throws ConfigRuntimeException {
+			CArray array = Static.getArray(args[0], t);
+			CClosure closure = Static.getObject(args[1], t, CClosure.class);
+			if(array.isEmpty()){
+				return CNull.NULL;
+			}
+			if(array.size() == 1){
+				// This line looks bad, but all it does is return the first (and since we know only) value in the array,
+				// whether or not it is associative or normal.
+				return array.get(array.keySet().toArray(new Construct[0])[0], t);
+			}
+			List<Construct> keys = new ArrayList<>(array.keySet());
+			Construct lastValue = array.get(keys.get(0), t);
+			for(int i = 1; i < keys.size(); ++i){
+				boolean hadReturn = false;
+				try {
+					closure.execute(lastValue, array.get(keys.get(i), t));
+				} catch(FunctionReturnException ex){
+					lastValue = ex.getReturn();
+					if(lastValue instanceof CVoid){
+						throw new ConfigRuntimeException("The closure passed to " + getName() + " cannot return void.", ExceptionType.IllegalArgumentException, t);
+					}
+					hadReturn = true;
+				}
+				if(!hadReturn){
+					throw new ConfigRuntimeException("The closure passed to " + getName() + " must return a value, but one was not returned.", ExceptionType.IllegalArgumentException, t);
+				}
+			}
+			return lastValue;
+		}
+
+		@Override
+		public String getName() {
+			return "array_reduce";
+		}
+
+		@Override
+		public Integer[] numArgs() {
+			return new Integer[]{2};
+		}
+
+		@Override
+		public String docs() {
+			return "mixed {array, closure} Reduces an array to a single value. This is useful for, for instance, summing the"
+					+ " values of an array. The previously calculated value, then the next value of the array are sent"
+					+ " to the closure, which is expected to return a value, based on the two values, which will be sent"
+					+ " again to the closure as the new calculated value. If the array is empty, null is returned, and if"
+					+ " the array has exactly one value in it, only that value is returned. Associative arrays are supported,"
+					+ " but the order is based on the key order, which may not be as expected. The keys of the array are ignored.";
+		}
+
+		@Override
+		public Version since() {
+			return CHVersion.V3_3_1;
+		}
+
+		@Override
+		public ExampleScript[] examples() throws ConfigCompileException {
+			return new ExampleScript[]{
+				new ExampleScript("Summing the values of an array", "@array = array(1, 2, 4, 8);\n"
+						+ "@sum = array_reduce(@array, closure(@soFar, @next){\n"
+						+ "\treturn(@soFar + @next);\n"
+						+ "});\n"
+						+ "msg(@sum);"),
+				new ExampleScript("Combining the strings in an array", "@array = array('a', 'b', 'c');\n"
+						+ "@string = array_reduce(@array, closure(@soFar, @next){\n"
+						+ "\treturn(@soFar . @next);\n"
+						+ "});\n"
+						+ "msg(@string);")
+			};
+		}
+
+	}
+
+	@api
+	public static class array_reduce_right extends AbstractFunction {
+
+		@Override
+		public ExceptionType[] thrown() {
+			return new ExceptionType[]{ExceptionType.CastException, ExceptionType.IllegalArgumentException};
+		}
+
+		@Override
+		public boolean isRestricted() {
+			return false;
+		}
+
+		@Override
+		public Boolean runAsync() {
+			return null;
+		}
+
+		@Override
+		public Construct exec(Target t, Environment environment, Construct... args) throws ConfigRuntimeException {
+			CArray array = Static.getArray(args[0], t);
+			CClosure closure = Static.getObject(args[1], t, CClosure.class);
+			if(array.isEmpty()){
+				return CNull.NULL;
+			}
+			if(array.size() == 1){
+				// This line looks bad, but all it does is return the first (and since we know only) value in the array,
+				// whether or not it is associative or normal.
+				return array.get(array.keySet().toArray(new Construct[0])[0], t);
+			}
+			List<Construct> keys = new ArrayList<>(array.keySet());
+			Construct lastValue = array.get(keys.get(keys.size() - 1), t);
+			for(int i = keys.size() - 2; i >= 0; --i){
+				boolean hadReturn = false;
+				try {
+					closure.execute(lastValue, array.get(keys.get(i), t));
+				} catch(FunctionReturnException ex){
+					lastValue = ex.getReturn();
+					if(lastValue instanceof CVoid){
+						throw new ConfigRuntimeException("The closure passed to " + getName() + " cannot return void.", ExceptionType.IllegalArgumentException, t);
+					}
+					hadReturn = true;
+				}
+				if(!hadReturn){
+					throw new ConfigRuntimeException("The closure passed to " + getName() + " must return a value, but one was not returned.", ExceptionType.IllegalArgumentException, t);
+				}
+			}
+			return lastValue;
+		}
+
+		@Override
+		public String getName() {
+			return "array_reduce_right";
+		}
+
+		@Override
+		public Integer[] numArgs() {
+			return new Integer[]{2};
+		}
+
+		@Override
+		public String docs() {
+			return "mixed {array, closure} Reduces an array to a single value. This works in reverse of"
+					+ " array_reduce. This is useful for, for instance, summing the"
+					+ " values of an array. The previously calculated value, then the previous value of the array are sent"
+					+ " to the closure, which is expected to return a value, based on the two values, which will be sent"
+					+ " again to the closure as the new calculated value. If the array is empty, null is returned, and if"
+					+ " the array has exactly one value in it, only that value is returned. Associative arrays are supported,"
+					+ " but the order is based on the key order, which may not be as expected. The keys of the array are ignored.";
+		}
+
+		@Override
+		public Version since() {
+			return CHVersion.V3_3_1;
+		}
+
+		@Override
+		public ExampleScript[] examples() throws ConfigCompileException {
+			return new ExampleScript[]{
+				new ExampleScript("Summing the values of an array", "@array = array(1, 2, 4, 8);\n"
+						+ "@sum = array_reduce_right(@array, closure(@soFar, @next){\n"
+						+ "\treturn(@soFar + @next);\n"
+						+ "});\n"
+						+ "msg(@sum);"),
+				new ExampleScript("Combining the strings in an array", "@array = array('a', 'b', 'c');\n"
+						+ "@string = array_reduce_right(@array, closure(@soFar, @next){\n"
+						+ "\treturn(@soFar . @next);\n"
+						+ "});\n"
+						+ "msg(@string);")
+			};
+		}
+
+	}
+
+	@api
+	public static class array_every extends AbstractFunction {
+
+		@Override
+		public ExceptionType[] thrown() {
+			return new ExceptionType[]{ExceptionType.CastException};
+		}
+
+		@Override
+		public boolean isRestricted() {
+			return false;
+		}
+
+		@Override
+		public Boolean runAsync() {
+			return null;
+		}
+
+		@Override
+		public Construct exec(Target t, Environment environment, Construct... args) throws ConfigRuntimeException {
+			CArray array = Static.getArray(args[0], t);
+			CClosure closure = Static.getObject(args[1], t, CClosure.class);
+			for(Construct c : array.keySet()){
+				boolean hasReturn = false;
+				try {
+					closure.execute(array.get(c, t));
+				} catch(FunctionReturnException ex){
+					hasReturn = true;
+					boolean ret = Static.getBoolean(ex.getReturn());
+					if(ret == false){
+						return CBoolean.FALSE;
+					}
+				}
+				if(!hasReturn){
+					throw new ConfigRuntimeException("The closure passed to " + getName() + " must return a boolean.", ExceptionType.IllegalArgumentException, t);
+				}
+			}
+			return CBoolean.TRUE;
+		}
+
+		@Override
+		public String getName() {
+			return "array_every";
+		}
+
+		@Override
+		public Integer[] numArgs() {
+			return new Integer[]{2};
+		}
+
+		@Override
+		public String docs() {
+			return "boolean {array, closure} Returns true if every value in the array meets some test, which the closure"
+					+ " should return true or false about. Not all values will necessarily be checked, once a value is"
+					+ " determined to fail the check, execution is stopped, and false is returned. The closure will be"
+					+ " passed each value in the array, one at a time, and must return a boolean.";
+		}
+
+		@Override
+		public Version since() {
+			return CHVersion.V3_3_1;
+		}
+
+		@Override
+		public ExampleScript[] examples() throws ConfigCompileException {
+			return new ExampleScript[]{
+				new ExampleScript("Basic usage", "@array = array(1, 3, 5);\n"
+						+ "@arrayIsAllOdds = array_every(@array, closure(@value){\n"
+						+ "\treturn(@value % 2 == 1);\n"
+						+ "});\n"
+						+ "msg(@arrayIsAllOdds);"),
+				new ExampleScript("Basic usage, with false condition", "@array = array(1, 3, 4);\n"
+						+ "@arrayIsAllOdds = array_every(@array, closure(@value){\n"
+						+ "\treturn(@value % 2 == 1);\n"
+						+ "});\n"
+						+ "msg(@arrayIsAllOdds);")
+			};
+		}
+
+	}
+
+	@api
+	public static class array_some extends AbstractFunction {
+
+		@Override
+		public ExceptionType[] thrown() {
+			return new ExceptionType[]{ExceptionType.CastException};
+		}
+
+		@Override
+		public boolean isRestricted() {
+			return false;
+		}
+
+		@Override
+		public Boolean runAsync() {
+			return null;
+		}
+
+		@Override
+		public Construct exec(Target t, Environment environment, Construct... args) throws ConfigRuntimeException {
+			CArray array = Static.getArray(args[0], t);
+			CClosure closure = Static.getObject(args[1], t, CClosure.class);
+			for(Construct c : array.keySet()){
+				boolean hasReturn = false;
+				try {
+					closure.execute(array.get(c, t));
+				} catch(FunctionReturnException ex){
+					hasReturn = true;
+					boolean ret = Static.getBoolean(ex.getReturn());
+					if(ret == true){
+						return CBoolean.TRUE;
+					}
+				}
+				if(!hasReturn){
+					throw new ConfigRuntimeException("The closure passed to " + getName() + " must return a boolean.", ExceptionType.IllegalArgumentException, t);
+				}
+			}
+			return CBoolean.FALSE;
+		}
+
+		@Override
+		public String getName() {
+			return "array_some";
+		}
+
+		@Override
+		public Integer[] numArgs() {
+			return new Integer[]{2};
+		}
+
+		@Override
+		public String docs() {
+			return "boolean {array, closure} Returns true if any value in the array meets some test, which the closure"
+					+ " should return true or false about. Not all values will necessarily be checked, once a value is"
+					+ " determined to pass the check, execution is stopped, and true is returned. The closure will be"
+					+ " passed each value in the array, one at a time, and must return a boolean.";
+		}
+
+		@Override
+		public Version since() {
+			return CHVersion.V3_3_1;
+		}
+
+		@Override
+		public ExampleScript[] examples() throws ConfigCompileException {
+			return new ExampleScript[]{
+				new ExampleScript("Basic usage", "@array = array(2, 4, 8);\n"
+						+ "@arrayHasOdds = array_every(@array, closure(@value){\n"
+						+ "\treturn(@value % 2 == 1);\n"
+						+ "});\n"
+						+ "msg(@arrayHasOdds);"),
+				new ExampleScript("Basic usage, with false condition", "@array = array(2, 3, 4);\n"
+						+ "@arrayHasOdds = array_every(@array, closure(@value){\n"
+						+ "\treturn(@value % 2 == 1);\n"
+						+ "});\n"
+						+ "msg(@arrayHasOdds);")
+			};
+		}
+
+	}
+
+	@api
+	public static class array_map extends AbstractFunction {
+
+		@Override
+		public ExceptionType[] thrown() {
+			return new ExceptionType[]{ExceptionType.CastException, ExceptionType.IllegalArgumentException};
+		}
+
+		@Override
+		public boolean isRestricted() {
+			return false;
+		}
+
+		@Override
+		public Boolean runAsync() {
+			return null;
+		}
+
+		@Override
+		public Construct exec(Target t, Environment environment, Construct... args) throws ConfigRuntimeException {
+			CArray array = Static.getArray(args[0], t);
+			CClosure closure = Static.getObject(args[1], t, CClosure.class);
+			CArray newArray = (array.isAssociative()?CArray.GetAssociativeArray(t):new CArray(t, (int)array.size()));
+
+			for(Construct c : array.keySet()){
+				boolean hasReturn = false;
+				try {
+					closure.execute(array.get(c, t));
+				} catch(FunctionReturnException ex){
+					hasReturn = true;
+					newArray.set(c, ex.getReturn(), t);
+				}
+				if(!hasReturn){
+					throw new ConfigRuntimeException("The closure passed to " + getName() + " must return a value.", ExceptionType.IllegalArgumentException, t);
+				}
+			}
+
+			return newArray;
+		}
+
+		@Override
+		public String getName() {
+			return "array_map";
+		}
+
+		@Override
+		public Integer[] numArgs() {
+			return new Integer[]{2};
+		}
+
+		@Override
+		public String docs() {
+			return "array {array, closure} Calls the closure on each element of an array, and returns an array that contains the results.";
+		}
+
+		@Override
+		public Version since() {
+			return CHVersion.V3_3_1;
+		}
+
+		@Override
+		public ExampleScript[] examples() throws ConfigCompileException {
+			return new ExampleScript[]{
+				new ExampleScript("Basic usage", "@areaOfSquare = closure(@sideLength){\n"
+						+ "\treturn(@sideLength ** 2);\n"
+						+ "};\n"
+						+ "// A collection of square sides\n"
+						+ "@squares = array(1, 4, 8);\n"
+						+ "@areas = array_map(@squares, @areaOfSquare);\n"
+						+ "msg(@areas);")
+			};
+		}
+
+	}
 }

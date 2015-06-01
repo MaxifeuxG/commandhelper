@@ -1,5 +1,6 @@
 package com.laytonsmith.abstraction.bukkit.entities;
 
+import com.laytonsmith.PureUtilities.Vector3D;
 import com.laytonsmith.abstraction.MCEntity;
 import com.laytonsmith.abstraction.MCLivingEntity;
 import com.laytonsmith.abstraction.MCLocation;
@@ -154,9 +155,9 @@ public class BukkitMCEntity extends BukkitMCMetadatable implements MCEntity {
 	}
 
 	@Override
-	public MVector3D getVelocity() {
+	public Vector3D getVelocity() {
 		Vector v = e.getVelocity();
-		return new MVector3D(v.getX(), v.getY(), v.getZ());
+		return new Vector3D(v.getX(), v.getY(), v.getZ());
 	}
 
 	@Override
@@ -236,8 +237,8 @@ public class BukkitMCEntity extends BukkitMCMetadatable implements MCEntity {
 	}
 
 	@Override
-	public void setVelocity(MVector3D velocity) {
-		Vector v = new Vector(velocity.x, velocity.y, velocity.z);
+	public void setVelocity(Vector3D velocity) {
+		Vector v = new Vector(velocity.X(), velocity.Y(), velocity.Z());
 		e.setVelocity(v);
 	}
 

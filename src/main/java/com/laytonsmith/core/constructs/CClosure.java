@@ -1,6 +1,7 @@
 package com.laytonsmith.core.constructs;
 
 import com.laytonsmith.annotations.typeof;
+import com.laytonsmith.core.CHLog;
 import com.laytonsmith.core.MethodScriptCompiler;
 import com.laytonsmith.core.ParseTree;
 import com.laytonsmith.core.environments.Environment;
@@ -25,12 +26,12 @@ import java.util.logging.Logger;
 public class CClosure extends Construct {
 
     public static final long serialVersionUID = 1L;
-    private ParseTree node;
-    private final Environment env;
-    private final String[] names;
-    private final Construct[] defaults;
-	private final CClassType[] types;
-	private final CClassType returnType;
+    protected ParseTree node;
+    protected final Environment env;
+    protected final String[] names;
+    protected final Construct[] defaults;
+	protected final CClassType[] types;
+	protected final CClassType returnType;
 
     public CClosure(ParseTree node, Environment env, CClassType returnType, String[] names, Construct[] defaults, CClassType[] types, Target t) {
         super(node != null ? node.toString() : "", ConstructType.CLOSURE, t);
@@ -40,6 +41,12 @@ public class CClosure extends Construct {
         this.defaults = defaults;
 		this.types = types;
 		this.returnType = returnType;
+		for(String pName : names){
+			if(pName.equals("@arguments")){
+				CHLog.GetLogger().w(CHLog.Tags.COMPILER, "This closure overrides the builtin @arguments parameter", t);
+				break;
+			}
+		}
     }
 
     @Override
@@ -146,13 +153,24 @@ public class CClosure extends Construct {
                     environment.getEnv(GlobalEnv.class).GetVarList().set(new IVariable(types[i], name, value, getTarget()));
                 }
             }
-            CArray arguments = new CArray(node.getData().getTarget());
-            if (values != null) {
-                for (Construct value : values) {
-                    arguments.push(value);
-                }
-            }
-            environment.getEnv(GlobalEnv.class).GetVarList().set(new IVariable(new CClassType("array", Target.UNKNOWN), "@arguments", arguments, node.getData().getTarget()));
+			boolean hasArgumentsParam = false;
+			for(String pName : this.names){
+				if(pName.equals("@arguments")){
+					hasArgumentsParam = true;
+					break;
+				}
+			}
+			
+			if(!hasArgumentsParam){
+				CArray arguments = new CArray(node.getData().getTarget());
+				if (values != null) {
+					for (Construct value : values) {
+						arguments.push(value);
+					}
+				}
+				environment.getEnv(GlobalEnv.class).GetVarList().set(new IVariable(new CClassType("array", Target.UNKNOWN), "@arguments", arguments, node.getData().getTarget()));
+			}
+			
             ParseTree newNode = new ParseTree(new CFunction("g", getTarget()), node.getFileOptions());
             List<ParseTree> children = new ArrayList<ParseTree>();
             children.add(node);
