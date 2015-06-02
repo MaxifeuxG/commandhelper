@@ -2,6 +2,12 @@
 
 package com.laytonsmith.core;
 
+import static com.laytonsmith.testing.StaticTest.RunCommand;
+import static com.laytonsmith.testing.StaticTest.SRun;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
 import com.laytonsmith.abstraction.MCPlayer;
 import com.laytonsmith.abstraction.MCServer;
 import com.laytonsmith.core.constructs.Target;
@@ -12,24 +18,17 @@ import com.laytonsmith.core.exceptions.ConfigCompileException;
 import com.laytonsmith.core.exceptions.ConfigCompileGroupException;
 import com.laytonsmith.core.exceptions.ConfigRuntimeException;
 import com.laytonsmith.testing.StaticTest;
-import static com.laytonsmith.testing.StaticTest.RunCommand;
-import static com.laytonsmith.testing.StaticTest.SRun;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.junit.After;
-import org.junit.AfterClass;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 //import org.powermock.api.mockito.PowerMockito;
 //import org.powermock.core.classloader.annotations.PowerMockIgnore;
 //import org.powermock.core.classloader.annotations.PrepareForTest;
@@ -40,7 +39,7 @@ import static org.mockito.Mockito.verify;
  *
  */
 //@RunWith(PowerMockRunner.class)
-//@PrepareForTest(CommandHelperPlugin.class)
+//@PrepareForTest(CommandHelperBukkit.class)
 //@PowerMockIgnore({"javax.xml.parsers.*", "com.sun.org.apache.xerces.internal.jaxp.*"})
 public class MethodScriptCompilerTest {
 
@@ -442,9 +441,9 @@ public class MethodScriptCompilerTest {
 //    public void testCompileWithDoubleSlashCommand() throws Exception{
 //        AliasCore ac = mock(AliasCore.class);
 //        ac.autoIncludes = new ArrayList<File>();
-//        PowerMockito.mockStatic(CommandHelperPlugin.class);
-//        when(CommandHelperPlugin.getCore()).thenReturn(ac);
-//        assertEquals(ac, CommandHelperPlugin.getCore());
+//        PowerMockito.mockStatic(CommandHelperBukkit.class);
+//        when(CommandHelperBukkit.getCore()).thenReturn(ac);
+//        assertEquals(ac, CommandHelperBukkit.getCore());
 //        String config = "//cmd blah = msg('success')";
 //        Script s = MethodScriptCompiler.preprocess(MethodScriptCompiler.lex(config, null, false)).get(0);
 //        s.compile();
@@ -457,9 +456,9 @@ public class MethodScriptCompilerTest {
 //    public void testCompileTwoAliases() throws Exception{
 //        AliasCore ac = mock(AliasCore.class);
 //        ac.autoIncludes = new ArrayList<File>();
-//        PowerMockito.mockStatic(CommandHelperPlugin.class);
-//        when(CommandHelperPlugin.getCore()).thenReturn(ac);
-//        assertEquals(ac, CommandHelperPlugin.getCore());
+//        PowerMockito.mockStatic(CommandHelperBukkit.class);
+//        when(CommandHelperBukkit.getCore()).thenReturn(ac);
+//        assertEquals(ac, CommandHelperBukkit.getCore());
 //        String config = "/cmd1 = msg('success')\n"
 //                + "                 \n" //Spaces and tabs are here
 //                + "/cmd2 = msg('success')";

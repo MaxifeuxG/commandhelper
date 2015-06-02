@@ -4,7 +4,6 @@ import com.laytonsmith.PureUtilities.Version;
 import com.laytonsmith.abstraction.Implementation;
 import com.laytonsmith.abstraction.MCCommand;
 import com.laytonsmith.abstraction.MCCommandManager;
-import com.laytonsmith.abstraction.MCServer;
 import com.laytonsmith.abstraction.StaticLayer;
 import com.laytonsmith.annotations.api;
 import com.laytonsmith.core.CHVersion;
@@ -60,8 +59,7 @@ public class Commands {
 
 		@Override
 		public Construct exec(Target t, Environment environment, Construct... args) throws ConfigRuntimeException {
-			MCServer s = Static.getServer();
-			MCCommand cmd = s.getCommandMap().getCommand(args[0].val());
+			MCCommand cmd = Static.getGame().getCommandManager().getCommand(args[0].val());
 			if (cmd == null) {
 				throw new ConfigRuntimeException("Command not found, did you forget to register it?",
 						ExceptionType.NotFoundException, t);
@@ -81,7 +79,7 @@ public class Commands {
 			if (arg instanceof CClosure) {
 				onTabComplete.remove(cmd.getName());
 				onTabComplete.put(cmd.getName(), (CClosure) arg);
-				cmd.setTabCompleter(Static.getServer().getPluginManager()
+				cmd.setTabCompleter(Static.getGame().getPluginManager()
 						.getPlugin(Implementation.GetServerType().getBranding()));
 			} else {
 				throw new ConfigRuntimeException("At this time, only closures are accepted as tabcompleters",
@@ -134,7 +132,7 @@ public class Commands {
 
 		@Override
 		public Construct exec(Target t, Environment environment, Construct... args) throws ConfigRuntimeException {
-			MCCommandManager map = Static.getServer().getCommandMap();
+			MCCommandManager map = Static.getGame().getCommandManager();
 			MCCommand cmd = map.getCommand(args[0].val());
 			if (cmd == null) {
 				throw new ConfigRuntimeException("Command not found, did you forget to register it?",
@@ -184,7 +182,7 @@ public class Commands {
 
 		@Override
 		public Construct exec(Target t, Environment environment, Construct... args) throws ConfigRuntimeException {
-			MCCommandManager map = Static.getServer().getCommandMap();
+			MCCommandManager map = Static.getGame().getCommandManager();
 			MCCommand cmd = map.getCommand(args[0].val().toLowerCase());
 			boolean isnew = false;
 			if (cmd == null) {
@@ -284,7 +282,7 @@ public class Commands {
 
 		@Override
 		public Construct exec(Target t, Environment environment, Construct... args) throws ConfigRuntimeException {
-			MCCommand cmd = Static.getServer().getCommandMap().getCommand(args[0].val());
+			MCCommand cmd = Static.getGame().getCommandManager().getCommand(args[0].val());
 			if (cmd == null) {
 				throw new ConfigRuntimeException("Command not found did you forget to register it?",
 						ExceptionType.NotFoundException, t);
@@ -304,7 +302,7 @@ public class Commands {
 			if (arg instanceof CClosure) {
 				onCommand.remove(cmd.getName());
 				onCommand.put(cmd.getName(), (CClosure) arg);
-				cmd.setTabCompleter(Static.getServer().getPluginManager()
+				cmd.setTabCompleter(Static.getGame().getPluginManager()
 						.getPlugin(Implementation.GetServerType().getBranding()));
 			} else {
 				throw new ConfigRuntimeException("At this time, only closures are accepted as command executors.",
@@ -356,7 +354,7 @@ public class Commands {
 
 		@Override
 		public Construct exec(Target t, Environment environment, Construct... args) throws ConfigRuntimeException {
-			MCCommandManager map = Static.getServer().getCommandMap();
+			MCCommandManager map = Static.getGame().getCommandManager();
 			Collection<MCCommand> commands = map.getCommands();
 			CArray ret = CArray.GetAssociativeArray(t);
 			for(MCCommand command : commands) {
@@ -425,7 +423,7 @@ public class Commands {
 
 		@Override
 		public Construct exec(Target t, Environment environment, Construct... args) throws ConfigRuntimeException {
-			MCCommandManager map = Static.getServer().getCommandMap();
+			MCCommandManager map = Static.getGame().getCommandManager();
 			map.clearCommands();
 			return CVoid.VOID;
 		}

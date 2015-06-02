@@ -24,7 +24,7 @@ import com.laytonsmith.abstraction.enums.MCWeather;
 import com.laytonsmith.abstraction.enums.bukkit.BukkitMCInstrument;
 import com.laytonsmith.abstraction.enums.bukkit.BukkitMCSound;
 import com.laytonsmith.abstraction.enums.bukkit.BukkitMCWeather;
-import com.laytonsmith.commandhelper.CommandHelperPlugin;
+import com.laytonsmith.commandhelper.CommandHelperBukkit;
 import com.laytonsmith.core.Static;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -624,7 +624,7 @@ public class BukkitMCPlayer extends BukkitMCHumanEntity implements MCPlayer, MCC
 	@Override
 	public void sendPluginMessage(String channel, byte[] message) {
 		StaticLayer.GetConvertor().GetPluginMeta().openOutgoingChannel(channel);
-		p.sendPluginMessage(CommandHelperPlugin.self, channel, message);
+		p.sendPluginMessage(CommandHelperBukkit.self, channel, message);
 	}
 
 	@Override

@@ -1,13 +1,20 @@
 
 package com.laytonsmith.abstraction;
 
+import java.util.List;
+
 /**
  *
  * @author import
  */
 public interface MCChunk extends AbstractionObject {
-	public int getX();
-	public int getZ();
-	public MCWorld getWorld();
-	public MCEntity[] getEntities();
+	boolean isLoaded();
+
+	int getX();
+
+	int getZ();
+
+	MCWorld getWorld();
+
+	List<MCEntity> getEntities();
 }

@@ -1,22 +1,22 @@
 package com.laytonsmith.abstraction.sponge.entities;
 
 import com.google.common.base.Optional;
+import com.laytonsmith.PureUtilities.Vector3D;
 import com.laytonsmith.abstraction.MCEntity;
 import com.laytonsmith.abstraction.MCLocation;
 import com.laytonsmith.abstraction.MCMetadataValue;
 import com.laytonsmith.abstraction.MCPlugin;
 import com.laytonsmith.abstraction.MCServer;
 import com.laytonsmith.abstraction.MCWorld;
-import com.laytonsmith.abstraction.MVector3D;
 import com.laytonsmith.abstraction.enums.MCDamageCause;
 import com.laytonsmith.abstraction.enums.MCEntityEffect;
 import com.laytonsmith.abstraction.enums.MCEntityType;
 import com.laytonsmith.abstraction.enums.MCTeleportCause;
 import com.laytonsmith.abstraction.events.MCEntityDamageEvent;
 import com.laytonsmith.abstraction.sponge.SpongeMCLocation;
-import org.spongepowered.api.data.manipulators.DisplayNameData;
-import org.spongepowered.api.data.manipulators.catalogs.CatalogEntityData;
-import org.spongepowered.api.data.manipulators.entities.VehicleData;
+import org.spongepowered.api.data.manipulator.DisplayNameData;
+import org.spongepowered.api.data.manipulator.catalog.CatalogEntityData;
+import org.spongepowered.api.data.manipulator.entity.VehicleData;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.world.Location;
 
@@ -123,12 +123,12 @@ public class SpongeMCEntity implements MCEntity {
 	}
 
 	@Override
-	public MVector3D getVelocity() {
+	public Vector3D getVelocity() {
 		return null;
 	}
 
 	@Override
-	public void setVelocity(MVector3D v) {
+	public void setVelocity(Vector3D v) {
 
 	}
 

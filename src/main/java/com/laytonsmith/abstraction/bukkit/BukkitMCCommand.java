@@ -8,7 +8,7 @@ import com.laytonsmith.abstraction.MCCommandManager;
 import com.laytonsmith.abstraction.MCCommandSender;
 import com.laytonsmith.abstraction.MCPlugin;
 import com.laytonsmith.abstraction.bukkit.events.BukkitMiscEvents.BukkitMCCommandTabCompleteEvent;
-import com.laytonsmith.commandhelper.CommandHelperPlugin;
+import com.laytonsmith.commandhelper.CommandHelperBukkit;
 import com.laytonsmith.core.constructs.CArray;
 import com.laytonsmith.core.constructs.CBoolean;
 import com.laytonsmith.core.constructs.CClosure;
@@ -142,7 +142,7 @@ public class BukkitMCCommand implements MCCommand {
 	
 	public static MCCommand newCommand(String name) {
 		return new BukkitMCCommand(ReflectionUtils.newInstance(PluginCommand.class,
-				new Class[]{String.class, Plugin.class}, new Object[]{name, CommandHelperPlugin.self}));
+				new Class[]{String.class, Plugin.class}, new Object[]{name, CommandHelperBukkit.self}));
 	}
 
 	@Override

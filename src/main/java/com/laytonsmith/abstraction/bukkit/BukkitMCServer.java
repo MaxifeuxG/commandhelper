@@ -1,7 +1,6 @@
 package com.laytonsmith.abstraction.bukkit;
 
 import com.laytonsmith.PureUtilities.Common.ReflectionUtils;
-import com.laytonsmith.abstraction.MCCommandManager;
 import com.laytonsmith.abstraction.MCCommandSender;
 import com.laytonsmith.abstraction.MCConsoleCommandSender;
 import com.laytonsmith.abstraction.MCHumanEntity;
@@ -28,7 +27,6 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.Server;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.SimpleCommandMap;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.InventoryHolder;
@@ -241,11 +239,6 @@ public class BukkitMCServer extends BukkitMCGame implements MCServer {
 	}
 
 	@Override
-	public MCCommandManager getCommandMap() {
-		return new BukkitMCCommandManager((SimpleCommandMap) ReflectionUtils.invokeMethod(server.getClass(), server, "getCommandMap"));
-	}
-
-	@Override
 	public MCOfflinePlayer getOfflinePlayer(String player) {
 		return new BukkitMCOfflinePlayer(server.getOfflinePlayer(player));
 	}
@@ -368,7 +361,7 @@ public class BukkitMCServer extends BukkitMCGame implements MCServer {
 
 	@Override
 	public boolean equals(Object obj) {
-		return (obj instanceof BukkitMCServer ? server.equals(((BukkitMCServer) obj).__Server()) : false);
+		return (obj instanceof BukkitMCServer && server.equals(((BukkitMCServer) obj).__Server()));
 	}
 
 	@Override

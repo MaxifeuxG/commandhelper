@@ -1,62 +1,64 @@
 package com.laytonsmith.abstraction.bukkit;
 
+import com.laytonsmith.PureUtilities.Common.ReflectionUtils;
 import com.laytonsmith.abstraction.MCCommandManager;
 import com.laytonsmith.abstraction.MCEventManager;
 import com.laytonsmith.abstraction.MCGame;
 import com.laytonsmith.abstraction.MCPluginManager;
 import com.laytonsmith.abstraction.enums.MCVersion;
 import org.bukkit.Server;
+import org.bukkit.command.SimpleCommandMap;
 
 /**
  * Created by jb_aero on 4/8/2015.
  */
 public abstract class BukkitMCGame implements MCGame {
 
-	Server server;
-	MCVersion version;
+	final Server server;
+	final MCVersion version;
+	final BukkitMCPluginManager pluginManager;
 
 	// Game is a Sponge concept, but it helps tidy up the Bukkit server
 	public BukkitMCGame(Server game) {
 		this.server = game;
+		int temp = server.getBukkitVersion().indexOf('-');
+		version = MCVersion.match(getHandle().getBukkitVersion().substring(0, temp).split("."));
+		pluginManager = new BukkitMCPluginManager(server.getPluginManager());
 	}
 
 	@Override
 	public Server getHandle() {
-		return (Server) server;
+		return server;
 	}
 
 	@Override
 	public String getAPIVersion() {
-		return server.getBukkitVersion();
+		return getHandle().getBukkitVersion();
 	}
 
 	@Override
 	public String getImplementationVersion() {
-		return server.getVersion();
+		return getHandle().getVersion();
 	}
 
 	@Override
 	public MCVersion getMinecraftVersion() {
-		if (version == null) {
-			int temp = s.getBukkitVersion().indexOf('-');
-			version = MCVersion.match(s.getBukkitVersion().substring(0, temp).split("."));
-		}
 		return version;
 	}
 
 	@Override
 	public MCCommandManager getCommandManager() {
-		return null;
+		return new BukkitMCCommandManager((SimpleCommandMap) ReflectionUtils.invokeMethod(server.getClass(), server, "getCommandMap"));
 	}
 
 	@Override
 	public MCEventManager getEventManager() {
-		return null;
+		return pluginManager;
 	}
 
 	@Override
 	public MCPluginManager getPluginManager() {
-		return null;
+		return pluginManager;
 	}
 
 	@Override

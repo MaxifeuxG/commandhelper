@@ -64,5 +64,15 @@ public class BukkitMCPlugin implements MCPlugin {
 	public String getName() {
 		return p.getName();
 	}
-    
+
+    @Override
+    public String getId() {
+        return getHandle().getName();
+    }
+
+    @Override
+    public String getVersion() {
+        return getHandle().getDescription().getVersion();
+    }
+
 }

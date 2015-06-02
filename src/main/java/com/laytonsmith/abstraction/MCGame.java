@@ -31,7 +31,8 @@ public interface MCGame extends AbstractionObject {
 
 	enum MCPlatform {
 		CLIENT,
-		SERVER
+		SERVER,
+		UNKNOWN
 	}
 
 }

@@ -6,7 +6,6 @@ import com.laytonsmith.abstraction.MCLivingEntity;
 import com.laytonsmith.abstraction.MCLocation;
 import com.laytonsmith.abstraction.MCServer;
 import com.laytonsmith.abstraction.MCWorld;
-import com.laytonsmith.abstraction.MVector3D;
 import com.laytonsmith.abstraction.StaticLayer;
 import com.laytonsmith.abstraction.bukkit.BukkitConvertor;
 import com.laytonsmith.abstraction.bukkit.BukkitMCLocation;
@@ -20,7 +19,7 @@ import com.laytonsmith.abstraction.enums.MCTeleportCause;
 import com.laytonsmith.abstraction.enums.MCVersion;
 import com.laytonsmith.abstraction.enums.bukkit.BukkitMCEntityType;
 import com.laytonsmith.abstraction.events.MCEntityDamageEvent;
-import com.laytonsmith.commandhelper.CommandHelperPlugin;
+import com.laytonsmith.commandhelper.CommandHelperBukkit;
 import com.laytonsmith.core.Static;
 import org.bukkit.EntityEffect;
 import org.bukkit.entity.Entity;
@@ -56,7 +55,7 @@ public class BukkitMCEntity extends BukkitMCMetadatable implements MCEntity {
 	@Override
 	public void fireEntityDamageEvent(MCDamageCause dc) {
 		EntityDamageEvent ede = new EntityDamageEvent(e, EntityDamageEvent.DamageCause.valueOf(dc.name()), 9001);
-		CommandHelperPlugin.self.getServer().getPluginManager().callEvent(ede);
+		CommandHelperBukkit.self.getServer().getPluginManager().callEvent(ede);
 	}
 
 	@Override

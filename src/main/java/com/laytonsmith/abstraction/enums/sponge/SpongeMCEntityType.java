@@ -4,6 +4,7 @@ import com.laytonsmith.abstraction.MCEntity;
 import com.laytonsmith.abstraction.enums.MCEntityType;
 import com.laytonsmith.core.CHLog;
 import com.laytonsmith.core.constructs.Target;
+import org.spongepowered.api.CatalogTypes;
 import org.spongepowered.api.GameRegistry;
 import org.spongepowered.api.entity.EntityType;
 import org.spongepowered.api.entity.EntityTypes;
@@ -44,7 +45,7 @@ public class SpongeMCEntityType extends MCEntityType {
 				counted.add(type);
 			}
 		}
-		for (EntityType b : registry.getEntities()) {
+		for (EntityType b : registry.getAllOf(CatalogTypes.ENTITY_TYPE)) {
 			if (!counted.contains(b)) {
 				mappings.put(b.getId(), new SpongeMCEntityType(b, MCEntityType.MCVanillaEntityType.UNKNOWN));
 			}
@@ -105,7 +106,7 @@ public class SpongeMCEntityType extends MCEntityType {
 			case MINECART_TNT:
 				return EntityTypes.TNT_MINECART;
 		}
-		return reg.getEntity(v.name()).orNull();
+		return reg.getType(CatalogTypes.ENTITY_TYPE, v.name()).orNull();
 	}
 
 	// This is here because it shouldn't be getting changed from API

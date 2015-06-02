@@ -2,6 +2,12 @@
 
 package com.laytonsmith.core.functions;
 
+import static com.laytonsmith.testing.StaticTest.*;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.*;
+
 import com.laytonsmith.abstraction.MCCommandSender;
 import com.laytonsmith.abstraction.MCConsoleCommandSender;
 import com.laytonsmith.abstraction.MCLocation;
@@ -11,28 +17,14 @@ import com.laytonsmith.abstraction.MCWorld;
 import com.laytonsmith.abstraction.StaticLayer;
 import com.laytonsmith.abstraction.blocks.MCBlock;
 import com.laytonsmith.abstraction.bukkit.BukkitMCWorld;
-import com.laytonsmith.commandhelper.CommandHelperPlugin;
-import com.laytonsmith.core.exceptions.ConfigCompileException;
 import com.laytonsmith.testing.StaticTest;
-import static com.laytonsmith.testing.StaticTest.GetFakeConsoleCommandSender;
-import static com.laytonsmith.testing.StaticTest.GetFakeServer;
-import static com.laytonsmith.testing.StaticTest.GetOp;
-import static com.laytonsmith.testing.StaticTest.GetWorld;
-import static com.laytonsmith.testing.StaticTest.Run;
-import static com.laytonsmith.testing.StaticTest.SRun;
-import java.util.HashSet;
 import org.junit.After;
 import org.junit.AfterClass;
-import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+
+import java.util.HashSet;
 
 /**
  *
@@ -61,7 +53,6 @@ public class PlayerManangementTest {
         fakePlayer = GetOp("player", fakeServer);
         StaticTest.InstallFakeConvertor(fakePlayer);
         when(fakePlayer.getServer()).thenReturn(fakeServer);
-        CommandHelperPlugin.myServer = fakeServer;
         String name = fakePlayer.getName();
         when(fakeServer.getPlayer(name)).thenReturn(fakePlayer);
     }
@@ -111,7 +102,6 @@ public class PlayerManangementTest {
 
     public void testSetPloc() throws Exception, Exception {
         MCWorld w = GetWorld("world");
-        CommandHelperPlugin.myServer = fakeServer;
         String name = fakePlayer.getName();
         when(fakeServer.getPlayer(name)).thenReturn(fakePlayer);
         when(fakePlayer.getWorld()).thenReturn(w);
@@ -136,7 +126,6 @@ public class PlayerManangementTest {
     @Test(timeout = 10000)
     public void testPcursor() throws Exception, Exception {
         MCBlock b = mock(MCBlock.class);
-        CommandHelperPlugin.myServer = fakeServer;
         when(fakeServer.getPlayer(fakePlayer.getName())).thenReturn(fakePlayer);
         when(fakePlayer.getTargetBlock((HashSet) eq(null), anyInt(), eq(false))).thenReturn(b);
         MCWorld w = mock(MCWorld.class);

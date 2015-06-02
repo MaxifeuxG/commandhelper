@@ -1,5 +1,11 @@
 package com.laytonsmith.testing;
 
+import static com.laytonsmith.testing.StaticTest.Run;
+import static com.laytonsmith.testing.StaticTest.SRun;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.*;
+
 import com.laytonsmith.PureUtilities.ClassLoading.ClassDiscovery;
 import com.laytonsmith.PureUtilities.Common.ReflectionUtils;
 import com.laytonsmith.PureUtilities.Common.StringUtils;
@@ -10,7 +16,6 @@ import com.laytonsmith.abstraction.MCServer;
 import com.laytonsmith.abstraction.MCWorld;
 import com.laytonsmith.abstraction.bukkit.BukkitMCCommandSender;
 import com.laytonsmith.abstraction.bukkit.entities.BukkitMCPlayer;
-import com.laytonsmith.commandhelper.CommandHelperPlugin;
 import com.laytonsmith.core.MethodScriptComplete;
 import com.laytonsmith.core.ObjectGenerator;
 import com.laytonsmith.core.Static;
@@ -51,12 +56,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import static com.laytonsmith.testing.StaticTest.Run;
-import static com.laytonsmith.testing.StaticTest.SRun;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.*;
 
 /**
  *
@@ -228,7 +227,6 @@ public class RandomTests {
 		MCWorld fakeWorld = mock(MCWorld.class);
 		MCServer fakeServer = mock(MCServer.class);
 		when(fakeServer.getWorld("world")).thenReturn(fakeWorld);
-		CommandHelperPlugin.myServer = fakeServer;
 		CArray ca1 = new CArray(Target.UNKNOWN, C.onstruct(1), C.onstruct(2), C.onstruct(3));
 		CArray ca2 = new CArray(Target.UNKNOWN, C.onstruct(1), C.onstruct(2), C.onstruct(3), C.onstruct("world"));
 		CArray ca3 = new CArray(Target.UNKNOWN, C.onstruct(1), C.onstruct(2), C.onstruct(3), C.onstruct(45), C.onstruct(50));
@@ -261,7 +259,6 @@ public class RandomTests {
 		assertEquals(0, l2.getPitch(), 0.0000000000000000001);
 		assertEquals(50, l3.getPitch(), 0.0000000000000000001);
 		assertEquals(50, l4.getPitch(), 0.0000000000000000001);
-		CommandHelperPlugin.myServer = null;
 	}
 
 	@Test

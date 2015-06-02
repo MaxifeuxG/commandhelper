@@ -2,11 +2,12 @@ package com.laytonsmith.abstraction.bukkit.pluginmessages;
 
 import com.laytonsmith.abstraction.pluginmessages.MCMessenger;
 import com.laytonsmith.abstraction.pluginmessages.MCPluginMessageListenerRegistration;
+import com.laytonsmith.commandhelper.CommandHelperBukkit;
 import com.laytonsmith.commandhelper.CommandHelperMessageListener;
-import com.laytonsmith.commandhelper.CommandHelperPlugin;
-import java.util.Set;
 import org.bukkit.plugin.messaging.Messenger;
 import org.bukkit.plugin.messaging.PluginMessageListenerRegistration;
+
+import java.util.Set;
 
 /**
  *
@@ -25,7 +26,7 @@ public class BukkitMCMessenger implements MCMessenger {
 		PluginMessageListenerRegistration reg;
 		
 		reg = messenger.registerIncomingPluginChannel(
-			CommandHelperPlugin.self, channel, 
+				CommandHelperBukkit.self, channel,
 			CommandHelperMessageListener.getInstance());
 
 		return new BukkitMCPluginMessageListenerRegistration(reg);
@@ -33,19 +34,19 @@ public class BukkitMCMessenger implements MCMessenger {
 	
 	@Override
 	public boolean isIncomingChannelRegistered(String channel) {
-		return messenger.isIncomingChannelRegistered(CommandHelperPlugin.self, channel);
+		return messenger.isIncomingChannelRegistered(CommandHelperBukkit.self, channel);
 	}
 	
 	@Override
 	public void unregisterIncomingPluginChannel(String channel) {
 		messenger.unregisterIncomingPluginChannel(
-			CommandHelperPlugin.self, channel, 
+				CommandHelperBukkit.self, channel,
 			CommandHelperMessageListener.getInstance());
 	}
 	
 	@Override
 	public Set<String> getIncomingChannels() {
-		return messenger.getIncomingChannels(CommandHelperPlugin.self);
+		return messenger.getIncomingChannels(CommandHelperBukkit.self);
 	}
 	
 	@Override

@@ -3,9 +3,11 @@ package com.laytonsmith.abstraction.bukkit;
 import com.laytonsmith.abstraction.MCChunk;
 import com.laytonsmith.abstraction.MCEntity;
 import com.laytonsmith.abstraction.MCWorld;
-import com.laytonsmith.abstraction.bukkit.entities.BukkitMCEntity;
 import org.bukkit.Chunk;
 import org.bukkit.entity.Entity;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -17,7 +19,12 @@ public class BukkitMCChunk implements MCChunk {
 	public BukkitMCChunk(Chunk c) {
 		this.c = c;
 	}
-	
+
+	@Override
+	public boolean isLoaded() {
+		return getHandle().isLoaded();
+	}
+
 	@Override
 	public int getX() {
 		return c.getX();
@@ -29,13 +36,12 @@ public class BukkitMCChunk implements MCChunk {
 	}
 
 	@Override
-	public MCEntity[] getEntities() {
-		Entity[] entities = c.getEntities();
-		MCEntity[] r = new MCEntity[entities.length];
-		for (int i = 0 ; i < r.length ; i++) {
-			r[i] = new BukkitMCEntity(entities[i]);
+	public List<MCEntity> getEntities() {
+		List<MCEntity> ret = new ArrayList<>();
+		for (Entity entity : getHandle().getEntities()) {
+			ret.add(BukkitConvertor.BukkitGetCorrectEntity(entity));
 		}
-		return r;
+		return ret;
 	}
 
 	@Override
@@ -44,13 +50,13 @@ public class BukkitMCChunk implements MCChunk {
 	}
 	
 	@Override
-	public Object getHandle() {
+	public Chunk getHandle() {
 		return c;
 	}
 
 	@Override
 	public boolean equals(Object o) {
-		return o instanceof MCChunk ? this.c.equals(((BukkitMCChunk)o).c) : false;
+		return o instanceof MCChunk && this.c.equals(((BukkitMCChunk) o).c);
 	}
 
 	@Override

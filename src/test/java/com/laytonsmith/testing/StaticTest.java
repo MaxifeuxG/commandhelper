@@ -2,6 +2,10 @@
 
 package com.laytonsmith.testing;
 
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import com.laytonsmith.PureUtilities.ClassLoading.ClassDiscovery;
 import com.laytonsmith.PureUtilities.DaemonManager;
 import com.laytonsmith.PureUtilities.RunnableQueue;
@@ -15,6 +19,7 @@ import com.laytonsmith.abstraction.MCConsoleCommandSender;
 import com.laytonsmith.abstraction.MCEnchantment;
 import com.laytonsmith.abstraction.MCEntity;
 import com.laytonsmith.abstraction.MCFireworkBuilder;
+import com.laytonsmith.abstraction.MCGame;
 import com.laytonsmith.abstraction.MCInventory;
 import com.laytonsmith.abstraction.MCItemMeta;
 import com.laytonsmith.abstraction.MCItemStack;
@@ -35,7 +40,7 @@ import com.laytonsmith.abstraction.enums.MCRecipeType;
 import com.laytonsmith.abstraction.enums.MCTone;
 import com.laytonsmith.annotations.convert;
 import com.laytonsmith.annotations.noboilerplate;
-import com.laytonsmith.commandhelper.CommandHelperPlugin;
+import com.laytonsmith.commandhelper.CommandHelperMainClass;
 import com.laytonsmith.core.AliasCore;
 import com.laytonsmith.core.CHLog;
 import com.laytonsmith.core.MethodScriptCompiler;
@@ -55,7 +60,6 @@ import com.laytonsmith.core.events.AbstractEvent;
 import com.laytonsmith.core.events.BindableEvent;
 import com.laytonsmith.core.events.EventMixinInterface;
 import com.laytonsmith.core.exceptions.CancelCommandException;
-import com.laytonsmith.core.exceptions.ConfigCompileException;
 import com.laytonsmith.core.exceptions.ConfigRuntimeException;
 import com.laytonsmith.core.exceptions.EventException;
 import com.laytonsmith.core.exceptions.FunctionReturnException;
@@ -66,6 +70,8 @@ import com.laytonsmith.core.functions.BasicLogic.equals;
 import com.laytonsmith.core.functions.Exceptions;
 import com.laytonsmith.core.functions.Function;
 import com.laytonsmith.core.functions.FunctionBase;
+import org.mockito.Mockito;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -82,10 +88,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import static org.junit.Assert.fail;
-import org.mockito.Mockito;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 //import static org.powermock.api.mockito.PowerMockito.mock;
 //import org.powermock.modules.junit4.PowerMockRunner;
 
@@ -538,13 +540,13 @@ public class StaticTest {
     //Blarg. Dumb thing.
 //    private static void injectAliasCore() throws Exception{
 //        PermissionsResolverManager prm = mock(PermissionsResolverManager.class);
-//        CommandHelperPlugin chp = mock(CommandHelperPlugin.class);
+//        CommandHelperBukkit chp = mock(CommandHelperBukkit.class);
 //        AliasCore ac = new AliasCore(new File("plugins/CommandHelper/config.txt"),
 //                new File("plugins/CommandHelper/LocalPackages"),
 //                new File("plugins/CommandHelper/preferences.ini"),
 //                new File("plugins/CommandHelper/main.ms"), prm, chp);
 //        try{
-//            Field aliasCore = CommandHelperPlugin.class.getDeclaredField("ac");
+//            Field aliasCore = CommandHelperBukkit.class.getDeclaredField("ac");
 //            aliasCore.setAccessible(true);
 //            aliasCore.set(null, ac);
 //        } catch(Exception e){
@@ -564,7 +566,6 @@ public class StaticTest {
             pps.add(pp);
         }
         when(fakeServer.getOnlinePlayers()).thenReturn(new HashSet<MCPlayer>());
-        CommandHelperPlugin.myServer = fakeServer;
         return fakeServer;
     }
 
@@ -583,7 +584,7 @@ public class StaticTest {
 		Implementation.setServerType(Implementation.Type.TEST);
         AliasCore fakeCore = mock(AliasCore.class);
         fakeCore.autoIncludes = new ArrayList<File>();
-		SetPrivate(CommandHelperPlugin.class, "ac", fakeCore, AliasCore.class);
+        SetPrivate(CommandHelperMainClass.class, "ac", fakeCore, AliasCore.class);
        frontendInstalled = true;
 		try {
 			Prefs.init(new File("preferences.ini"));
@@ -645,13 +646,18 @@ public class StaticTest {
             return c.GetEnchantmentByName(name);
         }
 
-		@Override
+        @Override
+        public MCGame GetGame() {
+            return fakeServer;
+        }
+
+        @Override
         public MCServer GetServer() {
             return fakeServer;
         }
 
 		@Override
-        public void Startup(CommandHelperPlugin chp) {
+        public void Startup() {
             //Nothing.
         }
 

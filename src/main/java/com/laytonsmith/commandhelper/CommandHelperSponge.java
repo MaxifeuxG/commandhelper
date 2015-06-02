@@ -6,11 +6,11 @@ import com.laytonsmith.abstraction.StaticLayer;
 import com.laytonsmith.core.Static;
 import org.slf4j.Logger;
 import org.spongepowered.api.Game;
+import org.spongepowered.api.event.Subscribe;
 import org.spongepowered.api.event.state.InitializationEvent;
 import org.spongepowered.api.event.state.PreInitializationEvent;
 import org.spongepowered.api.event.state.ServerStoppedEvent;
 import org.spongepowered.api.plugin.Plugin;
-import org.spongepowered.api.util.event.Subscribe;
 
 import java.util.logging.Level;
 

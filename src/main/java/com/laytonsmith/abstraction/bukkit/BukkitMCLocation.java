@@ -29,8 +29,8 @@ public class BukkitMCLocation implements MCLocation {
     }
 
 	@Override
-    public Object getHandle() {
-        return l;
+	public Location getHandle() {
+		return l;
     }
 
 	@Override
@@ -50,12 +50,12 @@ public class BukkitMCLocation implements MCLocation {
 
 	@Override
 	public double distance(MCLocation o) {
-		return l.distance(((BukkitMCLocation)o)._Location());
+		return l.distance(((BukkitMCLocation) o)._Location());
 	}
 	
 	@Override
 	public double distanceSquared(MCLocation o) {
-		return l.distanceSquared(((BukkitMCLocation)o)._Location());
+		return l.distanceSquared(((BukkitMCLocation) o)._Location());
 	}
 
 	@Override
@@ -67,14 +67,24 @@ public class BukkitMCLocation implements MCLocation {
     }
 
 	@Override
-    public float getYaw() {
-        return l.getYaw();
-    }
+	public float getYaw() {
+		return l.getYaw();
+	}
 
 	@Override
-    public float getPitch() {
-        return l.getPitch();
-    }
+	public float getPitch() {
+		return l.getPitch();
+	}
+
+	@Override
+	public double getYawD() {
+		return getHandle().getYaw();
+	}
+
+	@Override
+	public double getPitchD() {
+		return getHandle().getPitch();
+	}
 
 	@Override
     public int getBlockX() {

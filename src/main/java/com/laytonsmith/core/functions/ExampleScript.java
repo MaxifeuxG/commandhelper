@@ -2,7 +2,7 @@ package com.laytonsmith.core.functions;
 
 import com.laytonsmith.abstraction.MCPlayer;
 import com.laytonsmith.abstraction.MCServer;
-import com.laytonsmith.commandhelper.CommandHelperPlugin;
+import com.laytonsmith.commandhelper.CommandHelperMainClass;
 import com.laytonsmith.core.AliasCore;
 import com.laytonsmith.core.MethodScriptCompiler;
 import com.laytonsmith.core.MethodScriptComplete;
@@ -163,7 +163,7 @@ public class ExampleScript {
 			});
 			fakeCore = new FakeCore();
 			try {
-				Field f = CommandHelperPlugin.class.getDeclaredField("ac");
+				Field f = CommandHelperMainClass.class.getDeclaredField("ac");
 				f.setAccessible(true);
 				f.set(null, fakeCore);
 			} catch (Exception ex) {

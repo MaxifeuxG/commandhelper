@@ -16,34 +16,10 @@ import com.laytonsmith.abstraction.blocks.MCBlockFace;
 import com.laytonsmith.abstraction.enums.MCAction;
 import com.laytonsmith.abstraction.enums.MCFishingState;
 import com.laytonsmith.abstraction.enums.MCTeleportCause;
-import com.laytonsmith.abstraction.events.MCChatTabCompleteEvent;
-import com.laytonsmith.abstraction.events.MCExpChangeEvent;
-import com.laytonsmith.abstraction.events.MCFoodLevelChangeEvent;
-import com.laytonsmith.abstraction.events.MCGamemodeChangeEvent;
-import com.laytonsmith.abstraction.events.MCPlayerBedEvent;
-import com.laytonsmith.abstraction.events.MCPlayerChatEvent;
-import com.laytonsmith.abstraction.events.MCPlayerCommandEvent;
-import com.laytonsmith.abstraction.events.MCPlayerDeathEvent;
-import com.laytonsmith.abstraction.events.MCPlayerEditBookEvent;
-import com.laytonsmith.abstraction.events.MCPlayerFishEvent;
-import com.laytonsmith.abstraction.events.MCPlayerInteractEvent;
-import com.laytonsmith.abstraction.events.MCPlayerItemConsumeEvent;
-import com.laytonsmith.abstraction.events.MCPlayerJoinEvent;
-import com.laytonsmith.abstraction.events.MCPlayerKickEvent;
-import com.laytonsmith.abstraction.events.MCPlayerLoginEvent;
-import com.laytonsmith.abstraction.events.MCPlayerMoveEvent;
-import com.laytonsmith.abstraction.events.MCPlayerPortalEvent;
-import com.laytonsmith.abstraction.events.MCPlayerPreLoginEvent;
-import com.laytonsmith.abstraction.events.MCPlayerQuitEvent;
-import com.laytonsmith.abstraction.events.MCPlayerRespawnEvent;
-import com.laytonsmith.abstraction.events.MCPlayerTeleportEvent;
-import com.laytonsmith.abstraction.events.MCPlayerToggleFlightEvent;
-import com.laytonsmith.abstraction.events.MCPlayerToggleSneakEvent;
-import com.laytonsmith.abstraction.events.MCPlayerToggleSprintEvent;
-import com.laytonsmith.abstraction.events.MCWorldChangedEvent;
+import com.laytonsmith.abstraction.events.*;
 import com.laytonsmith.annotations.api;
 import com.laytonsmith.annotations.hide;
-import com.laytonsmith.commandhelper.CommandHelperPlugin;
+import com.laytonsmith.commandhelper.CommandHelperBukkit;
 import com.laytonsmith.core.CHVersion;
 import com.laytonsmith.core.ObjectGenerator;
 import com.laytonsmith.core.Static;
@@ -73,6 +49,7 @@ import com.laytonsmith.core.exceptions.PrefilterNonMatchException;
 import com.laytonsmith.core.functions.Exceptions;
 import com.laytonsmith.core.functions.Exceptions.ExceptionType;
 import com.laytonsmith.core.functions.StringHandling;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -279,8 +256,8 @@ public class PlayerEvents {
             if (e instanceof MCPlayerKickEvent) {
                 //I gather we do not what to intercept anything from players in interpreter mode
                 //because there would be no one to recieve the information
-                if(CommandHelperPlugin.self.interpreterListener.isInInterpreterMode(((MCPlayerKickEvent)e).getPlayer().getName())){
-                    throw new PrefilterNonMatchException();
+				if (CommandHelperBukkit.self.interpreterListener.isInInterpreterMode(((MCPlayerKickEvent) e).getPlayer().getName())) {
+					throw new PrefilterNonMatchException();
                 }
 
                 Prefilters.match(prefilter, "player", ((MCPlayerKickEvent)e).getPlayer().getName(), PrefilterType.MACRO);
@@ -1391,8 +1368,8 @@ public class PlayerEvents {
             if (e instanceof MCPlayerQuitEvent) {
                 //As a very special case, if this player is currently in interpreter mode, we do not want to
                 //intercept their chat event
-                if(CommandHelperPlugin.self.interpreterListener.isInInterpreterMode(((MCPlayerQuitEvent)e).getPlayer().getName())){
-                    throw new PrefilterNonMatchException();
+				if (CommandHelperBukkit.self.interpreterListener.isInInterpreterMode(((MCPlayerQuitEvent) e).getPlayer().getName())) {
+					throw new PrefilterNonMatchException();
                 }
 
                 Prefilters.match(prefilter, "player", ((MCPlayerQuitEvent)e).getPlayer().getName(), PrefilterType.MACRO);
@@ -1494,8 +1471,8 @@ public class PlayerEvents {
             if (e instanceof MCPlayerChatEvent) {
                 //As a very special case, if this player is currently in interpreter mode, we do not want to
                 //intercept their chat event
-                if(CommandHelperPlugin.self.interpreterListener.isInInterpreterMode(((MCPlayerChatEvent)e).getPlayer().getName())){
-                    throw new PrefilterNonMatchException();
+				if (CommandHelperBukkit.self.interpreterListener.isInInterpreterMode(((MCPlayerChatEvent) e).getPlayer().getName())) {
+					throw new PrefilterNonMatchException();
                 }
                 Prefilters.match(prefilter, "player", ((MCPlayerChatEvent)e).getPlayer().getName(), PrefilterType.MACRO);
                 return true;
@@ -1610,8 +1587,8 @@ public class PlayerEvents {
             if (e instanceof MCPlayerChatEvent) {
                 //As a very special case, if this player is currently in interpreter mode, we do not want to
                 //intercept their chat event
-                if(CommandHelperPlugin.self.interpreterListener.isInInterpreterMode(((MCPlayerChatEvent)e).getPlayer().getName())){
-                    throw new PrefilterNonMatchException();
+				if (CommandHelperBukkit.self.interpreterListener.isInInterpreterMode(((MCPlayerChatEvent) e).getPlayer().getName())) {
+					throw new PrefilterNonMatchException();
                 }
                 Prefilters.match(prefilter, "player", ((MCPlayerChatEvent)e).getPlayer().getName(), PrefilterType.MACRO);
                 return true;

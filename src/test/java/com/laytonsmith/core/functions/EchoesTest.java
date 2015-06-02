@@ -2,9 +2,13 @@
 
 package com.laytonsmith.core.functions;
 
+import static com.laytonsmith.testing.StaticTest.*;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.laytonsmith.abstraction.MCPlayer;
 import com.laytonsmith.abstraction.MCServer;
-import com.laytonsmith.commandhelper.CommandHelperPlugin;
 import com.laytonsmith.core.Static;
 import com.laytonsmith.core.constructs.CString;
 import com.laytonsmith.core.constructs.Target;
@@ -13,19 +17,13 @@ import com.laytonsmith.core.exceptions.CancelCommandException;
 import com.laytonsmith.core.exceptions.ConfigCompileException;
 import com.laytonsmith.core.functions.Echoes.color;
 import com.laytonsmith.testing.C;
-import static com.laytonsmith.testing.StaticTest.GetFakeServer;
-import static com.laytonsmith.testing.StaticTest.GetOnlinePlayer;
-import static com.laytonsmith.testing.StaticTest.SRun;
-import static com.laytonsmith.testing.StaticTest.TestClassDocs;
-import java.lang.reflect.InvocationTargetException;
 import org.junit.After;
 import org.junit.AfterClass;
-import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+
+import java.lang.reflect.InvocationTargetException;
 
 /**
  *
@@ -77,7 +75,6 @@ public class EchoesTest {
             IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException, CancelCommandException {
         Echoes.broadcast a = new Echoes.broadcast();
         when(fakePlayer.getServer()).thenReturn(fakeServer);
-        CommandHelperPlugin.myServer = fakeServer;
         a.exec(Target.UNKNOWN, env, C.onstruct("Hello World!"));
         verify(fakeServer).broadcastMessage("Hello World!");
     }

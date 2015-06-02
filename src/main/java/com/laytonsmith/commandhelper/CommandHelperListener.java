@@ -94,8 +94,8 @@ public class CommandHelperListener implements Listener {
      * @param event Relevant event details
      */
     @EventHandler(priority= EventPriority.LOWEST)
-    public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event) {     
-        if(CommandHelperPlugin.self.interpreterListener
+    public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event) {
+        if (CommandHelperBukkit.self.interpreterListener
                 .isInInterpreterMode(event.getPlayer().getName())){
             //They are in interpreter mode, so we want it to handle this, not everything else.
             return;

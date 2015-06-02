@@ -18,46 +18,24 @@
  */
 package com.laytonsmith.commandhelper;
 
-import com.laytonsmith.PureUtilities.ClassLoading.ClassDiscovery;
-import com.laytonsmith.PureUtilities.ClassLoading.ClassDiscoveryCache;
-import com.laytonsmith.PureUtilities.Common.FileUtil;
-import com.laytonsmith.PureUtilities.Common.OSUtils;
-import com.laytonsmith.PureUtilities.Common.ReflectionUtils;
 import com.laytonsmith.PureUtilities.Common.StringUtils;
-import com.laytonsmith.PureUtilities.ExecutionQueue;
-import com.laytonsmith.PureUtilities.SimpleVersion;
-import com.laytonsmith.PureUtilities.TermColors;
 import com.laytonsmith.abstraction.Implementation;
 import com.laytonsmith.abstraction.MCCommand;
 import com.laytonsmith.abstraction.MCCommandSender;
 import com.laytonsmith.abstraction.MCPlayer;
-import com.laytonsmith.abstraction.MCServer;
 import com.laytonsmith.abstraction.StaticLayer;
 import com.laytonsmith.abstraction.bukkit.BukkitConvertor;
 import com.laytonsmith.abstraction.bukkit.BukkitMCBlockCommandSender;
 import com.laytonsmith.abstraction.bukkit.BukkitMCCommand;
 import com.laytonsmith.abstraction.bukkit.entities.BukkitMCPlayer;
 import com.laytonsmith.abstraction.enums.MCChatColor;
-import com.laytonsmith.abstraction.enums.bukkit.BukkitMCEntityType;
-import com.laytonsmith.annotations.EventIdentifier;
-import com.laytonsmith.core.AliasCore;
-import com.laytonsmith.core.CHLog;
-import com.laytonsmith.core.Installer;
-import com.laytonsmith.core.Main;
-import com.laytonsmith.core.MethodScriptExecutionQueue;
-import com.laytonsmith.core.MethodScriptFileLocations;
 import com.laytonsmith.core.Prefs;
 import com.laytonsmith.core.Script;
 import com.laytonsmith.core.Static;
-import com.laytonsmith.core.UpgradeLog;
 import com.laytonsmith.core.UserManager;
-import com.laytonsmith.core.constructs.Target;
 import com.laytonsmith.core.exceptions.ConfigCompileException;
 import com.laytonsmith.core.exceptions.ConfigCompileGroupException;
-import com.laytonsmith.core.extensions.ExtensionManager;
-import com.laytonsmith.core.profiler.Profiler;
 import com.laytonsmith.persistence.DataSourceException;
-import com.laytonsmith.persistence.PersistenceNetwork;
 import com.laytonsmith.persistence.ReadOnlyException;
 import org.bukkit.Server;
 import org.bukkit.command.BlockCommandSender;
@@ -65,35 +43,23 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
-import org.bukkit.event.EventException;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.server.ServerCommandEvent;
-import org.bukkit.plugin.EventExecutor;
-import org.bukkit.plugin.RegisteredListener;
-import org.bukkit.plugin.TimedRegisteredListener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.mcstats.Metrics;
 
-import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * This was originally known as CommandHelperBukkit.java -jb_aero
+ *
  * Entry point for the plugin.
  *
  * @author sk89q
@@ -101,19 +67,15 @@ import java.util.logging.Logger;
 public class CommandHelperBukkit extends JavaPlugin {
 	//Do not rename this field, it is changed reflectively in unit tests.
 
-	private static AliasCore ac;
-	public static MCServer myServer;
-	public static SimpleVersion version;
 	public static CommandHelperBukkit self;
-	public static ExecutorService hostnameLookupThreadPool;
-	public static ConcurrentHashMap<String, String> hostnameLookupCache;
-	private static int hostnameThreadPoolID = 0;
-	public Profiler profiler;
-	public final ExecutionQueue executionQueue = new MethodScriptExecutionQueue("CommandHelperExecutionQueue", "default");
-	public PersistenceNetwork persistenceNetwork;
-	public boolean firstLoad = true;
+	public CommandHelperMainClass common;
 	public long interpreterUnlockedUntil = 0;
-	private Thread loadingThread;
+
+	public CommandHelperBukkit() {
+		self = this;
+		common = new CommandHelperMainClass();
+	}
+
 	/**
 	 * Listener for the plugin system.
 	 */
@@ -134,182 +96,7 @@ public class CommandHelperBukkit extends JavaPlugin {
 	@Override
 	public void onLoad() {
 		Implementation.setServerType(Implementation.Type.BUKKIT);
-
-		CommandHelperFileLocations.setDefault(new CommandHelperFileLocations());
-		CommandHelperFileLocations.getDefault().getCacheDirectory().mkdirs();
-		CommandHelperFileLocations.getDefault().getPreferencesDirectory().mkdirs();
-
-		UpgradeLog upgradeLog = new UpgradeLog(CommandHelperFileLocations.getDefault().getUpgradeLogFile());
-		upgradeLog.addUpgradeTask(new UpgradeLog.UpgradeTask() {
-
-			String version = null;
-			@Override
-			public boolean doRun() {
-				try {
-					version = "versionUpgrade-" + Main.loadSelfVersion();
-					return !hasBreadcrumb(version);
-				} catch (Exception ex) {
-					Logger.getLogger(CommandHelperBukkit.class.getName()).log(Level.SEVERE, null, ex);
-					return false;
-				}
-			}
-
-			@Override
-			public void run() {
-				leaveBreadcrumb(version);
-			}
-		});
-		upgradeLog.addUpgradeTask(new UpgradeLog.UpgradeTask() {
-
-			File oldPreferences = new File(CommandHelperFileLocations.getDefault().getConfigDirectory(),
-					"preferences.txt");
-			@Override
-			public boolean doRun() {
-				return oldPreferences.exists()
-						&& !CommandHelperFileLocations.getDefault().getPreferencesFile().exists();
-			}
-
-			@Override
-			public void run() {
-				try {
-					Prefs.init(oldPreferences);
-					Prefs.SetColors();
-					Logger.getLogger("Minecraft").log(Level.INFO,
-							TermColors.YELLOW + "[" + Implementation.GetServerType().getBranding() + "] Old preferences.txt file detected. Moving preferences.txt to preferences.ini." + TermColors.reset());
-					FileUtil.copy(oldPreferences, CommandHelperFileLocations.getDefault().getPreferencesFile(), true);
-					oldPreferences.deleteOnExit();
-				} catch (IOException ex) {
-					Logger.getLogger(CommandHelperBukkit.class.getName()).log(Level.SEVERE, null, ex);
-				}
-			}
-		});
-		upgradeLog.addUpgradeTask(new UpgradeLog.UpgradeTask() {
-
-			File cd = CommandHelperFileLocations.getDefault().getConfigDirectory();
-			private final String breadcrumb = "move-preference-files-v1.0";
-			@Override
-			public boolean doRun() {
-				return !hasBreadcrumb(breadcrumb)
-						&& new File(cd, "preferences.ini").exists();
-			}
-
-			@Override
-			public void run() {
-				//We need to move the following files:
-				//1. persistance.config to prefs/persistence.ini (note the correct spelling)
-				//2. preferences.ini to prefs/preferences.ini
-				//3. profiler.config to prefs/profiler.ini
-				//4. sql-profiles.xml to prefs/sql-profiles.xml
-				//5. We are not moving loggerPreferences.txt, instead just deleting it,
-				//	because the defaults have changed. Most people aren't using this feature
-				//	anyways. (The new one will write itself out upon installation.)
-				//Other than the config/prefs directory, we are hardcoding all the values, so
-				//we know they are correct (for old values). Any errors will be reported, but will not
-				//stop the entire process.
-				CommandHelperFileLocations p = CommandHelperFileLocations.getDefault();
-				try {
-					FileUtil.move(new File(cd, "persistance.config"), p.getPersistenceConfig());
-				} catch (IOException ex) {
-					Logger.getLogger(CommandHelperBukkit.class.getName()).log(Level.SEVERE, null, ex);
-				}
-				try {
-					FileUtil.move(new File(cd, "preferences.ini"), p.getPreferencesFile());
-				} catch (IOException ex) {
-					Logger.getLogger(CommandHelperBukkit.class.getName()).log(Level.SEVERE, null, ex);
-				}
-				try {
-					FileUtil.move(new File(cd, "profiler.config"), p.getProfilerConfigFile());
-				} catch (IOException ex) {
-					Logger.getLogger(CommandHelperBukkit.class.getName()).log(Level.SEVERE, null, ex);
-				}
-				try {
-					FileUtil.move(new File(cd, "sql-profiles.xml"), p.getSQLProfilesFile());
-				} catch (IOException ex) {
-					Logger.getLogger(CommandHelperBukkit.class.getName()).log(Level.SEVERE, null, ex);
-				}
-				new File(cd, "logs/debug/loggerPreferences.txt").delete();
-				leaveBreadcrumb(breadcrumb);
-				System.out.println("CommandHelper: Your preferences files have all been relocated to " + p.getPreferencesDirectory());
-				System.out.println("CommandHelper: The loggerPreferences.txt file has been deleted and re-created, as the defaults have changed.");
-			}
-		});
-
-		// Renames the sql-profiles.xml file to the new name.
-		upgradeLog.addUpgradeTask(new UpgradeLog.UpgradeTask() {
-
-			// This should never change
-			private final File oldProfilesFile = new File(MethodScriptFileLocations.getDefault().getPreferencesDirectory(), "sql-profiles.xml");
-
-			@Override
-			public boolean doRun() {
-				return oldProfilesFile.exists();
-			}
-
-			@Override
-			public void run() {
-				try {
-					FileUtil.move(oldProfilesFile, MethodScriptFileLocations.getDefault().getProfilesFile());
-					System.out.println("CommandHelper: sql-profiles.xml has been renamed to " + MethodScriptFileLocations.getDefault().getProfilesFile().getName());
-				} catch (IOException ex) {
-					Logger.getLogger(CommandHelperBukkit.class.getName()).log(Level.SEVERE, null, ex);
-				}
-			}
-		});
-
-		try {
-			upgradeLog.runTasks();
-		} catch (IOException ex) {
-			Logger.getLogger(CommandHelperBukkit.class.getName()).log(Level.SEVERE, null, ex);
-		}
-
-		try{
-			Prefs.init(CommandHelperFileLocations.getDefault().getPreferencesFile());
-		} catch (IOException ex) {
-			Logger.getLogger(CommandHelperBukkit.class.getName()).log(Level.SEVERE, null, ex);
-		}
-
-		Prefs.SetColors();
-		CHLog.initialize(CommandHelperFileLocations.getDefault().getConfigDirectory());
-		Installer.Install(CommandHelperFileLocations.getDefault().getConfigDirectory());
-		if(new SimpleVersion(System.getProperty("java.version")).lt(new SimpleVersion("1.7"))){
-			CHLog.GetLogger().w(CHLog.Tags.GENERAL, "You appear to be running a version of Java older than Java 7. You should have plans"
-					+ " to upgrade at some point, as " + Implementation.GetServerType().getBranding() + " may require it at some point.", Target.UNKNOWN);
-		}
-
-		self = this;
-
-		ClassDiscoveryCache cdc = new ClassDiscoveryCache(CommandHelperFileLocations.getDefault().getCacheDirectory());
-		cdc.setLogger(Logger.getLogger(CommandHelperBukkit.class.getName()));
-		ClassDiscovery.getDefaultInstance().setClassDiscoveryCache(cdc);
-		ClassDiscovery.getDefaultInstance().addDiscoveryLocation(ClassDiscovery.GetClassContainer(CommandHelperBukkit.class));
-		ClassDiscovery.getDefaultInstance().addDiscoveryLocation(ClassDiscovery.GetClassContainer(Server.class));
-
-		System.out.println("[CommandHelper] Running initial class discovery,"
-				+ " this will probably take a few seconds...");
-		myServer = StaticLayer.GetServer();
-		BukkitMCEntityType.build();
-
-		System.out.println("[CommandHelper] Loading extensions in the background...");
-
-		loadingThread = new Thread("extensionloader") {
-			@Override
-			public void run() {
-				ExtensionManager.AddDiscoveryLocation(CommandHelperFileLocations.getDefault().getExtensionsDirectory());
-
-				if (OSUtils.GetOS() == OSUtils.OS.WINDOWS) {
-					// Using System.out here instead of the logger as the logger doesn't
-					// immediately print to the console.
-					System.out.println("[CommandHelper] Caching extensions...");
-					ExtensionManager.Cache(CommandHelperFileLocations.getDefault().getExtensionCacheDirectory());
-					System.out.println("[CommandHelper] Extension caching complete.");
-				}
-
-				ExtensionManager.Initialize(ClassDiscovery.getDefaultInstance());
-				System.out.println("[CommandHelper] Extension loading complete.");
-			}
-		};
-
-		loadingThread.start();
+		common.firstSetup(Server.class);
 	}
 
 	/**
@@ -317,19 +104,10 @@ public class CommandHelperBukkit extends JavaPlugin {
 	 */
 	@Override
 	public void onEnable() {
-		if(loadingThread.isAlive()){
-			System.out.println("[CommandHelper] Waiting for extension loading to complete...");
-
-			try {
-				loadingThread.join();
-			} catch (InterruptedException ex) {
-				Logger.getLogger(CommandHelperBukkit.class.getName()).log(Level.SEVERE, null, ex);
-			}
-		}
 
 		//Metrics
 		try {
-			org.mcstats.Metrics m = new Metrics(this);
+			Metrics m = new Metrics(this);
 			m.addCustomData(new Metrics.Plotter("Player count") {
 
 				@Override
@@ -342,50 +120,7 @@ public class CommandHelperBukkit extends JavaPlugin {
 			// Failed to submit the stats :-(
 		}
 
-		try {
-			//This may seem redundant, but on a /reload, we want to refresh these
-			//properties.
-			Prefs.init(CommandHelperFileLocations.getDefault().getPreferencesFile());
-		} catch (IOException ex) {
-			Logger.getLogger(CommandHelperBukkit.class.getName()).log(Level.SEVERE, null, ex);
-		}
-		if(Prefs.UseSudoFallback()){
-			Logger.getLogger(CommandHelperBukkit.class.getName()).log(Level.WARNING, "In your preferences, use-sudo-fallback is turned on. Consider turning this off if you can.");
-		}
-		CHLog.initialize(CommandHelperFileLocations.getDefault().getConfigDirectory());
-
-		version = new SimpleVersion(getDescription().getVersion());
-
-		String script_name = Prefs.ScriptName();
-		String main_file = Prefs.MainFile();
-		boolean showSplashScreen = Prefs.ShowSplashScreen();
-		if (showSplashScreen) {
-			System.out.println(TermColors.reset());
-			//System.out.flush();
-			System.out.println("\n\n\n" + Static.Logo());
-		}
-		ac = new AliasCore(new File(CommandHelperFileLocations.getDefault().getConfigDirectory(), script_name),
-				CommandHelperFileLocations.getDefault().getLocalPackagesDirectory(),
-				CommandHelperFileLocations.getDefault().getPreferencesFile(),
-				new File(CommandHelperFileLocations.getDefault().getConfigDirectory(), main_file), this);
-		ac.reload(null, null);
-
-		//Clear out our hostname cache
-		hostnameLookupCache = new ConcurrentHashMap<>();
-		//Create a new thread pool, with a custom ThreadFactory,
-		//so we can more clearly name our threads.
-		hostnameLookupThreadPool = Executors.newFixedThreadPool(3, new ThreadFactory() {
-			@Override
-			public Thread newThread(Runnable r) {
-				return new Thread(r, "CommandHelperHostnameLookup-" + (++hostnameThreadPoolID));
-			}
-		});
-		for (MCPlayer p : Static.getServer().getOnlinePlayers()) {
-			//Repopulate our cache for currently online players.
-			//New players that join later will get a lookup done
-			//on them at that time.
-			Static.HostnameCache(p);
-		}
+		common.secondSetup(getDescription().getVersion());
 
 		BukkitDirtyRegisteredListener.PlayDirty();
 		registerEvents(playerListener);
@@ -395,16 +130,12 @@ public class CommandHelperBukkit extends JavaPlugin {
 		registerEvents(serverListener);
 
 		//Script events
-		StaticLayer.Startup(this);
+		StaticLayer.Startup(common);
 
 		playerListener.loadGlobalAliases();
 		interpreterListener.reload();
 
-		Static.getLogger().log(Level.INFO, "[CommandHelper] CommandHelper {0} enabled", getDescription().getVersion());
-	}
-
-	public static AliasCore getCore() {
-		return ac;
+		Static.getLogger().log(Level.INFO, "[CommandHelper] CommandHelper {0} enabled", common.version);
 	}
 
 	/**
@@ -412,19 +143,7 @@ public class CommandHelperBukkit extends JavaPlugin {
 	 */
 	@Override
 	public void onDisable() {
-		//free up some memory
-		StaticLayer.GetConvertor().runShutdownHooks();
-		stopExecutionQueue();
-
-		ExtensionManager.Cleanup();
-
-		ac = null;
-	}
-
-	public void stopExecutionQueue() {
-		for (String queue : executionQueue.activeQueues()) {
-			executionQueue.clear(queue);
-		}
+		common.disable();
 	}
 
 	/**
@@ -436,56 +155,6 @@ public class CommandHelperBukkit extends JavaPlugin {
 		getServer().getPluginManager().registerEvents(listener, this);
 	}
 
-	/*
-	 * This method is based on Bukkit's JavaPluginLoader:createRegisteredListeners
-	 * Part of this code would be run normally using the other register method
-	 */
-	public void registerEventsDynamic(Listener listener) {
-		for (final java.lang.reflect.Method method : listener.getClass().getMethods()) {
-			EventIdentifier identifier = method.getAnnotation(EventIdentifier.class);
-			EventHandler defaultHandler = method.getAnnotation(EventHandler.class);
-			EventPriority priority = EventPriority.LOWEST;
-			if (identifier == null || !identifier.event().existsInCurrent()) {
-				continue;
-			}
-			if (defaultHandler != null) {
-				priority = defaultHandler.priority();
-			}
-			Class<? extends Event> eventClass = null;
-			try {
-				eventClass = (Class<? extends Event>) Class.forName(identifier.className());
-			} catch (ClassNotFoundException | ClassCastException e) {
-				CHLog.GetLogger().e(CHLog.Tags.RUNTIME, "Could not listen for " + identifier.event().name()
-								+ " because the class " + identifier.className() + " could not be found."
-								+ " This problem is not expected to occur, so please report it on the bug tracker if it does.",
-						Target.UNKNOWN);
-				continue;
-			}
-			HandlerList handler = (HandlerList) ReflectionUtils.invokeMethod(eventClass, null, "getHandlerList");
-			final Class<? extends Event> finalEventClass = eventClass;
-			EventExecutor executor = new EventExecutor() {
-				@Override
-				public void execute(Listener listener, Event event) throws EventException {
-					try {
-						if (!finalEventClass.isAssignableFrom(event.getClass())) {
-							return;
-						}
-						method.invoke(listener, event);
-					} catch (InvocationTargetException ex) {
-						throw new EventException(ex.getCause());
-					} catch (Throwable t) {
-						throw new EventException(t);
-					}
-				}
-			};
-			if (this.getServer().getPluginManager().useTimings()) {
-				handler.register(new TimedRegisteredListener(listener, executor, priority, this, false));
-			} else {
-				handler.register(new RegisteredListener(listener, executor, priority, this, false));
-			}
-		}
-	}
-
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
 		MCCommandSender mcsender = BukkitConvertor.BukkitGetCorrectSender(sender);
@@ -495,6 +164,7 @@ public class CommandHelperBukkit extends JavaPlugin {
 
 	/**
 	 * Called when a command registered by this plugin is received.
+	 *
 	 * @param sender
 	 * @param cmd
 	 * @param commandLabel
@@ -511,7 +181,7 @@ public class CommandHelperBukkit extends JavaPlugin {
 			if (sender instanceof Player) {
 				player = new BukkitMCPlayer((Player) sender);
 			}
-			ac.reload(player, args);
+			common.ac.reload(player, args);
 //            if(ac.reload(player)){
 //                if(sender instanceof Player){
 //                    Static.SendMessage(player, MCChatColor.GOLD + "Command Helper scripts sucessfully recompiled.");
@@ -538,18 +208,19 @@ public class CommandHelperBukkit extends JavaPlugin {
 				}
 				ServerCommandEvent sce = new ServerCommandEvent((ConsoleCommandSender) sender, cmd2);
 				serverListener.onServerCommand(sce);
-			} else if(sender instanceof BlockCommandSender){
-				MCCommandSender s = new BukkitMCBlockCommandSender((BlockCommandSender)sender);
+			} else if (sender instanceof BlockCommandSender) {
+				MCCommandSender s = new BukkitMCBlockCommandSender((BlockCommandSender) sender);
 				String cmd2 = StringUtils.Join(args, " ");
 				Static.getAliasCore().alias(cmd2, s, new ArrayList<Script>());
 			}
 			return true;
-		} else if(cmdName.equalsIgnoreCase("interpreter-on")){
-			if(sender instanceof ConsoleCommandSender){
+		} else if (cmdName.equalsIgnoreCase("interpreter-on")) {
+			if (sender instanceof ConsoleCommandSender) {
 				int interpreterTimeout = Prefs.InterpreterTimeout();
-				if(interpreterTimeout != 0){
+				if (interpreterTimeout != 0) {
 					interpreterUnlockedUntil = (interpreterTimeout * 60 * 1000) + System.currentTimeMillis();
-					sender.sendMessage("Inpterpreter mode unlocked for " + interpreterTimeout + " minute" + (interpreterTimeout==1?"":"s"));
+					sender.sendMessage("Inpterpreter mode unlocked for " + interpreterTimeout + " minute" + (
+							interpreterTimeout == 1 ? "" : "s"));
 				}
 			} else {
 				sender.sendMessage("This command can only be run from console.");
@@ -618,18 +289,18 @@ public class CommandHelperBukkit extends JavaPlugin {
 			}
 
 			if (args.length > 0) {
-				String alias = CommandHelperBukkit.joinString(args, " ");
+				String alias = Static.joinString(args, " ");
 				try {
-					int id = um.addAlias(alias, persistenceNetwork);
+					int id = um.addAlias(alias, common.persistenceNetwork);
 					if (id > -1) {
 						Static.SendMessage(player, MCChatColor.YELLOW + "Alias added with id '" + id + "'");
 					}
 				} catch (ConfigCompileException ex) {
 					Static.SendMessage(player, "Your alias could not be added due to a compile error:\n" + MCChatColor.RED + ex.getMessage());
-				} catch (ConfigCompileGroupException e){
+				} catch (ConfigCompileGroupException e) {
 					StringBuilder b = new StringBuilder();
 					b.append("Your alias could not be added due to compile errors:\n").append(MCChatColor.RED);
-					for(ConfigCompileException ex : e.getList()){
+					for (ConfigCompileException ex : e.getList()) {
 						b.append(ex.getMessage());
 					}
 					Static.SendMessage(player, b.toString());
@@ -657,7 +328,7 @@ public class CommandHelperBukkit extends JavaPlugin {
 			} catch (ArrayIndexOutOfBoundsException | NumberFormatException e) {
 				//Meh. Index out of bounds, or number format exception. Whatever, show page 1
 			}
-			Static.SendMessage(player, um.getAllAliases(page, persistenceNetwork));
+			Static.SendMessage(player, um.getAllAliases(page, common.persistenceNetwork));
 			commandRunning.remove(player);
 			return true;
 			// Delete alias
@@ -670,7 +341,7 @@ public class CommandHelperBukkit extends JavaPlugin {
 			try {
 				ArrayList<String> deleted = new ArrayList<String>();
 				for (String arg : args) {
-					um.delAlias(Integer.parseInt(arg), persistenceNetwork);
+					um.delAlias(Integer.parseInt(arg), common.persistenceNetwork);
 					deleted.add("#" + arg);
 				}
 				if (args.length > 1) {
@@ -691,8 +362,8 @@ public class CommandHelperBukkit extends JavaPlugin {
 		} else if (cmd.equalsIgnoreCase("interpreter")) {
 			if (player.hasPermission("commandhelper.interpreter")) {
 				if (Prefs.EnableInterpreter()) {
-					if(Prefs.InterpreterTimeout() != 0){
-						if(interpreterUnlockedUntil < System.currentTimeMillis()){
+					if (Prefs.InterpreterTimeout() != 0) {
+						if (interpreterUnlockedUntil < System.currentTimeMillis()) {
 							player.sendMessage(MCChatColor.RED + "Interpreter mode is currently locked. Run \"interpreter-on\" from console to unlock it."
 									+ " If you want to turn this off entirely, set the interpreter-timeout option to 0 in "
 									+ CommandHelperFileLocations.getDefault().getPreferencesFile().getName());
@@ -717,28 +388,9 @@ public class CommandHelperBukkit extends JavaPlugin {
 	}
 
 	/**
-	 * Joins a string from an array of strings.
-	 *
-	 * @param str
-	 * @param delimiter
-	 * @return
-	 */
-	public static String joinString(String[] str, String delimiter) {
-		if (str.length == 0) {
-			return "";
-		}
-		StringBuilder buffer = new StringBuilder(str[0]);
-		for (int i = 1; i < str.length; i++) {
-			buffer.append(delimiter).append(str[i]);
-		}
-		return buffer.toString();
-	}
-
-	/**
 	 * Execute a command.
 	 *
 	 * @param player
-	 *
 	 * @param cmd
 	 */
 	public static void execCommand(MCPlayer player, String cmd) {

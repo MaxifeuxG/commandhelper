@@ -2,7 +2,7 @@ package com.laytonsmith.abstraction.bukkit.events.drivers;
 
 import com.laytonsmith.abstraction.bukkit.entities.BukkitMCPlayer;
 import com.laytonsmith.abstraction.bukkit.events.BukkitPlayerEvents;
-import com.laytonsmith.commandhelper.CommandHelperPlugin;
+import com.laytonsmith.commandhelper.CommandHelperBukkit;
 import com.laytonsmith.core.Static;
 import com.laytonsmith.core.constructs.Target;
 import com.laytonsmith.core.events.Driver;
@@ -104,8 +104,8 @@ public class BukkitPlayerListener implements Listener {
 
 	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled=true)
 	public void onPlayerChat(final AsyncPlayerChatEvent event) {
-		if(CommandHelperPlugin.self.interpreterListener
-                .isInInterpreterMode(event.getPlayer().getName())){
+		if (CommandHelperBukkit.self.interpreterListener
+				.isInInterpreterMode(event.getPlayer().getName())){
             //They are in interpreter mode, so we want it to handle this, not everything else.
             return;
         }
@@ -176,7 +176,7 @@ public class BukkitPlayerListener implements Listener {
 					final AsyncPlayerChatEvent copy = new AsyncPlayerChatEvent(false, event.getPlayer(), event.getMessage(), event.getRecipients());
 					copy.setFormat(event.getFormat());
 					//event.setCancelled(true);
-					Future f = Bukkit.getServer().getScheduler().callSyncMethod(CommandHelperPlugin.self, new Callable() {
+					Future f = Bukkit.getServer().getScheduler().callSyncMethod(CommandHelperBukkit.self, new Callable() {
 						@Override
 						public Object call() throws Exception {
 							onPlayerChat(copy);

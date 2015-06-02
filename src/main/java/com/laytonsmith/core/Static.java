@@ -8,6 +8,7 @@ import com.laytonsmith.abstraction.Implementation;
 import com.laytonsmith.abstraction.MCCommandSender;
 import com.laytonsmith.abstraction.MCConsoleCommandSender;
 import com.laytonsmith.abstraction.MCEntity;
+import com.laytonsmith.abstraction.MCGame;
 import com.laytonsmith.abstraction.MCItemStack;
 import com.laytonsmith.abstraction.MCLivingEntity;
 import com.laytonsmith.abstraction.MCMetadatable;
@@ -278,6 +279,20 @@ public final class Static {
 	}
 
 	/**
+	 * Returns the game this plugin is running on
+	 *
+	 * @return
+	 * @throws NotInitializedYetException
+	 */
+	public static MCGame getGame() throws NotInitializedYetException {
+		MCGame game = StaticLayer.GetGame();
+		if (game == null) {
+			throw new NotInitializedYetException("The game has not been initialized yet");
+		}
+		return game;
+	}
+
+	/**
 	 * Returns the server for this plugin
 	 *
 	 * @return
@@ -379,7 +394,7 @@ public final class Static {
 	}
 
 	public static void checkPlugin(String name, Target t) throws ConfigRuntimeException {
-		if (Static.getServer().getPluginManager().getPlugin(name) == null) {
+		if (Static.getGame().getPluginManager().getPlugin(name) == null) {
 			throw new ConfigRuntimeException("Needed plugin " + name + " not found!",
 					ExceptionType.InvalidPluginException, t);
 		}
@@ -895,7 +910,7 @@ public final class Static {
 	 * @return
 	 */
 	public static MCPlugin getPlugin(String name, Target t) {
-		MCPlugin plugin = getServer().getPluginManager().getPlugin(name);
+		MCPlugin plugin = getGame().getPluginManager().getPlugin(name);
 		if (plugin != null) {
 			return plugin;
 		} else {

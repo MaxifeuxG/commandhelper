@@ -2,23 +2,20 @@
 
 package com.laytonsmith.core.functions;
 
+import static com.laytonsmith.testing.StaticTest.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.laytonsmith.abstraction.MCPlayer;
 import com.laytonsmith.abstraction.MCServer;
-import com.laytonsmith.commandhelper.CommandHelperPlugin;
 import com.laytonsmith.core.MethodScriptCompiler;
 import com.laytonsmith.core.Static;
 import com.laytonsmith.core.environments.CommandHelperEnvironment;
-import com.laytonsmith.core.exceptions.ConfigCompileException;
-import static com.laytonsmith.testing.StaticTest.GetFakeServer;
-import static com.laytonsmith.testing.StaticTest.GetOnlinePlayer;
-import static com.laytonsmith.testing.StaticTest.SRun;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 /**
  *
@@ -45,7 +42,6 @@ public class MetaTest {
     public void setUp() throws Exception {
         fakePlayer = GetOnlinePlayer();
         fakeServer = GetFakeServer();
-        CommandHelperPlugin.myServer = fakeServer;
 		env = Static.GenerateStandaloneEnvironment();
         env.getEnv(CommandHelperEnvironment.class).SetPlayer(fakePlayer);
     }

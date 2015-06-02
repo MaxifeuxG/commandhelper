@@ -51,7 +51,7 @@ import com.laytonsmith.abstraction.enums.MCRecipeType;
 import com.laytonsmith.abstraction.enums.MCTone;
 import com.laytonsmith.abstraction.enums.bukkit.BukkitMCEntityType;
 import com.laytonsmith.annotations.convert;
-import com.laytonsmith.commandhelper.CommandHelperPlugin;
+import com.laytonsmith.commandhelper.CommandHelperBukkit;
 import com.laytonsmith.core.CHLog;
 import com.laytonsmith.core.LogLevel;
 import com.laytonsmith.core.constructs.Target;
@@ -277,14 +277,14 @@ public class BukkitConvertor extends AbstractConvertor {
 //
 //	@Override
 //    public synchronized int SetFutureRunnable(DaemonManager dm, long ms, Runnable r) {
-//        int id = Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(CommandHelperPlugin.self, r, Static.msToTicks(ms));
+//        int id = Bukkit.getServer().getScheduler().scheduleSyncDelayedTask(CommandHelperBukkit.self, r, Static.msToTicks(ms));
 //        validIDs.add(id);
 //        return id;
 //    }
 //
 //	@Override
 //    public synchronized int SetFutureRepeater(DaemonManager dm, long ms, long initialDelay, Runnable r){
-//        int id = Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(CommandHelperPlugin.self, r, Static.msToTicks(initialDelay), Static.msToTicks(ms));
+//        int id = Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(CommandHelperBukkit.self, r, Static.msToTicks(initialDelay), Static.msToTicks(ms));
 //        validIDs.add(id);
 //        return id;
 //    }
@@ -293,7 +293,7 @@ public class BukkitConvertor extends AbstractConvertor {
 //    public synchronized void ClearAllRunnables() {
 //		//Doing cancelTasks apparently does not work, so let's just manually cancel each task, which does appear to work.
 //		//Anyways, it's better that way anyhow, because we actually remove IDs from validIDs that way.
-//        //((BukkitMCServer)Static.getServer()).__Server().getScheduler().cancelTasks(CommandHelperPlugin.self);
+//        //((BukkitMCServer)Static.getServer()).__Server().getScheduler().cancelTasks(CommandHelperBukkit.self);
 //		Set<Integer> ids = new TreeSet<Integer>(validIDs);
 //		for(int id : ids){
 //			try{
@@ -480,7 +480,7 @@ public class BukkitConvertor extends AbstractConvertor {
 
 	@Override
 	public void runOnMainThreadLater(DaemonManager dm, final Runnable r) {
-		Bukkit.getServer().getScheduler().callSyncMethod(CommandHelperPlugin.self, new Callable<Object>() {
+		Bukkit.getServer().getScheduler().callSyncMethod(CommandHelperBukkit.self, new Callable<Object>() {
 
 			@Override
 			public Object call() throws Exception {
@@ -492,7 +492,7 @@ public class BukkitConvertor extends AbstractConvertor {
 
 	@Override
 	public <T> T runOnMainThreadAndWait(Callable<T> callable) throws InterruptedException, ExecutionException {
-		return Bukkit.getServer().getScheduler().callSyncMethod(CommandHelperPlugin.self, callable).get();
+		return Bukkit.getServer().getScheduler().callSyncMethod(CommandHelperBukkit.self, callable).get();
 	}
 
 	@Override
@@ -562,7 +562,7 @@ public class BukkitConvertor extends AbstractConvertor {
 	@Override
 	public MCPluginMeta GetPluginMeta() {
 		if (pluginMeta == null) {
-			pluginMeta = new BukkitMCPluginMeta(CommandHelperPlugin.self);
+			pluginMeta = new BukkitMCPluginMeta(CommandHelperBukkit.self);
 			addShutdownHook(new Runnable() {
 
 				@Override
@@ -646,7 +646,7 @@ public class BukkitConvertor extends AbstractConvertor {
 
 	@Override
 	public MCPlugin GetPlugin() {
-		return new BukkitMCPlugin(CommandHelperPlugin.self);
+		return new BukkitMCPlugin(CommandHelperBukkit.self);
 	}
 
 	@Override

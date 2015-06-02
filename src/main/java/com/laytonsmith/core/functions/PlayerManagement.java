@@ -1,6 +1,7 @@
 package com.laytonsmith.core.functions;
 
 import com.laytonsmith.PureUtilities.Common.StringUtils;
+import com.laytonsmith.PureUtilities.Vector3D;
 import com.laytonsmith.PureUtilities.Version;
 import com.laytonsmith.abstraction.MCBlockCommandSender;
 import com.laytonsmith.abstraction.MCCommandSender;
@@ -12,14 +13,13 @@ import com.laytonsmith.abstraction.MCOfflinePlayer;
 import com.laytonsmith.abstraction.MCPlayer;
 import com.laytonsmith.abstraction.MCServer;
 import com.laytonsmith.abstraction.MCWorld;
-import com.laytonsmith.PureUtilities.Vector3D;
 import com.laytonsmith.abstraction.StaticLayer;
 import com.laytonsmith.abstraction.blocks.MCBlock;
 import com.laytonsmith.abstraction.enums.MCGameMode;
 import com.laytonsmith.annotations.api;
 import com.laytonsmith.annotations.hide;
 import com.laytonsmith.annotations.seealso;
-import com.laytonsmith.commandhelper.CommandHelperPlugin;
+import com.laytonsmith.commandhelper.CommandHelperBukkit;
 import com.laytonsmith.core.CHLog;
 import com.laytonsmith.core.CHVersion;
 import com.laytonsmith.core.LogLevel;
@@ -958,8 +958,8 @@ public class PlayerManagement {
 					hostname = "";
 				}
 
-				if (CommandHelperPlugin.hostnameLookupCache.containsKey(p.getName())) {
-					hostname = CommandHelperPlugin.hostnameLookupCache.get(p.getName());
+				if (CommandHelperBukkit.self.common.hostnameLookupCache.containsKey(p.getName())) {
+					hostname = CommandHelperBukkit.self.common.hostnameLookupCache.get(p.getName());
 				}
 
 				retVals.add(new CString(hostname, t));

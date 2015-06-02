@@ -22,23 +22,27 @@ public class SpongeMCGame implements MCGame {
 
 	public SpongeMCGame() {
 		game = CommandHelperSponge.self.myGame;
-		server = new SpongeMCServer();
+		if (!(this instanceof MCServer)) {
+			server = new SpongeMCServer();
+		} else {
+			server = null;
+		}
 	}
 
 	@Override
 	public String getAPIVersion() {
-		return game.getApiVersion();
+		return _Game().getPlatform().getApiVersion();
 	}
 
 	@Override
 	public String getImplementationVersion() {
-		return game.getImplementationVersion();
+		return _Game().getPlatform().getVersion();
 	}
 
 	@Override
 	public MCVersion getMinecraftVersion() {
 		if (ver == null) {
-			ver = MCVersion.valueOf("MC" + game.getMinecraftVersion().getName().replace('.', '_'));
+			ver = MCVersion.match(_Game().getPlatform().getMinecraftVersion().getName().split("."));
 		}
 		return ver;
 	}
@@ -80,7 +84,7 @@ public class SpongeMCGame implements MCGame {
 
 	@Override
 	public MCPlatform getPlatform() {
-		return MCPlatform.valueOf(game.getPlatform().name());
+		return MCPlatform.valueOf(game.getPlatform().getType().name());
 	}
 
 	@Override

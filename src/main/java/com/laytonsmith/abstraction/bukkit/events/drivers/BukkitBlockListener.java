@@ -1,11 +1,9 @@
 package com.laytonsmith.abstraction.bukkit.events.drivers;
 
 import com.laytonsmith.abstraction.bukkit.events.BukkitBlockEvents;
-import com.laytonsmith.commandhelper.CommandHelperPlugin;
+import com.laytonsmith.commandhelper.CommandHelperBukkit;
 import com.laytonsmith.core.events.Driver;
 import com.laytonsmith.core.events.EventUtils;
-import java.util.ArrayList;
-import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.event.EventHandler;
@@ -20,6 +18,9 @@ import org.bukkit.event.block.BlockPistonExtendEvent;
 import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.SignChangeEvent;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -37,8 +38,8 @@ public class BukkitBlockListener implements Listener{
 		if (pistonsOut.contains(e.getBlock())) {
 			return;
 		}
-		
-		Bukkit.getScheduler().runTaskLater(CommandHelperPlugin.self, new Runnable() {
+
+		Bukkit.getScheduler().runTaskLater(CommandHelperBukkit.self, new Runnable() {
 			@Override
 			public void run() {
 				pistonsOut.remove(e.getBlock());
@@ -57,8 +58,8 @@ public class BukkitBlockListener implements Listener{
 		if (pistonsIn.contains(e.getBlock())) {
 			return;
 		}
-		
-		Bukkit.getScheduler().runTaskLater(CommandHelperPlugin.self, new Runnable() {
+
+		Bukkit.getScheduler().runTaskLater(CommandHelperBukkit.self, new Runnable() {
 			@Override
 			public void run() {
 				pistonsIn.remove(e.getBlock());

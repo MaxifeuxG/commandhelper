@@ -1,26 +1,22 @@
 package com.laytonsmith.tools;
 
+import static com.laytonsmith.PureUtilities.TermColors.*;
+
 import com.laytonsmith.PureUtilities.Common.FileUtil;
 import com.laytonsmith.PureUtilities.Common.MutableObject;
-import com.laytonsmith.PureUtilities.DaemonManager;
 import com.laytonsmith.PureUtilities.LimitedQueue;
 import com.laytonsmith.PureUtilities.RunnableQueue;
 import com.laytonsmith.PureUtilities.SignalHandler;
 import com.laytonsmith.PureUtilities.SignalType;
 import com.laytonsmith.PureUtilities.Signals;
 import com.laytonsmith.PureUtilities.TermColors;
-import static com.laytonsmith.PureUtilities.TermColors.BLUE;
-import static com.laytonsmith.PureUtilities.TermColors.RED;
-import static com.laytonsmith.PureUtilities.TermColors.YELLOW;
-import static com.laytonsmith.PureUtilities.TermColors.p;
-import static com.laytonsmith.PureUtilities.TermColors.pl;
-import static com.laytonsmith.PureUtilities.TermColors.reset;
 import com.laytonsmith.abstraction.AbstractConvertor;
 import com.laytonsmith.abstraction.Implementation;
 import com.laytonsmith.abstraction.MCColor;
 import com.laytonsmith.abstraction.MCEnchantment;
 import com.laytonsmith.abstraction.MCEntity;
 import com.laytonsmith.abstraction.MCFireworkBuilder;
+import com.laytonsmith.abstraction.MCGame;
 import com.laytonsmith.abstraction.MCInventory;
 import com.laytonsmith.abstraction.MCItemMeta;
 import com.laytonsmith.abstraction.MCItemStack;
@@ -37,7 +33,6 @@ import com.laytonsmith.abstraction.enums.MCRecipeType;
 import com.laytonsmith.abstraction.enums.MCTone;
 import com.laytonsmith.annotations.api;
 import com.laytonsmith.annotations.convert;
-import com.laytonsmith.commandhelper.CommandHelperPlugin;
 import com.laytonsmith.core.Installer;
 import com.laytonsmith.core.LogLevel;
 import com.laytonsmith.core.Main;
@@ -46,8 +41,10 @@ import com.laytonsmith.core.MethodScriptComplete;
 import com.laytonsmith.core.MethodScriptFileLocations;
 import com.laytonsmith.core.ParseTree;
 import com.laytonsmith.core.Prefs;
+import com.laytonsmith.core.Profiles;
 import com.laytonsmith.core.Static;
 import com.laytonsmith.core.constructs.CArray;
+import com.laytonsmith.core.constructs.CClassType;
 import com.laytonsmith.core.constructs.CClosure;
 import com.laytonsmith.core.constructs.CString;
 import com.laytonsmith.core.constructs.IVariable;
@@ -62,17 +59,19 @@ import com.laytonsmith.core.events.EventUtils;
 import com.laytonsmith.core.events.drivers.CmdlineEvents;
 import com.laytonsmith.core.exceptions.CancelCommandException;
 import com.laytonsmith.core.exceptions.ConfigCompileException;
+import com.laytonsmith.core.exceptions.ConfigCompileGroupException;
 import com.laytonsmith.core.exceptions.ConfigRuntimeException;
 import com.laytonsmith.core.exceptions.FunctionReturnException;
+import com.laytonsmith.core.functions.Exceptions;
 import com.laytonsmith.core.functions.FunctionBase;
 import com.laytonsmith.core.functions.FunctionList;
 import com.laytonsmith.core.profiler.ProfilePoint;
-import com.laytonsmith.core.Profiles;
-import com.laytonsmith.core.constructs.CClassType;
-import com.laytonsmith.core.exceptions.ConfigCompileGroupException;
-import com.laytonsmith.core.functions.Exceptions;
 import com.laytonsmith.persistence.DataSourceException;
 import com.laytonsmith.tools.docgen.DocGenTemplates;
+import jline.console.ConsoleReader;
+import jline.console.completer.ArgumentCompleter;
+import jline.console.completer.StringsCompleter;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -83,11 +82,6 @@ import java.util.NoSuchElementException;
 import java.util.Queue;
 import java.util.Scanner;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import jline.console.ConsoleReader;
-import jline.console.completer.ArgumentCompleter;
-import jline.console.completer.StringsCompleter;
 
 /**
  * This is a command line implementation of the in game interpreter mode. This
@@ -769,6 +763,11 @@ public final class Interpreter {
 		}
 
 		@Override
+		public MCGame GetGame() {
+			throw new UnsupportedOperationException("This method is not supported from a shell.");
+		}
+
+		@Override
 		public MCServer GetServer() {
 			throw new UnsupportedOperationException("This method is not supported from a shell.");
 		}
@@ -804,7 +803,7 @@ public final class Interpreter {
 		}
 
 		@Override
-		public void Startup(CommandHelperPlugin chp) {
+		public void Startup() {
 
 		}
 

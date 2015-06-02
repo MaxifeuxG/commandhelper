@@ -14,10 +14,10 @@ import java.util.UUID;
  *
  */
 public interface MCServer extends MCGame {
+
 	public String getName();
     public Collection<MCPlayer> getOnlinePlayers();
     public boolean dispatchCommand(MCCommandSender cs, String string) throws MCCommandException;
-    public MCPluginManager getPluginManager();
 
 	public MCPlayer getPlayer(String name);
 
@@ -30,7 +30,6 @@ public interface MCServer extends MCGame {
 	public MCConsoleCommandSender getConsole();
 	public MCItemFactory getItemFactory();
 
-	public MCCommandManager getCommandMap();
 	public MCInventory createInventory(MCInventoryHolder owner, MCInventoryType type);
 	public MCInventory createInventory(MCInventoryHolder owner, int size, String title);
 	public MCInventory createInventory(MCInventoryHolder owner, int size);

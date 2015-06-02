@@ -8,7 +8,7 @@ import com.laytonsmith.abstraction.MCEventManager;
 import com.laytonsmith.abstraction.MCPlugin;
 import com.laytonsmith.abstraction.MCPluginManager;
 import com.laytonsmith.annotations.EventIdentifier;
-import com.laytonsmith.commandhelper.CommandHelperPlugin;
+import com.laytonsmith.commandhelper.CommandHelperBukkit;
 import com.laytonsmith.core.CHLog;
 import com.laytonsmith.core.constructs.Target;
 import org.bukkit.event.Event;
@@ -108,8 +108,8 @@ public class BukkitMCPluginManager implements MCPluginManager, MCEventManager {
 	 */
 	@Override
 	public void registerEvents(Object listener) {
-		p.registerEvents((Listener) listener, CommandHelperPlugin.self);
-	}
+        p.registerEvents((Listener) listener, CommandHelperBukkit.self);
+    }
 
 	/**
 	 * Register all events in a Listener class.
@@ -192,10 +192,10 @@ public class BukkitMCPluginManager implements MCPluginManager, MCEventManager {
             };
             if (p.useTimings()) {
                 handler.register(new TimedRegisteredListener((Listener) listener, executor, priority,
-                        CommandHelperPlugin.self, false));
+                        CommandHelperBukkit.self, false));
             } else {
                 handler.register(new RegisteredListener(((Listener) listener), executor, priority,
-                        CommandHelperPlugin.self, false));
+                        CommandHelperBukkit.self, false));
             }
         }
     }

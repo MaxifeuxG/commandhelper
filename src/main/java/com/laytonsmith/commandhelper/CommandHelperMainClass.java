@@ -35,7 +35,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Created by jb_aero on 4/6/2015.
+ * CommandHelperMainClass, 4/6/2015
+ *
+ * @author jb_aero
  */
 public class CommandHelperMainClass {
 
@@ -96,7 +98,7 @@ public class CommandHelperMainClass {
 					version = "versionUpgrade-" + Main.loadSelfVersion();
 					return !hasBreadcrumb(version);
 				} catch (Exception ex) {
-					Logger.getLogger(CommandHelperPlugin.class.getName()).log(Level.SEVERE, null, ex);
+					Logger.getLogger(CommandHelperBukkit.class.getName()).log(Level.SEVERE, null, ex);
 					return false;
 				}
 			}
@@ -127,7 +129,7 @@ public class CommandHelperMainClass {
 					FileUtil.copy(oldPreferences, CommandHelperFileLocations.getDefault().getPreferencesFile(), true);
 					oldPreferences.deleteOnExit();
 				} catch (IOException ex) {
-					Logger.getLogger(CommandHelperPlugin.class.getName()).log(Level.SEVERE, null, ex);
+					Logger.getLogger(CommandHelperBukkit.class.getName()).log(Level.SEVERE, null, ex);
 				}
 			}
 		});
@@ -159,22 +161,22 @@ public class CommandHelperMainClass {
 				try {
 					FileUtil.move(new File(cd, "persistance.config"), p.getPersistenceConfig());
 				} catch (IOException ex) {
-					Logger.getLogger(CommandHelperPlugin.class.getName()).log(Level.SEVERE, null, ex);
+					Logger.getLogger(CommandHelperBukkit.class.getName()).log(Level.SEVERE, null, ex);
 				}
 				try {
 					FileUtil.move(new File(cd, "preferences.ini"), p.getPreferencesFile());
 				} catch (IOException ex) {
-					Logger.getLogger(CommandHelperPlugin.class.getName()).log(Level.SEVERE, null, ex);
+					Logger.getLogger(CommandHelperBukkit.class.getName()).log(Level.SEVERE, null, ex);
 				}
 				try {
 					FileUtil.move(new File(cd, "profiler.config"), p.getProfilerConfigFile());
 				} catch (IOException ex) {
-					Logger.getLogger(CommandHelperPlugin.class.getName()).log(Level.SEVERE, null, ex);
+					Logger.getLogger(CommandHelperBukkit.class.getName()).log(Level.SEVERE, null, ex);
 				}
 				try {
 					FileUtil.move(new File(cd, "sql-profiles.xml"), p.getSQLProfilesFile());
 				} catch (IOException ex) {
-					Logger.getLogger(CommandHelperPlugin.class.getName()).log(Level.SEVERE, null, ex);
+					Logger.getLogger(CommandHelperBukkit.class.getName()).log(Level.SEVERE, null, ex);
 				}
 				new File(cd, "logs/debug/loggerPreferences.txt").delete();
 				leaveBreadcrumb(breadcrumb);
@@ -200,7 +202,7 @@ public class CommandHelperMainClass {
 					FileUtil.move(oldProfilesFile, MethodScriptFileLocations.getDefault().getProfilesFile());
 					System.out.println("CommandHelper: sql-profiles.xml has been renamed to " + MethodScriptFileLocations.getDefault().getProfilesFile().getName());
 				} catch (IOException ex) {
-					Logger.getLogger(CommandHelperPlugin.class.getName()).log(Level.SEVERE, null, ex);
+					Logger.getLogger(CommandHelperBukkit.class.getName()).log(Level.SEVERE, null, ex);
 				}
 			}
 		});
@@ -208,13 +210,13 @@ public class CommandHelperMainClass {
 		try {
 			upgradeLog.runTasks();
 		} catch (IOException ex) {
-			Logger.getLogger(CommandHelperPlugin.class.getName()).log(Level.SEVERE, null, ex);
+			Logger.getLogger(CommandHelperBukkit.class.getName()).log(Level.SEVERE, null, ex);
 		}
 
 		try{
 			Prefs.init(CommandHelperFileLocations.getDefault().getPreferencesFile());
 		} catch (IOException ex) {
-			Logger.getLogger(CommandHelperPlugin.class.getName()).log(Level.SEVERE, null, ex);
+			Logger.getLogger(CommandHelperBukkit.class.getName()).log(Level.SEVERE, null, ex);
 		}
 
 		Prefs.SetColors();
@@ -226,7 +228,7 @@ public class CommandHelperMainClass {
 		}
 
 		ClassDiscoveryCache cdc = new ClassDiscoveryCache(CommandHelperFileLocations.getDefault().getCacheDirectory());
-		cdc.setLogger(Logger.getLogger(CommandHelperPlugin.class.getName()));
+		cdc.setLogger(Logger.getLogger(CommandHelperBukkit.class.getName()));
 		ClassDiscovery.getDefaultInstance().setClassDiscoveryCache(cdc);
 		ClassDiscovery.getDefaultInstance().addDiscoveryLocation(ClassDiscovery.GetClassContainer(CommandHelperMainClass.class));
 		ClassDiscovery.getDefaultInstance().addDiscoveryLocation(ClassDiscovery.GetClassContainer(apiRootClass));
@@ -265,7 +267,7 @@ public class CommandHelperMainClass {
 			try {
 				loadingThread.join();
 			} catch (InterruptedException ex) {
-				Logger.getLogger(CommandHelperPlugin.class.getName()).log(Level.SEVERE, null, ex);
+				Logger.getLogger(CommandHelperBukkit.class.getName()).log(Level.SEVERE, null, ex);
 			}
 		}
 
@@ -274,10 +276,10 @@ public class CommandHelperMainClass {
 			//properties.
 			Prefs.init(CommandHelperFileLocations.getDefault().getPreferencesFile());
 		} catch (IOException ex) {
-			Logger.getLogger(CommandHelperPlugin.class.getName()).log(Level.SEVERE, null, ex);
+			Logger.getLogger(CommandHelperBukkit.class.getName()).log(Level.SEVERE, null, ex);
 		}
 		if (Prefs.UseSudoFallback()) {
-			Logger.getLogger(CommandHelperPlugin.class.getName()).log(Level.WARNING, "In your preferences, use-sudo-fallback is turned on. Consider turning this off if you can.");
+			Logger.getLogger(CommandHelperBukkit.class.getName()).log(Level.WARNING, "In your preferences, use-sudo-fallback is turned on. Consider turning this off if you can.");
 		}
 		CHLog.initialize(CommandHelperFileLocations.getDefault().getConfigDirectory());
 

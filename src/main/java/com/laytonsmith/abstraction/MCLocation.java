@@ -8,40 +8,67 @@ import com.laytonsmith.abstraction.blocks.MCBlock;
  *
  * 
  */
-public interface MCLocation extends AbstractionObject{
-    public double getX();
-    public double getY();
-    public double getZ();
-	public double distance(MCLocation o);
-	public double distanceSquared(MCLocation o);
-    public MCWorld getWorld();
-    public float getYaw();
-    public float getPitch();
-    public int getBlockX();
-    public int getBlockY();
-    public int getBlockZ();
-	public MCChunk getChunk();
-    public MCBlock getBlock();
-	public MCLocation add(MCLocation vec);
+public interface MCLocation extends AbstractionObject {
 
-	public MCLocation add(Vector3D vec);
-	public MCLocation add(double x, double y, double z);
-	public MCLocation multiply(double m);
+	double getX();
 
-	public Vector3D toVector();
-	public MCLocation subtract(MCLocation vec);
+	double getY();
 
-	public MCLocation subtract(Vector3D vec);
-	public MCLocation subtract(double x, double y, double z);
+	double getZ();
 
-	public void setX(double x);
-	public void setY(double y);
-	public void setZ(double z);
-    public void setPitch(float p);
-    public void setYaw(float y);
-	public void breakBlock();
+	double distance(MCLocation o);
 
-	public Vector3D getDirection();
+	double distanceSquared(MCLocation o);
 
-    public MCLocation clone();
+	float getYaw();
+
+	float getPitch();
+
+	double getYawD();
+
+	double getPitchD();
+
+	int getBlockX();
+
+	int getBlockY();
+
+	int getBlockZ();
+
+	MCBlock getBlock();
+
+	MCChunk getChunk();
+
+	MCWorld getWorld();
+
+	Vector3D toVector();
+
+	MCLocation add(MCLocation vec);
+
+	MCLocation add(Vector3D vec);
+
+	MCLocation add(double x, double y, double z);
+
+	MCLocation multiply(double m);
+
+	MCLocation subtract(MCLocation vec);
+
+	MCLocation subtract(Vector3D vec);
+
+	MCLocation subtract(double x, double y, double z);
+
+	void setX(double x);
+
+	void setY(double y);
+
+	void setZ(double z);
+
+	void setPitch(float p);
+
+	void setYaw(float y);
+
+	void breakBlock();
+
+	Vector3D getDirection();
+
+	MCLocation clone();
 }

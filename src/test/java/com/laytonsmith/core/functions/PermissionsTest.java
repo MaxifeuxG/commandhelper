@@ -1,5 +1,7 @@
 package com.laytonsmith.core.functions;
 
+import static org.mockito.Mockito.mock;
+
 import com.laytonsmith.abstraction.MCPlayer;
 import com.laytonsmith.abstraction.MCServer;
 import com.laytonsmith.abstraction.MCWorld;
@@ -13,8 +15,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 
 import java.io.File;
-
-import static org.mockito.Mockito.mock;
 //import static org.powermock.api.mockito.PowerMockito.*;
 //import org.powermock.core.classloader.annotations.PrepareForTest;
 //import org.powermock.modules.junit4.PowerMockRunner;
@@ -27,7 +27,7 @@ import static org.mockito.Mockito.mock;
  */
 
 //@RunWith(PowerMockRunner.class)
-//@PrepareForTest({Static.class, CommandHelperPlugin.class})
+//@PrepareForTest({Static.class, CommandHelperBukkit.class})
 public class PermissionsTest {
     MCServer fakeServer;
     MCPlayer fakePlayer;

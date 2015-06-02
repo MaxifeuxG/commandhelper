@@ -1,12 +1,12 @@
 package com.laytonsmith.abstraction.sponge;
 
+import com.laytonsmith.PureUtilities.Vector3D;
 import com.laytonsmith.abstraction.MCChunk;
 import com.laytonsmith.abstraction.MCItemStack;
 import com.laytonsmith.abstraction.MCLocation;
 import com.laytonsmith.abstraction.MCMetadataValue;
 import com.laytonsmith.abstraction.MCPlugin;
 import com.laytonsmith.abstraction.MCWorld;
-import com.laytonsmith.abstraction.MVector3D;
 import com.laytonsmith.abstraction.blocks.MCBlock;
 import com.laytonsmith.abstraction.blocks.MCBlockFace;
 import com.laytonsmith.abstraction.blocks.MCBlockState;
@@ -219,11 +219,21 @@ public class SpongeMCLocation implements MCLocation, MCBlock {
 
 	@Override
 	public float getYaw() {
-		return yaw;
+		return (float) yaw;
 	}
 
 	@Override
 	public float getPitch() {
+		return (float) pitch;
+	}
+
+	@Override
+	public double getYawD() {
+		return yaw;
+	}
+
+	@Override
+	public double getPitchD() {
 		return pitch;
 	}
 
@@ -249,7 +259,7 @@ public class SpongeMCLocation implements MCLocation, MCBlock {
 			return new SpongeMCChunk((Chunk) e);
 		}
 		if (e instanceof World) {
-			return new SpongeMCChunk(((World) e).getChunk(getBlockX(), getBlockY(), getBlockZ()));
+			return new SpongeMCChunk(((World) e).loadChunk(getBlockX(), getBlockY(), getBlockZ(), true).get());
 		}
 		throw new IllegalStateException("This block/location was created with a non-chunk, non-world extent.");
 	}
@@ -265,7 +275,7 @@ public class SpongeMCLocation implements MCLocation, MCBlock {
 	}
 
 	@Override
-	public MCLocation add(MVector3D vec) {
+	public MCLocation add(Vector3D vec) {
 		return null;
 	}
 
@@ -280,7 +290,7 @@ public class SpongeMCLocation implements MCLocation, MCBlock {
 	}
 
 	@Override
-	public MVector3D toVector() {
+	public Vector3D toVector() {
 		return null;
 	}
 
@@ -290,7 +300,7 @@ public class SpongeMCLocation implements MCLocation, MCBlock {
 	}
 
 	@Override
-	public MCLocation subtract(MVector3D vec) {
+	public MCLocation subtract(Vector3D vec) {
 		return null;
 	}
 
@@ -330,7 +340,7 @@ public class SpongeMCLocation implements MCLocation, MCBlock {
 	}
 
 	@Override
-	public MVector3D getDirection() {
+	public Vector3D getDirection() {
 		return null;
 	}
 
