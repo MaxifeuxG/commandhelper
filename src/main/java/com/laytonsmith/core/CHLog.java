@@ -5,6 +5,7 @@ import com.laytonsmith.PureUtilities.Preferences;
 import com.laytonsmith.PureUtilities.Preferences.Preference;
 import com.laytonsmith.abstraction.Implementation;
 import com.laytonsmith.core.constructs.Target;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -97,7 +98,7 @@ public final class CHLog {
         try{
             CHLog.prefs.init(MethodScriptFileLocations.getDefault().getLoggerPreferencesFile());
         } catch(IOException e){
-            Static.getLogger().log(java.util.logging.Level.SEVERE, "Could not create logger preferences", e);
+            Static.getLogger().error("Could not create logger preferences", e);
         }
     }
     

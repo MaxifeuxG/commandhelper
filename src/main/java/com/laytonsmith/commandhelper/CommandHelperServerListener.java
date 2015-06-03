@@ -12,13 +12,13 @@ import com.laytonsmith.core.Script;
 import com.laytonsmith.core.Static;
 import com.laytonsmith.core.events.EventUtils;
 import com.laytonsmith.core.exceptions.ConfigRuntimeException;
-import java.util.ArrayList;
-import java.util.logging.Level;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.server.ServerCommandEvent;
+
+import java.util.ArrayList;
 
 /**
  *
@@ -40,9 +40,9 @@ public class CommandHelperServerListener implements Listener{
         try {
             match = Static.getAliasCore().alias("/" + event.getCommand(), player, new ArrayList<Script>());
         } catch (InternalException e) {
-            Static.getLogger().log(Level.SEVERE, e.getMessage());
+            Static.getLogger().error(e.getMessage());
         } catch (ConfigRuntimeException e) {
-            Static.getLogger().log(Level.WARNING, e.getMessage());
+            Static.getLogger().warn(e.getMessage());
         } catch (Throwable e) {
             player.sendMessage(MCChatColor.RED + "Command failed with following reason: " + e.getMessage());
             //Obviously the command is registered, but it somehow failed. Cancel the event.

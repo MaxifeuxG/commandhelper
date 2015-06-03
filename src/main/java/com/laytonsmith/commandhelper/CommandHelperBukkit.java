@@ -73,7 +73,7 @@ public class CommandHelperBukkit extends JavaPlugin {
 
 	public CommandHelperBukkit() {
 		self = this;
-		common = new CommandHelperMainClass();
+		common = new CommandHelperMainClass(new JavaLogger(this.getLogger()));
 	}
 
 	/**
@@ -135,7 +135,7 @@ public class CommandHelperBukkit extends JavaPlugin {
 		playerListener.loadGlobalAliases();
 		interpreterListener.reload();
 
-		Static.getLogger().log(Level.INFO, "[CommandHelper] CommandHelper {0} enabled", common.version);
+		this.getLogger().log(Level.INFO, "[CommandHelper] CommandHelper {0} enabled", common.version);
 	}
 
 	/**

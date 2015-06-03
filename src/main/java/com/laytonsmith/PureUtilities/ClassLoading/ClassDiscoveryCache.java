@@ -4,6 +4,9 @@ package com.laytonsmith.PureUtilities.ClassLoading;
 import com.laytonsmith.PureUtilities.Common.StringUtils;
 import com.laytonsmith.PureUtilities.ProgressIterator;
 import com.laytonsmith.PureUtilities.ZipReader;
+import com.laytonsmith.commandhelper.AbstractLogger;
+import com.laytonsmith.commandhelper.JavaLogger;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -15,8 +18,6 @@ import java.security.MessageDigest;
 import java.util.Enumeration;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -43,7 +44,7 @@ public class ClassDiscoveryCache {
 
 	private File cacheDir;
 	private ProgressIterator progress;
-	private Logger logger;
+	private AbstractLogger logger;
 	
 	/**
 	 * Creates a new ClassDiscoveryCache. The File is the location on
@@ -58,7 +59,7 @@ public class ClassDiscoveryCache {
 	 * If not null, informational output is logged to this logger.
 	 * @param logger 
 	 */
-	public void setLogger(Logger logger){
+	public void setLogger(AbstractLogger logger) {
 		this.logger = logger;
 	}
 	
@@ -126,11 +127,11 @@ public class ClassDiscoveryCache {
 					}
 				}
 			} catch (IOException ex) {
-				Logger.getLogger(ClassDiscoveryCache.class.getName()).log(Level.SEVERE, null, ex);
+				JavaLogger.forName(ClassDiscoveryCache.class.getName()).error(null, ex);
 			}
 			
 			if(logger != null){
-				logger.log(Level.INFO, "Performing one time scan of {0}, this may take a few moments.", fromClassLocation);
+				logger.info("Performing one time scan of {0}, this may take a few moments.", fromClassLocation);
 			}
 			
 			ClassDiscoveryURLCache cache = new ClassDiscoveryURLCache(fromClassLocation, progress);
@@ -144,10 +145,10 @@ public class ClassDiscoveryCache {
 				} catch (IOException ex) {
 					//Well, we couldn't write it out, so report the error, but continue anyways.
 					if(logger != null){
-						logger.log(Level.SEVERE, null, ex);
+						logger.error(null, ex);
 					} else {
 						//Report errors even if the logger passed in is null.
-						Logger.getLogger(ClassDiscoveryCache.class.getName()).log(Level.SEVERE, null, ex);
+						JavaLogger.forName(ClassDiscoveryCache.class.getName()).error(null, ex);
 					}
 				}
 			}

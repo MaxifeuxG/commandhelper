@@ -75,6 +75,7 @@ public class EchoesTest {
             IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException, CancelCommandException {
         Echoes.broadcast a = new Echoes.broadcast();
         when(fakePlayer.getServer()).thenReturn(fakeServer);
+        TestConvertor.setFakeServer(fakeServer);
         a.exec(Target.UNKNOWN, env, C.onstruct("Hello World!"));
         verify(fakeServer).broadcastMessage("Hello World!");
     }

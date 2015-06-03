@@ -71,7 +71,6 @@ public class AliasCore {
 	private File mainFile;
 	//AliasConfig config;
 	private List<Script> scripts;
-	static final Logger logger = Logger.getLogger("Minecraft");
 	private Set<String> echoCommand = new HashSet<String>();
 	public List<File> autoIncludes;
 	public static CommandHelperMainClass parent;
@@ -161,7 +160,7 @@ public class AliasCore {
 								b.append("from a MCCommandSender");
 							}
 							b.append(" ----> ").append(command);
-							Static.getLogger().log(Level.INFO, b.toString());
+							Static.getLogger().info(b.toString());
 						}
 						try {
 							env.getEnv(CommandHelperEnvironment.class).SetCommand(command);
@@ -175,9 +174,14 @@ public class AliasCore {
 												if (!output.trim().isEmpty() && output.trim().startsWith("/")) {
 													if (Prefs.DebugMode()) {
 														if (player instanceof MCPlayer) {
-															Static.getLogger().log(Level.INFO, "[CommandHelper]: Executing command on " + ((MCPlayer) player).getName() + ": " + output.trim());
+															Static.getLogger().info(
+																	"[CommandHelper]: Executing command on "
+																			+ ((MCPlayer) player).getName() + ": "
+																			+ output.trim());
 														} else {
-															Static.getLogger().log(Level.INFO, "[CommandHelper]: Executing command from console equivalent: " + output.trim());
+															Static.getLogger().info(
+																	"[CommandHelper]: Executing command from console equivalent: "
+																			+ output.trim());
 														}
 													}
 
@@ -189,7 +193,7 @@ public class AliasCore {
 												}
 											}
 										} catch (Throwable e) {
-											System.err.println(e.getMessage());
+											Static.getLogger().error(e.getMessage());
 											player.sendMessage(MCChatColor.RED + e.getMessage());
 										} finally {
 											Static.getAliasCore().removePlayerReference(player);
@@ -204,7 +208,8 @@ public class AliasCore {
 							ConfigRuntimeException.HandleUncaughtException(ex, env);
 						} catch (Throwable e) {
 							//This is not a simple user script error, this is a deeper problem, so we always handle this.
-							System.err.println("An unexpected exception occured: " + e.getClass().getSimpleName());
+							Static.getLogger().error(
+									"An unexpected exception occured: " + e.getClass().getSimpleName());
 							player.sendMessage("An unexpected exception occured: " + MCChatColor.RED + e.getClass().getSimpleName());
 							e.printStackTrace();
 						} finally {
@@ -214,7 +219,7 @@ public class AliasCore {
 						break;
 					}
 				} catch (Exception e) {
-					System.err.println("An unexpected exception occured inside the command " + s.toString());
+					Static.getLogger().error("An unexpected exception occured inside the command " + s.toString());
 					e.printStackTrace();
 				}
 			}
@@ -238,7 +243,8 @@ public class AliasCore {
 											if (output != null) {
 												if (!output.trim().isEmpty() && output.trim().startsWith("/")) {
 													if (Prefs.DebugMode()) {
-														Static.getLogger().log(Level.INFO, "[CommandHelper]: Executing command on " + ((MCPlayer) player).getName() + ": " + output.trim());
+														Static.getLogger().info("[CommandHelper]: Executing command on "
+																+ ((MCPlayer) player).getName() + ": " + output.trim());
 													}
 													((MCPlayer) player).chat(output.trim());
 												}
@@ -463,7 +469,7 @@ public class AliasCore {
 					samp_config = samp_config.replaceAll("\n|\r\n", System.getProperty("line.separator"));
 					file_put_contents(aliasConfig, samp_config, "o");
 				} catch (Exception e) {
-					logger.log(Level.WARNING, "CommandHelper: Could not write sample config file");
+					Static.getLogger().warn("CommandHelper: Could not write sample config file");
 				}
 			}
 
@@ -475,7 +481,7 @@ public class AliasCore {
 					samp_main = samp_main.replaceAll("\n|\r\n", System.getProperty("line.separator"));
 					file_put_contents(mainFile, samp_main, "o");
 				} catch (Exception e) {
-					logger.log(Level.WARNING, "CommandHelper: Could not write sample main file");
+					Static.getLogger().warn("CommandHelper: Could not write sample main file");
 				}
 			}
 
@@ -529,7 +535,7 @@ public class AliasCore {
 				}
 			}
 		} catch (IOException ex) {
-			logger.log(Level.SEVERE, "[CommandHelper]: Path to config file is not correct/accessable. Please"
+			Static.getLogger().error("[CommandHelper]: Path to config file is not correct/accessable. Please"
 					+ " check the location and try loading the plugin again.");
 		} catch (Throwable t) {
 			t.printStackTrace();
@@ -757,7 +763,7 @@ public class AliasCore {
 					ConfigRuntimeException.HandleUncaughtException(e, env);
 				} catch (CancelCommandException e) {
 					if (e.getMessage() != null && !"".equals(e.getMessage().trim())) {
-						logger.log(Level.INFO, e.getMessage());
+						Static.getLogger().info(e.getMessage());
 					}
 				} catch (ProgramFlowManipulationException e) {
 					exception = true;
@@ -767,12 +773,15 @@ public class AliasCore {
 				}
 				if (exception) {
 					if (Prefs.HaltOnFailure()) {
-						logger.log(Level.SEVERE, TermColors.RED + "[CommandHelper]: Compilation halted due to unrecoverable failure." + TermColors.reset());
+						Static.getLogger().error(
+								TermColors.RED + "[CommandHelper]: Compilation halted due to unrecoverable failure."
+										+ TermColors.reset());
 						return;
 					}
 				}
 			}
-			logger.log(Level.INFO, TermColors.YELLOW + "[CommandHelper]: MethodScript files processed" + TermColors.reset());
+			Static.getLogger().info(
+					TermColors.YELLOW + "[CommandHelper]: MethodScript files processed" + TermColors.reset());
 			if (player != null) {
 				player.sendMessage(MCChatColor.YELLOW + "[CommandHelper]: MethodScript files processed");
 			}

@@ -35,6 +35,7 @@ import com.laytonsmith.core.exceptions.ConfigCompileException;
 import com.laytonsmith.core.exceptions.ConfigRuntimeException;
 import com.laytonsmith.core.functions.Exceptions.ExceptionType;
 import com.laytonsmith.persistence.DataSourceException;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -44,8 +45,6 @@ import java.net.URISyntaxException;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 
 /**
@@ -426,7 +425,7 @@ public class FileHandling {
 				InputStream stream = new GZIPInputStream(new FileInputStream(location));
 				return CByteArray.wrap(StreamUtils.GetBytes(stream), t);
 			} catch (IOException ex) {
-				Static.getLogger().log(Level.SEVERE, "Could not read in file while attempting to find " + location.getAbsolutePath()
+				Static.getLogger().error("Could not read in file while attempting to find " + location.getAbsolutePath()
 					+ "\nFile " + (location.exists() ? "exists" : "does not exist"));
 				throw new ConfigRuntimeException("File could not be read in.",
 					Exceptions.ExceptionType.IOException, t);
@@ -490,7 +489,7 @@ public class FileHandling {
 				InputStream stream = new BufferedInputStream(new FileInputStream(location));
 				return CByteArray.wrap(StreamUtils.GetBytes(stream), t);
 			} catch (IOException ex) {
-				Static.getLogger().log(Level.SEVERE, "Could not read in file while attempting to find " + location.getAbsolutePath()
+				Static.getLogger().info("Could not read in file while attempting to find " + location.getAbsolutePath()
 					+ "\nFile " + (location.exists() ? "exists" : "does not exist"));
 				throw new ConfigRuntimeException("File could not be read in.",
 					Exceptions.ExceptionType.IOException, t);

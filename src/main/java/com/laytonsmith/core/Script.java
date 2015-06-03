@@ -51,7 +51,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 
 /**
  * A script is a section of code that has been preprocessed and split into separate
@@ -451,8 +450,8 @@ public class Script {
 							+ extensionData
 							+ "Here's the stacktrace:\n" + TermColors.RESET;
 					emsg += Static.GetStacktraceString(e);
-					Static.getLogger().log(Level.SEVERE, emsg);
-					throw new CancelCommandException(null, Target.UNKNOWN);
+                    Static.getLogger().error(emsg);
+                    throw new CancelCommandException(null, Target.UNKNOWN);
 				}
         } else if (m.getCType() == ConstructType.VARIABLE) {
             return new CString(m.val(), m.getTarget());

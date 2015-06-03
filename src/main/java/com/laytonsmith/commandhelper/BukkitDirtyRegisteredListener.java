@@ -2,10 +2,16 @@
 
 package com.laytonsmith.commandhelper;
 
-import com.laytonsmith.core.AliasCore;
 import com.laytonsmith.core.Prefs;
 import com.laytonsmith.core.Static;
 import com.laytonsmith.core.exceptions.ConfigRuntimeException;
+import org.bukkit.event.Event;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
+import org.bukkit.plugin.EventExecutor;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.RegisteredListener;
+
 import java.lang.reflect.Field;
 import java.util.Comparator;
 import java.util.EnumMap;
@@ -15,12 +21,6 @@ import java.util.TreeSet;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.bukkit.event.Event;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
-import org.bukkit.plugin.EventExecutor;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.RegisteredListener;
 
 /**
  *
@@ -321,8 +321,8 @@ public class BukkitDirtyRegisteredListener extends RegisteredListener {
 			} catch (NoSuchMethodException ex) {
 				Logger.getLogger(Static.class.getName()).log(Level.SEVERE, null, ex);
 			} catch (NoSuchFieldException | ClassCastException | IllegalArgumentException | IllegalAccessException ex) {
-				Static.getLogger().log(Level.SEVERE, "Uh oh, play dirty mode isn't working.", ex);
-			}
+                Static.getLogger().error("Uh oh, play dirty mode isn't working.", ex);
+            }
 		} //else play nice :(
 	}
 }

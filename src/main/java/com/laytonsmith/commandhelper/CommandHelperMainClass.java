@@ -31,8 +31,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * CommandHelperMainClass, 4/6/2015
@@ -41,6 +39,8 @@ import java.util.logging.Logger;
  */
 public class CommandHelperMainClass {
 
+	public static CommandHelperMainClass self;
+	public final AbstractLogger logger;
 	public Profiler profiler;
 	public static SimpleVersion version;
 	public long interpreterUnlockedUntil = 0;
@@ -51,6 +51,11 @@ public class CommandHelperMainClass {
 	protected static AliasCore ac;
 	protected Thread loadingThread;
 	protected static int hostnameThreadPoolID = 0;
+
+	public CommandHelperMainClass(AbstractLogger logger) {
+		this.self = this;
+		this.logger = logger;
+	}
 
 	public Profiler getProfiler() {
 		return profiler;
@@ -98,7 +103,7 @@ public class CommandHelperMainClass {
 					version = "versionUpgrade-" + Main.loadSelfVersion();
 					return !hasBreadcrumb(version);
 				} catch (Exception ex) {
-					Logger.getLogger(CommandHelperBukkit.class.getName()).log(Level.SEVERE, null, ex);
+					logger.error(null, ex);
 					return false;
 				}
 			}
@@ -124,12 +129,13 @@ public class CommandHelperMainClass {
 				try {
 					Prefs.init(oldPreferences);
 					Prefs.SetColors();
-					Logger.getLogger("Minecraft").log(Level.INFO,
-							TermColors.YELLOW + "[" + Implementation.GetServerType().getBranding() + "] Old preferences.txt file detected. Moving preferences.txt to preferences.ini." + TermColors.reset());
+					logger.info(TermColors.YELLOW + "[" + Implementation.GetServerType().getBranding()
+							+ "] Old preferences.txt file detected. Moving preferences.txt to preferences.ini."
+							+ TermColors.reset());
 					FileUtil.copy(oldPreferences, CommandHelperFileLocations.getDefault().getPreferencesFile(), true);
 					oldPreferences.deleteOnExit();
 				} catch (IOException ex) {
-					Logger.getLogger(CommandHelperBukkit.class.getName()).log(Level.SEVERE, null, ex);
+					logger.error(null, ex);
 				}
 			}
 		});
@@ -161,27 +167,28 @@ public class CommandHelperMainClass {
 				try {
 					FileUtil.move(new File(cd, "persistance.config"), p.getPersistenceConfig());
 				} catch (IOException ex) {
-					Logger.getLogger(CommandHelperBukkit.class.getName()).log(Level.SEVERE, null, ex);
+					logger.error(null, ex);
 				}
 				try {
 					FileUtil.move(new File(cd, "preferences.ini"), p.getPreferencesFile());
 				} catch (IOException ex) {
-					Logger.getLogger(CommandHelperBukkit.class.getName()).log(Level.SEVERE, null, ex);
+					logger.error(null, ex);
 				}
 				try {
 					FileUtil.move(new File(cd, "profiler.config"), p.getProfilerConfigFile());
 				} catch (IOException ex) {
-					Logger.getLogger(CommandHelperBukkit.class.getName()).log(Level.SEVERE, null, ex);
+					logger.error(null, ex);
 				}
 				try {
 					FileUtil.move(new File(cd, "sql-profiles.xml"), p.getSQLProfilesFile());
 				} catch (IOException ex) {
-					Logger.getLogger(CommandHelperBukkit.class.getName()).log(Level.SEVERE, null, ex);
+					logger.error(null, ex);
 				}
 				new File(cd, "logs/debug/loggerPreferences.txt").delete();
 				leaveBreadcrumb(breadcrumb);
-				System.out.println("CommandHelper: Your preferences files have all been relocated to " + p.getPreferencesDirectory());
-				System.out.println("CommandHelper: The loggerPreferences.txt file has been deleted and re-created, as the defaults have changed.");
+				logger.info("CommandHelper: Your preferences files have all been relocated to "
+						+ p.getPreferencesDirectory());
+				logger.info("CommandHelper: The loggerPreferences.txt file has been deleted and re-created, as the defaults have changed.");
 			}
 		});
 
@@ -200,9 +207,10 @@ public class CommandHelperMainClass {
 			public void run() {
 				try {
 					FileUtil.move(oldProfilesFile, MethodScriptFileLocations.getDefault().getProfilesFile());
-					System.out.println("CommandHelper: sql-profiles.xml has been renamed to " + MethodScriptFileLocations.getDefault().getProfilesFile().getName());
+					logger.info("CommandHelper: sql-profiles.xml has been renamed to "
+							+ MethodScriptFileLocations.getDefault().getProfilesFile().getName());
 				} catch (IOException ex) {
-					Logger.getLogger(CommandHelperBukkit.class.getName()).log(Level.SEVERE, null, ex);
+					logger.error(null, ex);
 				}
 			}
 		});
@@ -210,13 +218,13 @@ public class CommandHelperMainClass {
 		try {
 			upgradeLog.runTasks();
 		} catch (IOException ex) {
-			Logger.getLogger(CommandHelperBukkit.class.getName()).log(Level.SEVERE, null, ex);
+			logger.error(null, ex);
 		}
 
 		try{
 			Prefs.init(CommandHelperFileLocations.getDefault().getPreferencesFile());
 		} catch (IOException ex) {
-			Logger.getLogger(CommandHelperBukkit.class.getName()).log(Level.SEVERE, null, ex);
+			logger.error(null, ex);
 		}
 
 		Prefs.SetColors();
@@ -228,16 +236,16 @@ public class CommandHelperMainClass {
 		}
 
 		ClassDiscoveryCache cdc = new ClassDiscoveryCache(CommandHelperFileLocations.getDefault().getCacheDirectory());
-		cdc.setLogger(Logger.getLogger(CommandHelperBukkit.class.getName()));
+		cdc.setLogger(logger);
 		ClassDiscovery.getDefaultInstance().setClassDiscoveryCache(cdc);
 		ClassDiscovery.getDefaultInstance().addDiscoveryLocation(ClassDiscovery.GetClassContainer(CommandHelperMainClass.class));
 		ClassDiscovery.getDefaultInstance().addDiscoveryLocation(ClassDiscovery.GetClassContainer(apiRootClass));
 
-		System.out.println("[CommandHelper] Running initial class discovery,"
+		logger.info("[CommandHelper] Running initial class discovery,"
 				+ " this will probably take a few seconds...");
 		BukkitMCEntityType.build();
 
-		System.out.println("[CommandHelper] Loading extensions in the background...");
+		logger.info("[CommandHelper] Loading extensions in the background...");
 
 		loadingThread = new Thread("extensionloader") {
 			@Override
@@ -247,13 +255,13 @@ public class CommandHelperMainClass {
 				if (OSUtils.GetOS() == OSUtils.OS.WINDOWS) {
 					// Using System.out here instead of the logger as the logger doesn't
 					// immediately print to the console.
-					System.out.println("[CommandHelper] Caching extensions...");
+					logger.info("[CommandHelper] Caching extensions...");
 					ExtensionManager.Cache(CommandHelperFileLocations.getDefault().getExtensionCacheDirectory());
-					System.out.println("[CommandHelper] Extension caching complete.");
+					logger.info("[CommandHelper] Extension caching complete.");
 				}
 
 				ExtensionManager.Initialize(ClassDiscovery.getDefaultInstance());
-				System.out.println("[CommandHelper] Extension loading complete.");
+				logger.info("[CommandHelper] Extension loading complete.");
 			}
 		};
 
@@ -262,12 +270,12 @@ public class CommandHelperMainClass {
 
 	public void secondSetup(String versionString) {
 		if (loadingThread.isAlive()) {
-			System.out.println("[CommandHelper] Waiting for extension loading to complete...");
+			logger.info("[CommandHelper] Waiting for extension loading to complete...");
 
 			try {
 				loadingThread.join();
 			} catch (InterruptedException ex) {
-				Logger.getLogger(CommandHelperBukkit.class.getName()).log(Level.SEVERE, null, ex);
+				logger.error(null, ex);
 			}
 		}
 
@@ -276,10 +284,10 @@ public class CommandHelperMainClass {
 			//properties.
 			Prefs.init(CommandHelperFileLocations.getDefault().getPreferencesFile());
 		} catch (IOException ex) {
-			Logger.getLogger(CommandHelperBukkit.class.getName()).log(Level.SEVERE, null, ex);
+			logger.error(null, ex);
 		}
 		if (Prefs.UseSudoFallback()) {
-			Logger.getLogger(CommandHelperBukkit.class.getName()).log(Level.WARNING, "In your preferences, use-sudo-fallback is turned on. Consider turning this off if you can.");
+			logger.warn("In your preferences, use-sudo-fallback is turned on. Consider turning this off if you can.");
 		}
 		CHLog.initialize(CommandHelperFileLocations.getDefault().getConfigDirectory());
 

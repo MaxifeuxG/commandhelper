@@ -80,4 +80,19 @@ public abstract class BukkitMCGame implements MCGame {
 	public MCPlatform getPlatform() {
 		return MCPlatform.SERVER;
 	}
+
+	@Override
+	public String toString() {
+		return getHandle().toString();
+	}
+
+	@Override
+	public int hashCode() {
+		return getHandle().hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		return getHandle().equals(obj);
+	}
 }

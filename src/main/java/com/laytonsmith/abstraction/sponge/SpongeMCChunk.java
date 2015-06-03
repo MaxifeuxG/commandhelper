@@ -55,4 +55,19 @@ public class SpongeMCChunk implements MCChunk {
 	public Chunk getHandle() {
 		return chunk;
 	}
+
+	@Override
+	public int hashCode() {
+		return getHandle().hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		return getHandle().equals(obj);
+	}
+
+	@Override
+	public String toString() {
+		return getHandle().toString();
+	}
 }

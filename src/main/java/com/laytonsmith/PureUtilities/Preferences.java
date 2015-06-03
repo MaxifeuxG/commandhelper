@@ -3,6 +3,8 @@ package com.laytonsmith.PureUtilities;
 
 import com.laytonsmith.PureUtilities.Common.FileUtil;
 import com.laytonsmith.PureUtilities.Common.StringUtils;
+import com.laytonsmith.commandhelper.AbstractLogger;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -12,8 +14,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * This class allows an application to more easily manage user preferences. As
@@ -28,7 +28,7 @@ import java.util.logging.Logger;
 public class Preferences {
     private final Map<String, Preference> prefs = new HashMap<String, Preference>();
     private final String appName;
-    private final Logger logger;
+    private final AbstractLogger logger;
     
     private File prefFile;
     
@@ -88,7 +88,7 @@ public class Preferences {
      * value is provided. It also writes a custom header at the top of the file.
      * Newlines are supported, but only \n
      */
-    public Preferences(String appName, Logger logger, List<Preference> defaults, String header){
+    public Preferences(String appName, AbstractLogger logger, List<Preference> defaults, String header) {
         this.appName = appName;
         this.logger = logger;
         for(Preference p : defaults){
@@ -104,7 +104,7 @@ public class Preferences {
      * of defaults, in case the value is not provided by the user, or an invalid
      * value is provided. 
      */
-    public Preferences(String appName, Logger logger, List<Preference> defaults){
+    public Preferences(String appName, AbstractLogger logger, List<Preference> defaults) {
         this(appName, logger, defaults, "");
     }
 
@@ -153,21 +153,24 @@ public class Preferences {
                 try{
                     return Integer.parseInt(value);
                 } catch (NumberFormatException e){
-                    logger.log(Level.WARNING, "[" + appName + "] expects the value of " + p.name + " to be an integer. Using the default of " + p.value);
+                    logger.warn("[" + appName + "] expects the value of " + p.name
+                            + " to be an integer. Using the default of " + p.value);
                     return Integer.parseInt(p.value);
                 }
             case DOUBLE:
                 try{
                     return Double.parseDouble(value);
                 } catch (NumberFormatException e){
-                    logger.log(Level.WARNING, "[" + appName + "] expects the value of " + p.name + " to be an double. Using the default of " + p.value);
+                    logger.warn("[" + appName + "] expects the value of " + p.name
+                            + " to be an double. Using the default of " + p.value);
                     return Double.parseDouble(p.value);
                 }
             case BOOLEAN:
                 try{
                     return getBoolean(value);
                 } catch (NumberFormatException e){
-                    logger.log(Level.WARNING, "[" + appName + "] expects the value of " + p.name + " to be an boolean. Using the default of " + p.value);
+                    logger.warn("[" + appName + "] expects the value of " + p.name
+                            + " to be an boolean. Using the default of " + p.value);
                     return getBoolean(p.value);
                 }
             case NUMBER:
@@ -177,7 +180,8 @@ public class Preferences {
                     try{
                         return Double.parseDouble(value);
                     } catch(NumberFormatException f){
-                        logger.log(Level.WARNING, "[" + appName + "] expects the value of " + p.name + " to be a number. Using the default of " + p.value);
+                        logger.warn("[" + appName + "] expects the value of " + p.name
+                                + " to be a number. Using the default of " + p.value);
                         try{
                             return Integer.parseInt(p.value);
                         } catch(NumberFormatException g){
@@ -268,7 +272,8 @@ public class Preferences {
 				FileUtil.write(b.toString(), prefFile);
 			}
         } catch (Exception ex) {
-            logger.log(Level.WARNING, "[" + appName + "] Could not write out preferences file: " + (prefFile!=null?prefFile.getAbsolutePath():"null"), ex);
+            logger.warn("[" + appName + "] Could not write out preferences file: " + (
+                    prefFile != null ? prefFile.getAbsolutePath() : "null"), ex);
         }
     }
 	

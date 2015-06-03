@@ -624,6 +624,10 @@ public class StaticTest {
         private static MCServer fakeServer;
 		private RunnableQueue queue = new RunnableQueue("TestConvertorRunnableQueue");
 
+        public static void setFakeServer(MCServer fake) {
+            fakeServer = fake;
+        }
+
 		@Override
         public MCLocation GetLocation(MCWorld w, double x, double y, double z, float yaw, float pitch) {
              return StaticTest.GetFakeLocation(w, x, y + 1, z);

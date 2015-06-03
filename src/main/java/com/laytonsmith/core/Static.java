@@ -21,7 +21,9 @@ import com.laytonsmith.abstraction.MCWorld;
 import com.laytonsmith.abstraction.StaticLayer;
 import com.laytonsmith.abstraction.blocks.MCBlock;
 import com.laytonsmith.annotations.typeof;
+import com.laytonsmith.commandhelper.AbstractLogger;
 import com.laytonsmith.commandhelper.CommandHelperMainClass;
+import com.laytonsmith.commandhelper.JavaLogger;
 import com.laytonsmith.core.constructs.CArray;
 import com.laytonsmith.core.constructs.CBoolean;
 import com.laytonsmith.core.constructs.CByteArray;
@@ -62,8 +64,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -81,8 +81,6 @@ public final class Static {
 
 	private Static() {
 	}
-
-	private static final Logger logger = Logger.getLogger(Implementation.GetServerType().getBranding());
 
 	private static Map<String, String> hostCache = new HashMap<String, String>();
 
@@ -270,12 +268,15 @@ public final class Static {
 	}
 
 	/**
-	 * Returns the logger for the plugin
+	 * Returns the official logger provided for the plugin
 	 *
 	 * @return
 	 */
-	public static Logger getLogger() {
-		return logger;
+	public static AbstractLogger getLogger() {
+		if (CommandHelperMainClass.self == null || CommandHelperMainClass.self.logger == null) {
+			return JavaLogger.forName(CommandHelperMainClass.class.getName());
+		}
+		return CommandHelperMainClass.self.logger;
 	}
 
 	/**
@@ -1002,45 +1003,39 @@ public final class Static {
 		//If debug mode is on in the prefs, we want to log this to the screen too
 		if (Prefs.DebugMode() || Prefs.ShowWarnings() || level == LogLevel.ERROR) {
 			String color = "";
-			Level lev = Level.INFO;
 			boolean show = false;
 			switch (level) {
 				case ERROR:
 					color = TermColors.RED;
-					lev = Level.SEVERE;
 					show = true;
 					break;
 				case WARNING:
 					color = TermColors.YELLOW;
-					lev = Level.WARNING;
 					if (Prefs.DebugMode() || Prefs.ShowWarnings()) {
 						show = true;
 					}
 					break;
 				case INFO:
 					color = TermColors.GREEN;
-					lev = Level.INFO;
 					if (Prefs.DebugMode()) {
 						show = true;
 					}
 					break;
 				case DEBUG:
 					color = TermColors.BRIGHT_BLUE;
-					lev = Level.INFO;
 					if (Prefs.DebugMode()) {
 						show = true;
 					}
 					break;
 				case VERBOSE:
 					color = TermColors.WHITE;
-					lev = Level.INFO;
 					if (Prefs.DebugMode()) {
 						show = true;
 					}
 					break;
 			}
 			if (show && printScreen) {
-				Static.getLogger().log(lev, "{0}{1}{2}", new Object[]{color, message, TermColors.reset()});
+				Static.getLogger().log(level, "{0}{1}{2}", color, message, TermColors.reset());
 			}
 		}
 		String timestamp = DateUtils.ParseCalendarNotation("%Y-%M-%D %h:%m.%s - ");

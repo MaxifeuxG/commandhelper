@@ -3,7 +3,6 @@ package com.laytonsmith.commandhelper;
 import com.google.inject.Inject;
 import com.laytonsmith.abstraction.Implementation;
 import com.laytonsmith.abstraction.StaticLayer;
-import com.laytonsmith.core.Static;
 import org.slf4j.Logger;
 import org.spongepowered.api.Game;
 import org.spongepowered.api.event.Subscribe;
@@ -11,8 +10,6 @@ import org.spongepowered.api.event.state.InitializationEvent;
 import org.spongepowered.api.event.state.PreInitializationEvent;
 import org.spongepowered.api.event.state.ServerStoppedEvent;
 import org.spongepowered.api.plugin.Plugin;
-
-import java.util.logging.Level;
 
 /**
  * Created by jb_aero on 4/5/2015.
@@ -22,15 +19,13 @@ public class CommandHelperSponge {
 
 	public static CommandHelperSponge self;
 	public CommandHelperMainClass common;
-	public final Logger myLogger;
 	public final Game myGame;
 
 	@Inject
 	public CommandHelperSponge(Logger logger, Game game) {
-		myLogger = logger;
 		myGame = game;
 		self = this;
-		common = new CommandHelperMainClass();
+		common = new CommandHelperMainClass(new SLLogger(logger));
 	}
 
 	@Subscribe
@@ -57,7 +52,7 @@ public class CommandHelperSponge {
 		//playerListener.loadGlobalAliases();
 		//interpreterListener.reload();
 
-		Static.getLogger().log(Level.INFO, "[CommandHelper] CommandHelper {0} enabled", common.version);
+		common.logger.info("[CommandHelper] CommandHelper {0} enabled", common.version);
 	}
 
 	@Subscribe
