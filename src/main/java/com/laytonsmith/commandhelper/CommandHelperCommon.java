@@ -10,23 +10,46 @@ import com.laytonsmith.PureUtilities.TermColors;
 import com.laytonsmith.abstraction.Implementation;
 import com.laytonsmith.abstraction.MCPlayer;
 import com.laytonsmith.abstraction.StaticLayer;
-import com.laytonsmith.abstraction.enums.bukkit.BukkitMCEntityType;
+import com.laytonsmith.abstraction.enums.MCChatColor;
+import com.laytonsmith.core.AbstractLogger;
 import com.laytonsmith.core.AliasCore;
 import com.laytonsmith.core.CHLog;
 import com.laytonsmith.core.Installer;
 import com.laytonsmith.core.Main;
+import com.laytonsmith.core.MethodScriptCompiler;
+import com.laytonsmith.core.MethodScriptComplete;
 import com.laytonsmith.core.MethodScriptExecutionQueue;
 import com.laytonsmith.core.MethodScriptFileLocations;
+import com.laytonsmith.core.ParseTree;
 import com.laytonsmith.core.Prefs;
+import com.laytonsmith.core.Profiles;
+import com.laytonsmith.core.Script;
 import com.laytonsmith.core.Static;
 import com.laytonsmith.core.UpgradeLog;
+import com.laytonsmith.core.UserManager;
 import com.laytonsmith.core.constructs.Target;
+import com.laytonsmith.core.constructs.Token;
+import com.laytonsmith.core.environments.CommandHelperEnvironment;
+import com.laytonsmith.core.environments.Environment;
+import com.laytonsmith.core.environments.GlobalEnv;
+import com.laytonsmith.core.exceptions.CancelCommandException;
+import com.laytonsmith.core.exceptions.ConfigCompileException;
+import com.laytonsmith.core.exceptions.ConfigCompileGroupException;
+import com.laytonsmith.core.exceptions.ConfigRuntimeException;
 import com.laytonsmith.core.extensions.ExtensionManager;
 import com.laytonsmith.core.profiler.Profiler;
+import com.laytonsmith.core.taskmanager.TaskManager;
+import com.laytonsmith.persistence.DataSourceException;
 import com.laytonsmith.persistence.PersistenceNetwork;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -37,9 +60,9 @@ import java.util.concurrent.ThreadFactory;
  *
  * @author jb_aero
  */
-public class CommandHelperMainClass {
+public class CommandHelperCommon {
 
-	public static CommandHelperMainClass self;
+	public static CommandHelperCommon self;
 	public final AbstractLogger logger;
 	public Profiler profiler;
 	public static SimpleVersion version;
@@ -52,8 +75,11 @@ public class CommandHelperMainClass {
 	protected Thread loadingThread;
 	protected static int hostnameThreadPoolID = 0;
 
-	public CommandHelperMainClass(AbstractLogger logger) {
-		this.self = this;
+	private final Set<String> interpreterMode = Collections.synchronizedSet(new HashSet<String>());
+	final Map<String, String> multilineMode = new HashMap<String, String>();
+
+	public CommandHelperCommon(AbstractLogger logger) {
+		self = this;
 		this.logger = logger;
 	}
 
@@ -85,6 +111,137 @@ public class CommandHelperMainClass {
 
 	public static AliasCore getCore() {
 		return ac;
+	}
+
+	public boolean isInInterpreterMode(String player) {
+		return (interpreterMode.contains(player));
+	}
+
+	public void startInterpret(String playerName) {
+		interpreterMode.add(playerName);
+	}
+
+	public void stopInterpret(String playerName) {
+		interpreterMode.remove(playerName);
+	}
+
+	/**
+	 * Find and run aliases for a player for a given command.
+	 *
+	 * @param command
+	 *
+	 * @return
+	 */
+	public boolean runAlias(String command, MCPlayer player) throws DataSourceException {
+		UserManager um = UserManager.GetUserManager(player.getName());
+		List<Script> scripts = um.getAllScripts(persistenceNetwork);
+
+		return getCore().alias(command, player, scripts);
+	}
+
+	public void textLine(MCPlayer p, String line) {
+		if (line.equals("-")) {
+			//Exit interpreter mode
+			interpreterMode.remove(p.getName());
+			Static.SendMessage(p, MCChatColor.YELLOW + "Now exiting interpreter mode");
+		} else if (line.equals(">>>")) {
+			//Start multiline mode
+			if (multilineMode.containsKey(p.getName())) {
+				Static.SendMessage(p, MCChatColor.RED + "You are already in multiline mode!");
+			} else {
+				multilineMode.put(p.getName(), "");
+				Static.SendMessage(p,
+						MCChatColor.YELLOW + "You are now in multiline mode. Type <<< on a line by itself to execute.");
+				Static.SendMessage(p, ":" + MCChatColor.GRAY + ">>>");
+			}
+		} else if (line.equals("<<<")) {
+			//Execute multiline
+			Static.SendMessage(p, ":" + MCChatColor.GRAY + "<<<");
+			String script = multilineMode.get(p.getName());
+			multilineMode.remove(p.getName());
+			try {
+				execute(script, p);
+			} catch (ConfigCompileException e) {
+				Static.SendMessage(p, MCChatColor.RED + e.getMessage() + ":" + e.getLineNum());
+			} catch (ConfigCompileGroupException ex) {
+				for (ConfigCompileException e : ex.getList()) {
+					Static.SendMessage(p, MCChatColor.RED + e.getMessage() + ":" + e.getLineNum());
+				}
+			}
+		} else {
+			if (multilineMode.containsKey(p.getName())) {
+				//Queue multiline
+				multilineMode.put(p.getName(), multilineMode.get(p.getName()) + line + "\n");
+				Static.SendMessage(p, ":" + MCChatColor.GRAY + line);
+			} else {
+				try {
+					//Execute single line
+					execute(line, p);
+				} catch (ConfigCompileException ex) {
+					Static.SendMessage(p, MCChatColor.RED + ex.getMessage());
+				} catch (ConfigCompileGroupException e) {
+					for (ConfigCompileException ex : e.getList()) {
+						Static.SendMessage(p, MCChatColor.RED + ex.getMessage());
+					}
+				}
+			}
+		}
+	}
+
+	public void execute(String script, final MCPlayer p) throws ConfigCompileException, ConfigCompileGroupException {
+		List<Token> stream = MethodScriptCompiler.lex(script, new File("Interpreter"), true);
+		ParseTree tree = MethodScriptCompiler.compile(stream);
+		interpreterMode.remove(p.getName());
+		GlobalEnv gEnv;
+		try {
+			gEnv = new GlobalEnv(executionQueue, profiler, persistenceNetwork,
+					CommandHelperFileLocations.getDefault().getConfigDirectory(),
+					new Profiles(MethodScriptFileLocations.getDefault().getSQLProfilesFile()),
+					new TaskManager());
+		} catch (IOException ex) {
+			CHLog.GetLogger().e(CHLog.Tags.GENERAL, ex.getMessage(), Target.UNKNOWN);
+			return;
+		} catch (Profiles.InvalidProfileException ex) {
+			CHLog.GetLogger().e(CHLog.Tags.GENERAL, ex.getMessage(), Target.UNKNOWN);
+			return;
+		}
+		gEnv.SetDynamicScriptingMode(true);
+		CommandHelperEnvironment cEnv = new CommandHelperEnvironment();
+		cEnv.SetPlayer(p);
+		Environment env = Environment.createEnvironment(gEnv, cEnv);
+		try {
+			MethodScriptCompiler.registerAutoIncludes(env, null);
+			MethodScriptCompiler.execute(tree, env, new MethodScriptComplete() {
+
+				@Override
+				public void done(String output) {
+					output = output.trim();
+					if (output.isEmpty()) {
+						Static.SendMessage(p, ":");
+					} else {
+						if (output.startsWith("/")) {
+							//Run the command
+							Static.SendMessage(p, ":" + MCChatColor.YELLOW + output);
+							p.chat(output);
+						} else {
+							//output the results
+							Static.SendMessage(p, ":" + MCChatColor.GREEN + output);
+						}
+					}
+					interpreterMode.add(p.getName());
+				}
+			}, null);
+		} catch (CancelCommandException e) {
+			interpreterMode.add(p.getName());
+		} catch (ConfigRuntimeException e) {
+			ConfigRuntimeException.HandleUncaughtException(e, env);
+			Static.SendMessage(p, MCChatColor.RED + e.toString());
+			interpreterMode.add(p.getName());
+		} catch (Exception e) {
+			Static.SendMessage(p, MCChatColor.RED + e.toString());
+			Static.getLogger().error(null, e);
+			interpreterMode.add(p.getName());
+		}
 	}
 
 	public void firstSetup(Class apiRootClass) {
@@ -238,12 +395,11 @@ public class CommandHelperMainClass {
 		ClassDiscoveryCache cdc = new ClassDiscoveryCache(CommandHelperFileLocations.getDefault().getCacheDirectory());
 		cdc.setLogger(logger);
 		ClassDiscovery.getDefaultInstance().setClassDiscoveryCache(cdc);
-		ClassDiscovery.getDefaultInstance().addDiscoveryLocation(ClassDiscovery.GetClassContainer(CommandHelperMainClass.class));
+		ClassDiscovery.getDefaultInstance().addDiscoveryLocation(ClassDiscovery.GetClassContainer(CommandHelperCommon.class));
 		ClassDiscovery.getDefaultInstance().addDiscoveryLocation(ClassDiscovery.GetClassContainer(apiRootClass));
 
 		logger.info("[CommandHelper] Running initial class discovery,"
 				+ " this will probably take a few seconds...");
-		BukkitMCEntityType.build();
 
 		logger.info("[CommandHelper] Loading extensions in the background...");
 
@@ -269,7 +425,7 @@ public class CommandHelperMainClass {
 	}
 
 	public void secondSetup(String versionString) {
-		if (loadingThread.isAlive()) {
+		if (loadingThread != null && loadingThread.isAlive()) {
 			logger.info("[CommandHelper] Waiting for extension loading to complete...");
 
 			try {
@@ -297,15 +453,27 @@ public class CommandHelperMainClass {
 		String main_file = Prefs.MainFile();
 		boolean showSplashScreen = Prefs.ShowSplashScreen();
 		if (showSplashScreen) {
-			System.out.println(TermColors.reset());
+			Static.getLogger().info(TermColors.reset());
 			//System.out.flush();
-			System.out.println("\n\n\n" + Static.Logo());
+			Static.getLogger().info("\n\n\n" + Static.Logo());
 		}
 		ac = new AliasCore(new File(CommandHelperFileLocations.getDefault().getConfigDirectory(), script_name),
 				CommandHelperFileLocations.getDefault().getLocalPackagesDirectory(),
 				CommandHelperFileLocations.getDefault().getPreferencesFile(),
 				new File(CommandHelperFileLocations.getDefault().getConfigDirectory(), main_file), this);
 		ac.reload(null, null);
+
+		hostnameLookupCache = new ConcurrentHashMap<>();
+		hostnameLookupThreadPool = Executors.newFixedThreadPool(3, new ThreadFactory() {
+			@Override
+			public Thread newThread(Runnable r) {
+				return new Thread(r, "CommandHelperHostnameLookup-" + (++hostnameThreadPoolID));
+			}
+		});
+	}
+
+	// worth noting, this is not needed if plugins can't be dynamically loaded
+	public void hostCacheRefresh() {
 
 		//Clear out our hostname cache
 		hostnameLookupCache = new ConcurrentHashMap<>();

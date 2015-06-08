@@ -13,7 +13,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- * Created by jb_aero on 4/6/2015.
+ * SpongeMCEntityType, 4/6/2015
+ *
+ * @author jb_aero
  */
 public class SpongeMCEntityType extends MCEntityType {
 
@@ -105,6 +107,8 @@ public class SpongeMCEntityType extends MCEntityType {
 				return EntityTypes.MOB_SPAWNER_MINECART;
 			case MINECART_TNT:
 				return EntityTypes.TNT_MINECART;
+			case UNKNOWN:
+				return EntityTypes.UNKNOWN;
 		}
 		return reg.getType(CatalogTypes.ENTITY_TYPE, v.name()).orNull();
 	}

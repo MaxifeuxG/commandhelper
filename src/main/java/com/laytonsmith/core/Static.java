@@ -21,9 +21,7 @@ import com.laytonsmith.abstraction.MCWorld;
 import com.laytonsmith.abstraction.StaticLayer;
 import com.laytonsmith.abstraction.blocks.MCBlock;
 import com.laytonsmith.annotations.typeof;
-import com.laytonsmith.commandhelper.AbstractLogger;
-import com.laytonsmith.commandhelper.CommandHelperMainClass;
-import com.laytonsmith.commandhelper.JavaLogger;
+import com.laytonsmith.commandhelper.CommandHelperCommon;
 import com.laytonsmith.core.constructs.CArray;
 import com.laytonsmith.core.constructs.CBoolean;
 import com.laytonsmith.core.constructs.CByteArray;
@@ -273,10 +271,10 @@ public final class Static {
 	 * @return
 	 */
 	public static AbstractLogger getLogger() {
-		if (CommandHelperMainClass.self == null || CommandHelperMainClass.self.logger == null) {
-			return JavaLogger.forName(CommandHelperMainClass.class.getName());
+		if (CommandHelperCommon.self == null || CommandHelperCommon.self.logger == null) {
+			return JavaLogger.forName(CommandHelperCommon.class.getName());
 		}
-		return CommandHelperMainClass.self.logger;
+		return CommandHelperCommon.self.logger;
 	}
 
 	/**
@@ -314,7 +312,7 @@ public final class Static {
 	 * @throws NotInitializedYetException
 	 */
 	public static AliasCore getAliasCore() throws NotInitializedYetException {
-		AliasCore ac = CommandHelperMainClass.getCore();
+		AliasCore ac = CommandHelperCommon.getCore();
 		if (ac == null) {
 			throw new NotInitializedYetException("The core has not been initialized yet");
 		}
@@ -328,7 +326,7 @@ public final class Static {
 	 * @throws NotInitializedYetException
 	 */
 	public static SimpleVersion getVersion() throws NotInitializedYetException {
-		SimpleVersion v = CommandHelperMainClass.version;
+		SimpleVersion v = CommandHelperCommon.version;
 		if (v == null) {
 			throw new NotInitializedYetException("The plugin has not been initialized yet");
 		}
@@ -1193,10 +1191,10 @@ public final class Static {
 	}
 
 	public static void HostnameCache(final MCPlayer p) {
-		CommandHelperMainClass.hostnameLookupThreadPool.submit(new Runnable() {
+		CommandHelperCommon.hostnameLookupThreadPool.submit(new Runnable() {
 			@Override
 			public void run() {
-				CommandHelperMainClass.hostnameLookupCache.put(p.getName(), p.getAddress().getHostName());
+				CommandHelperCommon.hostnameLookupCache.put(p.getName(), p.getAddress().getHostName());
 			}
 		});
 	}

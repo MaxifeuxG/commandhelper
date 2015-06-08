@@ -23,16 +23,13 @@ import com.laytonsmith.abstraction.bukkit.entities.BukkitMCPlayer;
 import com.laytonsmith.abstraction.bukkit.events.BukkitPlayerEvents;
 import com.laytonsmith.abstraction.enums.MCChatColor;
 import com.laytonsmith.abstraction.events.MCPlayerCommandEvent;
-import com.laytonsmith.core.AliasCore;
 import com.laytonsmith.core.InternalException;
 import com.laytonsmith.core.Prefs;
-import com.laytonsmith.core.Script;
 import com.laytonsmith.core.Static;
 import com.laytonsmith.core.UserManager;
 import com.laytonsmith.core.events.Driver;
 import com.laytonsmith.core.events.EventUtils;
 import com.laytonsmith.core.exceptions.ConfigRuntimeException;
-import com.laytonsmith.persistence.DataSourceException;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -42,10 +39,6 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 /**
  * Event listener for Hey0's server mod.
  *
@@ -53,39 +46,10 @@ import java.util.logging.Logger;
  */
 public class CommandHelperListener implements Listener {
 
-    /**
-     * Logger.
-     */
-    private static final Logger logger = Logger.getLogger("Minecraft");
+    private final CommandHelperCommon common;
 
-    /**
-     * List of global aliases.
-     */
-    private AliasCore ac;
-    private CommandHelperBukkit plugin;
-
-    public CommandHelperListener(CommandHelperBukkit plugin) {
-        this.plugin = plugin;
-    }
-
-    /**
-     * Load global aliases.
-     */
-    public void loadGlobalAliases() {
-        ac = plugin.common.getCore();
-    }
-
-    /**
-     * Find and run aliases for a player for a given command.
-     *
-     * @param command
-     * @return
-     */
-    public boolean runAlias(String command, MCPlayer player) throws DataSourceException {
-        UserManager um = UserManager.GetUserManager(player.getName());
-        List<Script> scripts = um.getAllScripts(plugin.common.persistenceNetwork);
-
-        return plugin.common.getCore().alias(command, player, scripts);
+    public CommandHelperListener(CommandHelperCommon common) {
+        this.common = common;
     }
 
     /**
@@ -95,8 +59,7 @@ public class CommandHelperListener implements Listener {
      */
     @EventHandler(priority= EventPriority.LOWEST)
     public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event) {
-        if (CommandHelperBukkit.self.interpreterListener
-                .isInInterpreterMode(event.getPlayer().getName())){
+        if (common.isInInterpreterMode(event.getPlayer().getName())) {
             //They are in interpreter mode, so we want it to handle this, not everything else.
             return;
         }
@@ -122,7 +85,7 @@ public class CommandHelperListener implements Listener {
         } //If we are playing dirty, ignore the cancelled flag
 
         try {
-            if (runAlias(event.getMessage(), player)) {
+            if (common.runAlias(event.getMessage(), player)) {
                 event.setCancelled(true);
                 if(Prefs.PlayDirty()){
                     //Super cancel the event
@@ -130,9 +93,9 @@ public class CommandHelperListener implements Listener {
                 }
             }
         } catch (InternalException e) {
-            logger.log(Level.SEVERE, e.getMessage());
+            common.logger.error(e.getMessage());
         } catch (ConfigRuntimeException e) {
-            logger.log(Level.WARNING, e.getMessage());
+            common.logger.warn(e.getMessage());
         } catch (Throwable e) {
             player.sendMessage(MCChatColor.RED + "Command failed with following reason: " + e.getMessage());
             //Obviously the command is registered, but it somehow failed. Cancel the event.

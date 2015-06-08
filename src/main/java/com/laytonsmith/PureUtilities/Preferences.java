@@ -3,7 +3,7 @@ package com.laytonsmith.PureUtilities;
 
 import com.laytonsmith.PureUtilities.Common.FileUtil;
 import com.laytonsmith.PureUtilities.Common.StringUtils;
-import com.laytonsmith.commandhelper.AbstractLogger;
+import com.laytonsmith.core.AbstractLogger;
 
 import java.io.File;
 import java.io.FileInputStream;

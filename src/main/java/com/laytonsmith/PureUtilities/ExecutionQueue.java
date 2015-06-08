@@ -1,5 +1,7 @@
 package com.laytonsmith.PureUtilities;
 
+import com.laytonsmith.core.Static;
+
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -243,7 +245,8 @@ public class ExecutionQueue {
 							if(uncaughtExceptionHandler != null){
 								uncaughtExceptionHandler.uncaughtException(Thread.currentThread(), t);
 							} else {
-								System.err.println("The queue \"" + queue + "\" threw an exception, and it was not handled.");
+								Static.getLogger().error("The queue \"{0}\" threw an exception and it was not handled.",
+										queue);
 								t.printStackTrace(System.err);
 							}
 						} finally {

@@ -13,6 +13,7 @@ import com.laytonsmith.annotations.api;
 import com.laytonsmith.annotations.noboilerplate;
 import com.laytonsmith.core.CHVersion;
 import com.laytonsmith.core.Optimizable;
+import com.laytonsmith.core.PomData;
 import com.laytonsmith.core.Static;
 import com.laytonsmith.core.constructs.CNull;
 import com.laytonsmith.core.constructs.CString;
@@ -24,6 +25,7 @@ import com.laytonsmith.core.environments.Environment;
 import com.laytonsmith.core.exceptions.CancelCommandException;
 import com.laytonsmith.core.exceptions.ConfigRuntimeException;
 import com.laytonsmith.core.functions.Exceptions.ExceptionType;
+
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Map;
@@ -612,12 +614,12 @@ public class Echoes {
             if(args.length > 1){
                 prefix = Static.getBoolean(args[1]);
             }
-            mes = (prefix?"CommandHelper: ":"") + Static.MCToANSIColors(mes);
+            mes = (prefix ? PomData.NAME + " " : "") + Static.MCToANSIColors(mes);
             if(mes.matches("(?m).*\033.*")){
                 //We have terminal colors, we need to reset them at the end
                 mes += TermColors.reset();
             }
-            System.out.println(mes);
+            Static.getServer().getConsole().sendMessage(mes);
             return CVoid.VOID;
         }
 		@Override

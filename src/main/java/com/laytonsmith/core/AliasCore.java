@@ -8,8 +8,8 @@ import com.laytonsmith.abstraction.MCCommandSender;
 import com.laytonsmith.abstraction.MCPlayer;
 import com.laytonsmith.abstraction.StaticLayer;
 import com.laytonsmith.abstraction.enums.MCChatColor;
+import com.laytonsmith.commandhelper.CommandHelperCommon;
 import com.laytonsmith.commandhelper.CommandHelperFileLocations;
-import com.laytonsmith.commandhelper.CommandHelperMainClass;
 import com.laytonsmith.core.constructs.Target;
 import com.laytonsmith.core.environments.CommandHelperEnvironment;
 import com.laytonsmith.core.environments.Environment;
@@ -73,7 +73,7 @@ public class AliasCore {
 	private List<Script> scripts;
 	private Set<String> echoCommand = new HashSet<String>();
 	public List<File> autoIncludes;
-	public static CommandHelperMainClass parent;
+	public static CommandHelperCommon parent;
 
 	/*
 	 * Old javadoc... maybe reimplement these somewhere?
@@ -90,7 +90,7 @@ public class AliasCore {
 	 * This constructor accepts the configuration settings for the plugin, and ensures that the manager uses these
 	 * settings.
 	 */
-	public AliasCore(File aliasConfig, File auxAliases, File prefFile, File mainFile, CommandHelperMainClass parent) {
+	public AliasCore(File aliasConfig, File auxAliases, File prefFile, File mainFile, CommandHelperCommon parent) {
 		this.aliasConfig = aliasConfig;
 		this.auxAliases = auxAliases;
 		this.prefFile = prefFile;
@@ -331,7 +331,7 @@ public class AliasCore {
 				if (player != null) {
 					player.sendMessage(reloadOptions.getBuiltDescription());
 				} else {
-					System.out.println(reloadOptions.getBuiltDescription());
+					Static.getLogger().info(reloadOptions.getBuiltDescription());
 				}
 				return;
 			}
@@ -733,12 +733,16 @@ public class AliasCore {
 				}
 			}
 			if (errors > 0) {
-				System.out.println(TermColors.YELLOW + "[CommandHelper]: " + (scripts.size() - errors) + " alias(es) defined, " + TermColors.RED + "with " + errors + " aliases with compile errors." + TermColors.reset());
+				Static.getLogger().info("{0}[{1}] {2} alias{3} defined, {4}with {5} alias{6} with compile errors.{7}",
+						TermColors.YELLOW, PomData.NAME, (scripts.size() - errors),
+						(scripts.size() - errors) == 1 ? "" : "es",
+						TermColors.RED, errors, errors == 1 ? "" : "es", TermColors.reset());
 				if (player != null) {
 					player.sendMessage(MCChatColor.YELLOW + "[CommandHelper]: " + (scripts.size() - errors) + " alias(es) defined, " + MCChatColor.RED + "with " + errors + " aliases with compile errors.");
 				}
 			} else {
-				System.out.println(TermColors.YELLOW + "[CommandHelper]: " + scripts.size() + " alias(es) defined." + TermColors.reset());
+				Static.getLogger().info("{0}[{1}] {2} alias{3} defined.{4}", TermColors.YELLOW, PomData.NAME,
+						scripts.size(), scripts.size() == 1 ? "" : "es", TermColors.reset());
 				if (player != null) {
 					player.sendMessage(MCChatColor.YELLOW + "[CommandHelper]: " + scripts.size() + " alias(es) defined.");
 				}

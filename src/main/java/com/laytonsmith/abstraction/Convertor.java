@@ -122,6 +122,8 @@ public interface Convertor {
 	 */
 	public MCInventory GetLocationInventory(MCLocation location);
 
+	void setGame(MCGame game);
+
 	/**
 	 * Run whenever the server is shutting down (or restarting). There is no
 	 * guarantee provided as to what thread the runnables actually run on, so you should

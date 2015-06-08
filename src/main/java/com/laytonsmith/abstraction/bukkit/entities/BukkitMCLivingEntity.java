@@ -1,16 +1,20 @@
 package com.laytonsmith.abstraction.bukkit.entities;
 
 import com.laytonsmith.PureUtilities.Common.ReflectionUtils;
+import com.laytonsmith.PureUtilities.Vector3D;
 import com.laytonsmith.abstraction.MCEntity;
 import com.laytonsmith.abstraction.MCEntityEquipment;
 import com.laytonsmith.abstraction.MCLivingEntity;
 import com.laytonsmith.abstraction.MCLocation;
 import com.laytonsmith.abstraction.MCPlayer;
+import com.laytonsmith.abstraction.MCProjectile;
+import com.laytonsmith.abstraction.MCProjectileSource;
 import com.laytonsmith.abstraction.blocks.MCBlock;
 import com.laytonsmith.abstraction.bukkit.BukkitConvertor;
 import com.laytonsmith.abstraction.bukkit.BukkitMCEntityEquipment;
 import com.laytonsmith.abstraction.bukkit.BukkitMCLocation;
 import com.laytonsmith.abstraction.bukkit.blocks.BukkitMCBlock;
+import com.laytonsmith.abstraction.enums.MCProjectileType;
 import com.laytonsmith.core.Static;
 import com.laytonsmith.core.constructs.Target;
 import com.laytonsmith.core.exceptions.ConfigRuntimeException;
@@ -18,11 +22,14 @@ import com.laytonsmith.core.functions.Exceptions.ExceptionType;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Creature;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Projectile;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.BlockIterator;
+import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -35,13 +42,18 @@ import java.util.logging.Logger;
  *
  * 
  */
-public class BukkitMCLivingEntity extends BukkitMCEntityProjectileSource implements MCLivingEntity {
+public class BukkitMCLivingEntity extends BukkitMCEntity implements MCLivingEntity, MCProjectileSource {
 
-	LivingEntity le;
+	final LivingEntity le;
 
 	public BukkitMCLivingEntity(Entity ent) {
 		super(ent);
 		this.le = (LivingEntity) ent;
+	}
+
+	@Override
+	public LivingEntity getHandle() {
+		return le;
 	}
 
 	@Override
@@ -373,5 +385,36 @@ public class BukkitMCLivingEntity extends BukkitMCEntityProjectileSource impleme
 	@Override
 	public void setLeashHolder(MCEntity holder) {
 		le.setLeashHolder(holder == null ? null : ((BukkitMCEntity) holder).getHandle());
+	}
+
+	@Override
+	public MCProjectile launchProjectile(MCProjectileType projectile) {
+		EntityType et = EntityType.valueOf(projectile.name());
+		Class<? extends Entity> c = et.getEntityClass();
+		Projectile proj = getHandle().launchProjectile(c.asSubclass(Projectile.class));
+
+		MCEntity mcproj = BukkitConvertor.BukkitGetCorrectEntity(proj);
+
+		if (mcproj instanceof MCProjectile) {
+			return (MCProjectile) mcproj;
+		} else {
+			return null;
+		}
+	}
+
+	@Override
+	public MCProjectile launchProjectile(MCProjectileType projectile, Vector3D init) {
+		EntityType et = EntityType.valueOf(projectile.name());
+		Class<? extends Entity> c = et.getEntityClass();
+		Vector vector = new Vector(init.X(), init.Y(), init.Z());
+		Projectile proj = getHandle().launchProjectile(c.asSubclass(Projectile.class), vector);
+
+		MCEntity mcproj = BukkitConvertor.BukkitGetCorrectEntity(proj);
+
+		if (mcproj instanceof MCProjectile) {
+			return (MCProjectile) mcproj;
+		} else {
+			return null;
+		}
 	}
 }

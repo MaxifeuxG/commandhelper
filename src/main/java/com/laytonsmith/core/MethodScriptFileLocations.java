@@ -4,6 +4,7 @@ package com.laytonsmith.core;
 import com.laytonsmith.PureUtilities.Common.StringUtils;
 import com.laytonsmith.PureUtilities.FileLocations;
 import com.laytonsmith.abstraction.Implementation;
+
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
@@ -61,7 +62,7 @@ public class MethodScriptFileLocations extends FileLocations {
 	 * and other config settings are stored.
 	 * @return
 	 */
-	public File getConfigDirectory(){
+	public File getConfigDirectory() {
 		return new File(getJarDirectory(), Implementation.GetServerType().getBranding() + "/");
 	}
 

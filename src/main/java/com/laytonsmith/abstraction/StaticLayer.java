@@ -5,7 +5,8 @@ import com.laytonsmith.PureUtilities.DaemonManager;
 import com.laytonsmith.abstraction.blocks.MCMaterial;
 import com.laytonsmith.abstraction.enums.MCRecipeType;
 import com.laytonsmith.annotations.convert;
-import com.laytonsmith.commandhelper.CommandHelperMainClass;
+import com.laytonsmith.commandhelper.CommandHelperCommon;
+import com.laytonsmith.core.Static;
 
 import java.util.Set;
 
@@ -21,13 +22,13 @@ public final class StaticLayer {
     private static Convertor convertor = null;
     static{
         InitConvertor();
-    }        
-    
-    private static synchronized void InitConvertor(){
+    }
+
+    private static synchronized void InitConvertor() {
         Set<Class> classes = ClassDiscovery.getDefaultInstance().loadClassesWithAnnotation(convert.class);
         for(Class c : classes){
             if(!Convertor.class.isAssignableFrom(c)){
-                System.err.println("The Convertor " + c.getSimpleName() + " doesn't implement Convertor!");
+                Static.getLogger().error("The Convertor {0} doesn't implement Convertor!", c.getSimpleName());
             }
             convert convert = (convert)c.getAnnotation(convert.class);
             if(convert.type() == Implementation.GetServerType()){
@@ -35,17 +36,17 @@ public final class StaticLayer {
                 try{
                     if(convertor != null){
                         //Uh... There are more than one implementations for this server type
-                        System.out.println("More than one Convertor for this server type was detected!");
+                        Static.getLogger().error("More than one Convertor for this server type was detected!");
                     }
                     convertor = (Convertor) c.newInstance();                    
                     //At this point we are all set
                 } catch(Exception e){
-                    System.err.println("Tried to instantiate the Convertor, but couldn't!");
+                    Static.getLogger().error("Tried to instantiate the Convertor, but couldn't!");
                 }
             }
         }
         if(convertor == null){
-            System.err.println("Could not find a suitable convertor! You will experience serious issues with this plugin.");
+            Static.getLogger().error("Could not find a suitable convertor! You will experience serious issues with this plugin.");
         }
     }
 
@@ -105,7 +106,7 @@ public final class StaticLayer {
         return convertor.GetEnchantmentValues();
     }
 
-    public static void Startup(CommandHelperMainClass mainClass) {
+    public static void Startup(CommandHelperCommon mainClass) {
         convertor.Startup();
     }
 

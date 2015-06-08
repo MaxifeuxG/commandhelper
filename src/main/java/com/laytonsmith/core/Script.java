@@ -163,8 +163,8 @@ public class Script {
                 for (String group : groups) {
                     if (group.startsWith("-") && ((MCPlayer)p).inGroup(group.substring(1))) {
                         //negative permission
-                        throw new ConfigRuntimeException("You do not have permission to use that command", ExceptionType.InsufficientPermissionException,
-                                Target.UNKNOWN);
+                        throw new ConfigRuntimeException("You do not have permission to use that command",
+                                ExceptionType.InsufficientPermissionException, Target.UNKNOWN);
                     } else if (((MCPlayer)p).inGroup(group)) {
                         //They do have permission.
                         break;
@@ -202,12 +202,12 @@ public class Script {
             if(p != null){
                 p.sendMessage("The break() function must be used inside a for() or foreach() loop");
             }
-            System.out.println("The break() function must be used inside a for() or foreach() loop");
+            Static.getLogger().warn("The break() function must be used inside a for() or foreach() loop");
         } catch (LoopContinueException e) {
             if(p != null){
                 p.sendMessage("The continue() function must be used inside a for() or foreach() loop");
             }
-            System.out.println("The continue() function must be used inside a for() or foreach() loop");
+            Static.getLogger().warn("The continue() function must be used inside a for() or foreach() loop");
         } catch (FunctionReturnException e) {
             if(myEnv.getEnv(GlobalEnv.class).GetEvent() != null){
                 //Oh, we're running in an event handler. Those know how to catch it too.
@@ -216,9 +216,9 @@ public class Script {
             if(p != null){
                 p.sendMessage("The return() function must be used inside a procedure.");
             }
-            System.out.println("The return() function must be used inside a procedure.");
+            Static.getLogger().warn("The return() function must be used inside a procedure.");
         } catch (Throwable t) {
-            System.out.println("An unexpected exception occured during the execution of a script.");
+            Static.getLogger().error("An unexpected exception occured during the execution of a script.");
             t.printStackTrace();
             if(p != null){
                 p.sendMessage("An unexpected exception occured during the execution of your script. Please check the console for more information.");

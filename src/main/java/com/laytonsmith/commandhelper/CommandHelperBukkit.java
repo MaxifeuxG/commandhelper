@@ -29,6 +29,8 @@ import com.laytonsmith.abstraction.bukkit.BukkitMCBlockCommandSender;
 import com.laytonsmith.abstraction.bukkit.BukkitMCCommand;
 import com.laytonsmith.abstraction.bukkit.entities.BukkitMCPlayer;
 import com.laytonsmith.abstraction.enums.MCChatColor;
+import com.laytonsmith.abstraction.enums.bukkit.BukkitMCEntityType;
+import com.laytonsmith.core.JavaLogger;
 import com.laytonsmith.core.Prefs;
 import com.laytonsmith.core.Script;
 import com.laytonsmith.core.Static;
@@ -58,7 +60,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * This was originally known as CommandHelperBukkit.java -jb_aero
+ * This was originally known as CommandHelperPlugin.java -jb_aero
  *
  * Entry point for the plugin.
  *
@@ -68,24 +70,24 @@ public class CommandHelperBukkit extends JavaPlugin {
 	//Do not rename this field, it is changed reflectively in unit tests.
 
 	public static CommandHelperBukkit self;
-	public CommandHelperMainClass common;
+	public CommandHelperCommon common;
 	public long interpreterUnlockedUntil = 0;
 
 	public CommandHelperBukkit() {
 		self = this;
-		common = new CommandHelperMainClass(new JavaLogger(this.getLogger()));
+		common = new CommandHelperCommon(new JavaLogger(this.getLogger()));
 	}
 
 	/**
 	 * Listener for the plugin system.
 	 */
 	final CommandHelperListener playerListener =
-			new CommandHelperListener(this);
+			new CommandHelperListener(common);
 	/**
 	 * Interpreter listener
 	 */
 	public final CommandHelperInterpreterListener interpreterListener =
-			new CommandHelperInterpreterListener(this);
+			new CommandHelperInterpreterListener(common);
 	/**
 	 * Server Command Listener, for console commands
 	 */
@@ -97,6 +99,7 @@ public class CommandHelperBukkit extends JavaPlugin {
 	public void onLoad() {
 		Implementation.setServerType(Implementation.Type.BUKKIT);
 		common.firstSetup(Server.class);
+		BukkitMCEntityType.build();
 	}
 
 	/**
@@ -108,7 +111,8 @@ public class CommandHelperBukkit extends JavaPlugin {
 		//Metrics
 		try {
 			Metrics m = new Metrics(this);
-			m.addCustomData(new Metrics.Plotter("Player count") {
+			Metrics.Graph playerGraph = m.createGraph("Player Count");
+			playerGraph.addPlotter(new Metrics.Plotter("Player Count") {
 
 				@Override
 				public int getValue() {
@@ -121,6 +125,7 @@ public class CommandHelperBukkit extends JavaPlugin {
 		}
 
 		common.secondSetup(getDescription().getVersion());
+		common.hostCacheRefresh();
 
 		BukkitDirtyRegisteredListener.PlayDirty();
 		registerEvents(playerListener);
@@ -132,10 +137,7 @@ public class CommandHelperBukkit extends JavaPlugin {
 		//Script events
 		StaticLayer.Startup(common);
 
-		playerListener.loadGlobalAliases();
-		interpreterListener.reload();
-
-		this.getLogger().log(Level.INFO, "[CommandHelper] CommandHelper {0} enabled", common.version);
+		this.getLogger().log(Level.INFO, "[CommandHelper] CommandHelper {0} enabled", CommandHelperCommon.version);
 	}
 
 	/**
@@ -371,7 +373,7 @@ public class CommandHelperBukkit extends JavaPlugin {
 							return true;
 						}
 					}
-					interpreterListener.startInterpret(player.getName());
+					common.startInterpret(player.getName());
 					Static.SendMessage(player, MCChatColor.YELLOW + "You are now in interpreter mode. Type a dash (-) on a line by itself to exit, and >>> to enter"
 							+ " multiline mode.");
 				} else {

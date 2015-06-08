@@ -94,7 +94,7 @@ public final class CHLog {
         for(Tags t : Tags.values()){
             myPrefs.add(new Preference(t.name, t.level.name(), Preferences.Type.STRING, t.description));
         }
-        CHLog.prefs = new Preferences("CommandHelper", Static.getLogger(), myPrefs, header);
+        CHLog.prefs = new Preferences(PomData.NAME, Static.getLogger(), myPrefs, header);
         try{
             CHLog.prefs.init(MethodScriptFileLocations.getDefault().getLoggerPreferencesFile());
         } catch(IOException e){
@@ -284,7 +284,7 @@ public final class CHLog {
             } catch(IOException e){
                 //Well, shoot.
                 if(level.level <= 1){
-                    System.err.println("Was going to print information to the log, but instead, there was"
+                    Static.getLogger().error("Was going to print information to the log, but instead, there was"
                             + " an IOException: ");
                     e.printStackTrace(System.err);
                 }

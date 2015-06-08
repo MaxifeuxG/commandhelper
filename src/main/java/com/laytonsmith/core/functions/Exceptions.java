@@ -11,6 +11,7 @@ import com.laytonsmith.core.ParseTree;
 import com.laytonsmith.core.Prefs;
 import com.laytonsmith.core.Script;
 import com.laytonsmith.core.SimpleDocumentation;
+import com.laytonsmith.core.Static;
 import com.laytonsmith.core.constructs.CArray;
 import com.laytonsmith.core.constructs.CClosure;
 import com.laytonsmith.core.constructs.CNull;
@@ -25,6 +26,7 @@ import com.laytonsmith.core.environments.GlobalEnv;
 import com.laytonsmith.core.exceptions.CancelCommandException;
 import com.laytonsmith.core.exceptions.ConfigCompileException;
 import com.laytonsmith.core.exceptions.ConfigRuntimeException;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -400,8 +402,9 @@ public class Exceptions {
 				that.eval(tryCode, env);
 			} catch (ConfigRuntimeException e) {
 				if (Prefs.DebugMode()) {
-					System.out.println("[" + Implementation.GetServerType().getBranding() + "]:"
-							+ " Exception thrown (debug mode on) -> " + e.getMessage() + " :: " + e.getExceptionType() + ":" 
+					Static.getLogger().info("[" + Implementation.GetServerType().getBranding() + "]:"
+							+ " Exception thrown (debug mode on) -> " + e.getMessage() + " :: " + e.getExceptionType()
+							+ ":"
 							+ e.getFile() + ":" + e.getLineNum());
 				}
 				if (e.getExceptionType() != null && (interest.isEmpty() || interest.contains(e.getExceptionType().toString()))) {

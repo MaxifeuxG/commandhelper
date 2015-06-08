@@ -10,11 +10,9 @@ import com.laytonsmith.PureUtilities.Common.Misc;
 import com.laytonsmith.PureUtilities.Common.RSAEncrypt;
 import com.laytonsmith.PureUtilities.Common.StringUtils;
 import com.laytonsmith.PureUtilities.TermColors;
-import com.laytonsmith.PureUtilities.ZipReader;
 import com.laytonsmith.abstraction.Implementation;
 import com.laytonsmith.abstraction.StaticLayer;
 import com.laytonsmith.annotations.api;
-import com.laytonsmith.core.compiler.AliasCompiler;
 import com.laytonsmith.core.compiler.OptimizationUtilities;
 import com.laytonsmith.core.constructs.Target;
 import com.laytonsmith.core.exceptions.ConfigCompileException;
@@ -35,22 +33,20 @@ import com.laytonsmith.tools.docgen.DocGenExportTool;
 import com.laytonsmith.tools.docgen.DocGenUI;
 import com.laytonsmith.tools.docgen.ExtensionDocGen;
 import com.laytonsmith.tools.pnviewer.PNViewer;
-import java.awt.HeadlessException;
+import jline.console.ConsoleReader;
+
+import java.awt.*;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.lang.management.ManagementFactory;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import jline.console.ConsoleReader;
-import org.yaml.snakeyaml.Yaml;
 
 /**
  *
@@ -85,7 +81,6 @@ public class Main {
 	private static final ArgumentParser uiMode;
 
 	static {
-		MethodScriptFileLocations.setDefault(new MethodScriptFileLocations());
 		ArgumentSuite suite = new ArgumentSuite()
 				.addDescription("These are the command line tools for CommandHelper. For more information about a"
 				+ " particular mode, run help <mode name>. To run a command, in general, use the command:\n\n"
@@ -579,18 +574,6 @@ public class Main {
 
 	@SuppressWarnings({"ThrowableInstanceNotThrown", "ThrowableInstanceNeverThrown"})
 	public static String loadSelfVersion() throws Exception {
-		File file = new File(new File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI()), "plugin.yml");
-		ZipReader reader = new ZipReader(file);
-		if (!reader.exists()) {
-			throw new Exception(new FileNotFoundException(String.format("%s does not exist", file.getPath())));
-		}
-		try {
-			String contents = reader.getFileContents();
-			Yaml yaml = new Yaml();
-			Map<String, Object> map = (Map<String, Object>)yaml.load(contents);
-			return (String)map.get("version");
-		} catch (RuntimeException | IOException ex) {
-			throw new Exception(ex);
-		}
+		return PomData.VERSION;
 	}
 }

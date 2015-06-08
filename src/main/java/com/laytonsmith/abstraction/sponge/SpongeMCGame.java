@@ -21,7 +21,7 @@ public class SpongeMCGame implements MCGame {
 	private MCVersion ver;
 
 	public SpongeMCGame() {
-		game = CommandHelperSponge.self.myGame;
+		game = CommandHelperSponge.self.theGame;
 		if (!(this instanceof MCServer)) {
 			server = new SpongeMCServer();
 		} else {
@@ -79,6 +79,10 @@ public class SpongeMCGame implements MCGame {
 
 	@Override
 	public MCServer getServer() {
+		return server;
+	}
+
+	public SpongeMCServer getAbstractServer() {
 		return server;
 	}
 

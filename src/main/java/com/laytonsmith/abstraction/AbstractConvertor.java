@@ -26,6 +26,11 @@ public abstract class AbstractConvertor implements Convertor {
 	protected MCGame game;
 
 	@Override
+	public void setGame(MCGame game) {
+		this.game = game;
+	}
+
+	@Override
 	public void addShutdownHook(Runnable r) {
 		shutdownHooks.add(r);
 	}

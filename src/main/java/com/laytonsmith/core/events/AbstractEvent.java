@@ -98,7 +98,7 @@ public abstract class AbstractEvent implements Event, Comparable<Event> {
 				MethodScriptCompiler.execute(tree, env, null, null);
 			} catch(CancelCommandException ex){
 				if(ex.getMessage() != null && !ex.getMessage().equals("")){
-					System.out.println(ex.getMessage());
+					Static.getLogger().warn(ex.getMessage());
 				}
 			} catch(FunctionReturnException ex){
 				//We simply allow this to end the event execution

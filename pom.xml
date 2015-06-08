@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.sk89q</groupId>
 	<artifactId>commandhelper</artifactId>
-	<version>3.3.1-SNAPSHOT</version>
+	<version>3.4.0-SNAPSHOT</version>
 	<name>CommandHelper</name>
 	<description>CommandHelper is a full blown scripting language built right into Minecraft</description>
 	<inceptionYear>2010</inceptionYear>
@@ -202,6 +202,10 @@
 					<groupId>org.ow2.asm</groupId>
 					<artifactId>asm</artifactId>
 				</exclusion>
+				<exclusion>
+					<groupId>com.flowpowered</groupId>
+					<artifactId>flow-noise</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 
@@ -373,9 +377,10 @@
 		</dependency>
 		<!-- MCStats -->
 		<dependency>
-			<groupId>org.mcstats</groupId>
+			<groupId>org.mcstats.bukkit</groupId>
 			<artifactId>metrics</artifactId>
-			<version>1.2-SNAPSHOT</version>
+			<version>R8-SNAPSHOT</version>
+			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>commons-codec</groupId>
@@ -464,6 +469,21 @@
 
 		<!-- Plugins -->
 		<plugins>
+			<!-- Template plugin -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>templating-maven-plugin</artifactId>
+				<version>1.0-alpha-3</version>
+				<executions>
+					<execution>
+						<id>filter-src</id>
+						<goals>
+							<goal>filter-sources</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
 			<!-- Compile plugin -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -552,7 +572,7 @@
 									<include>com.jcraft:jsch:jar:*</include>
 									<include>org.apache.commons:commons-io:jar:*</include>
 									<include>org.xerial:sqlite-jdbc:jar:*</include>
-									<include>org.mcstats:metrics:jar:*</include>
+									<include>org.mcstats.*:*</include>
 									<include>net.sourceforge.jchardet:jchardet:jar:*</include>
 									<include>redis.clients:jedis:jar:*</include>
 									<include>mysql:mysql-connector-java:jar:*</include>

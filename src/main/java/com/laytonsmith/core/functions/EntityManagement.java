@@ -3,6 +3,7 @@ package com.laytonsmith.core.functions;
 import com.laytonsmith.PureUtilities.Common.StringUtils;
 import com.laytonsmith.PureUtilities.Vector3D;
 import com.laytonsmith.PureUtilities.Version;
+import com.laytonsmith.abstraction.Implementation;
 import com.laytonsmith.abstraction.MCAgeable;
 import com.laytonsmith.abstraction.MCArmorStand;
 import com.laytonsmith.abstraction.MCBlockCommandSender;
@@ -29,12 +30,12 @@ import com.laytonsmith.abstraction.StaticLayer;
 import com.laytonsmith.abstraction.blocks.MCBlock;
 import com.laytonsmith.abstraction.blocks.MCBlockFace;
 import com.laytonsmith.abstraction.blocks.MCBlockProjectileSource;
-import com.laytonsmith.abstraction.entities.MCFallingBlock;
 import com.laytonsmith.abstraction.entities.MCArrow;
 import com.laytonsmith.abstraction.entities.MCBoat;
 import com.laytonsmith.abstraction.entities.MCCommandMinecart;
 import com.laytonsmith.abstraction.entities.MCCreeper;
 import com.laytonsmith.abstraction.entities.MCEnderman;
+import com.laytonsmith.abstraction.entities.MCFallingBlock;
 import com.laytonsmith.abstraction.entities.MCFishHook;
 import com.laytonsmith.abstraction.entities.MCGuardian;
 import com.laytonsmith.abstraction.entities.MCHorse;
@@ -927,8 +928,8 @@ public class EntityManagement {
 				throw new ConfigRuntimeException("You must specify target location if you want shoot from location, not entity.", ExceptionType.FormatException, t);
 			}
 
-			if (shooter_id > 0 && to == null) {
-				MCProjectile projectile = shooter.launchProjectile(projectile_shoot);
+			if (shooter_id > 0 && to == null && shooter instanceof MCProjectileSource) {
+				MCProjectile projectile = ((MCProjectileSource) shooter).launchProjectile(projectile_shoot);
 
 				return new CInt(projectile.getEntityId(), t);
 			} else {
@@ -3157,8 +3158,14 @@ public class EntityManagement {
 				if (args[1] instanceof CNull) {
 					((MCProjectile) entity).setShooter(null);
 				} else if (args[1] instanceof CInt) {
-  					int id2 = Static.getInt32(args[1], t);
-  					((MCProjectile) entity).setShooter(Static.getLivingEntity(id2, t));
+					MCLivingEntity id2 = Static.getLivingEntity(Static.getInt32(args[1], t), t);
+					if (id2 instanceof MCProjectileSource) {
+						((MCProjectile) entity).setShooter((MCProjectileSource) id2);
+					} else {
+						throw new ConfigRuntimeException(t, ExceptionType.BadEntityTypeException,
+								"Expected a capable projectile source entity, but {0} is not such on {1}.",
+								id2.getType().concreteName(), Implementation.GetServerType().name());
+					}
 				} else if (args[1] instanceof CArray) {
 					throw new ConfigRuntimeException("Setting a block as a shooter is not yet supported",
 							ExceptionType.FormatException, t);

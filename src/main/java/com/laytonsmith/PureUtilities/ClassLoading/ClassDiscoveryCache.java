@@ -4,8 +4,8 @@ package com.laytonsmith.PureUtilities.ClassLoading;
 import com.laytonsmith.PureUtilities.Common.StringUtils;
 import com.laytonsmith.PureUtilities.ProgressIterator;
 import com.laytonsmith.PureUtilities.ZipReader;
-import com.laytonsmith.commandhelper.AbstractLogger;
-import com.laytonsmith.commandhelper.JavaLogger;
+import com.laytonsmith.core.AbstractLogger;
+import com.laytonsmith.core.JavaLogger;
 
 import java.io.File;
 import java.io.FileInputStream;

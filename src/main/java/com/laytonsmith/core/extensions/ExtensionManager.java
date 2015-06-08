@@ -15,10 +15,11 @@ import com.laytonsmith.abstraction.StaticLayer;
 import com.laytonsmith.annotations.api;
 import com.laytonsmith.annotations.shutdown;
 import com.laytonsmith.annotations.startup;
-import com.laytonsmith.commandhelper.AbstractLogger;
 import com.laytonsmith.commandhelper.CommandHelperFileLocations;
+import com.laytonsmith.core.AbstractLogger;
 import com.laytonsmith.core.CHLog;
 import com.laytonsmith.core.LogLevel;
+import com.laytonsmith.core.PomData;
 import com.laytonsmith.core.Prefs;
 import com.laytonsmith.core.Static;
 import com.laytonsmith.core.constructs.CFunction;
@@ -531,13 +532,13 @@ public class ExtensionManager {
 				Collections.sort(functions);
 				String functionString = StringUtils.Join(functions, ", ", ", and ", " and ");
 
-				System.out.println(Implementation.GetServerType().getBranding()
+				Static.getLogger().info(Implementation.GetServerType().getBranding()
 						+ ": Loaded the following functions: " + functionString.trim());
-				System.out.println(Implementation.GetServerType().getBranding()
+				Static.getLogger().info(Implementation.GetServerType().getBranding()
 						+ ": Loaded " + functions.size() + " function" + (functions.size() == 1 ? "." : "s."));
-				System.out.println(Implementation.GetServerType().getBranding()
+				Static.getLogger().info(Implementation.GetServerType().getBranding()
 						+ ": Loaded the following events: " + eventString.trim());
-				System.out.println(Implementation.GetServerType().getBranding()
+				Static.getLogger().info(Implementation.GetServerType().getBranding()
 						+ ": Loaded " + events.size() + " event" + (events.size() == 1 ? "." : "s."));
 			}
 		} catch(Throwable e) {
@@ -580,8 +581,8 @@ public class ExtensionManager {
 			try {
 				Files.delete(f.toPath());
 			} catch (IOException ex) {
-				System.out.println("[CommandHelper] Could not delete loose file "
-						+ f.getAbsolutePath() + ": " + ex.getMessage());
+				Static.getLogger().warn("[{0}] Could not delete loose file {1}: {2}",
+						PomData.NAME, f.getAbsolutePath(), ex.getMessage());
 			}
 		}
 	}

@@ -292,7 +292,7 @@ public class Meta {
 					p.setOp(value);
 				} else {
 					Static.getLogger().warn("[CommandHelper]: Failed to OP player " + player.getName());
-					System.err.println("Extra information about the error: ");
+					Static.getLogger().warn("Extra information about the error: ");
 					e.printStackTrace();
 				}
 			}

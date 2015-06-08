@@ -4,6 +4,7 @@
 package com.laytonsmith.core.exceptions;
 
 import com.laytonsmith.PureUtilities.Common.StackTraceUtils;
+import com.laytonsmith.PureUtilities.Common.StringUtils;
 import com.laytonsmith.PureUtilities.TermColors;
 import com.laytonsmith.abstraction.MCPlayer;
 import com.laytonsmith.abstraction.enums.MCChatColor;
@@ -21,6 +22,7 @@ import com.laytonsmith.core.environments.CommandHelperEnvironment;
 import com.laytonsmith.core.environments.Environment;
 import com.laytonsmith.core.environments.GlobalEnv;
 import com.laytonsmith.core.functions.Exceptions.ExceptionType;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -289,8 +291,8 @@ public class ConfigRuntimeException extends RuntimeException {
 		CHLog.GetLogger().Log("COMPILE ERROR".equals(exceptionType)?CHLog.Tags.COMPILER:CHLog.Tags.RUNTIME,
 				LogLevel.ERROR, log.toString(), top, false);
 		//Console
-		System.out.println(console.toString() + TermColors.reset());
-		//Player
+        Static.getLogger().error(console.toString() + TermColors.reset());
+        //Player
 		if(currentPlayer != null){
 			currentPlayer.sendMessage(player.toString());
 		}
@@ -401,6 +403,18 @@ public class ConfigRuntimeException extends RuntimeException {
 			throw new NullPointerException("Use CreateUncatchableException instead.");
 		}
         createException(ex, t);
+    }
+
+    public ConfigRuntimeException(Target t, ExceptionType ex, String format, Object arg) {
+        this(StringUtils.format(format, arg), ex, t);
+    }
+
+    public ConfigRuntimeException(Target t, ExceptionType ex, String format, Object arg1, Object arg2) {
+        this(StringUtils.format(format, arg1, arg2), ex, t);
+    }
+
+    public ConfigRuntimeException(Target t, ExceptionType ex, String format, Object... args) {
+        this(StringUtils.format(format, args), ex, t);
     }
 
 	private void createException(ExceptionType ex, Target t){

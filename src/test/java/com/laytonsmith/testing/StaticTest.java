@@ -40,7 +40,7 @@ import com.laytonsmith.abstraction.enums.MCRecipeType;
 import com.laytonsmith.abstraction.enums.MCTone;
 import com.laytonsmith.annotations.convert;
 import com.laytonsmith.annotations.noboilerplate;
-import com.laytonsmith.commandhelper.CommandHelperMainClass;
+import com.laytonsmith.commandhelper.CommandHelperCommon;
 import com.laytonsmith.core.AliasCore;
 import com.laytonsmith.core.CHLog;
 import com.laytonsmith.core.MethodScriptCompiler;
@@ -584,7 +584,7 @@ public class StaticTest {
 		Implementation.setServerType(Implementation.Type.TEST);
         AliasCore fakeCore = mock(AliasCore.class);
         fakeCore.autoIncludes = new ArrayList<File>();
-        SetPrivate(CommandHelperMainClass.class, "ac", fakeCore, AliasCore.class);
+        SetPrivate(CommandHelperCommon.class, "ac", fakeCore, AliasCore.class);
        frontendInstalled = true;
 		try {
 			Prefs.init(new File("preferences.ini"));

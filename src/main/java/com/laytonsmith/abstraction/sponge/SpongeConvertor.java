@@ -22,7 +22,9 @@ import com.laytonsmith.abstraction.blocks.MCMaterial;
 import com.laytonsmith.abstraction.enums.MCRecipeType;
 import com.laytonsmith.abstraction.enums.MCTone;
 import com.laytonsmith.abstraction.sponge.entities.SpongeMCEntity;
+import com.laytonsmith.abstraction.sponge.events.SpongeAbstractEventMixin;
 import com.laytonsmith.annotations.convert;
+import com.laytonsmith.commandhelper.CommandHelperSponge;
 import com.laytonsmith.core.CHLog;
 import com.laytonsmith.core.LogLevel;
 import com.laytonsmith.core.constructs.Target;
@@ -40,7 +42,7 @@ import java.util.List;
 public class SpongeConvertor extends AbstractConvertor {
 
 	public SpongeConvertor() {
-		game = new SpongeMCGame();
+		game = CommandHelperSponge.self.myGame;
 	}
 
 	@Override
@@ -50,7 +52,7 @@ public class SpongeConvertor extends AbstractConvertor {
 
 	@Override
 	public Class GetServerEventMixin() {
-		return null;
+		return SpongeAbstractEventMixin.class;
 	}
 
 	@Override

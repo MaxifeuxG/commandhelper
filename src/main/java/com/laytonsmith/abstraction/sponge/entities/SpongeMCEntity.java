@@ -30,7 +30,7 @@ import java.util.UUID;
  */
 public class SpongeMCEntity implements MCEntity {
 
-	private Entity entity;
+	final Entity entity;
 
 	public SpongeMCEntity(Entity param) {
 		entity = param;

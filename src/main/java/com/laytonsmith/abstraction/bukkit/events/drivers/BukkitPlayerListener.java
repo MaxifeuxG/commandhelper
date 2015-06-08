@@ -3,6 +3,7 @@ package com.laytonsmith.abstraction.bukkit.events.drivers;
 import com.laytonsmith.abstraction.bukkit.entities.BukkitMCPlayer;
 import com.laytonsmith.abstraction.bukkit.events.BukkitPlayerEvents;
 import com.laytonsmith.commandhelper.CommandHelperBukkit;
+import com.laytonsmith.commandhelper.CommandHelperCommon;
 import com.laytonsmith.core.Static;
 import com.laytonsmith.core.constructs.Target;
 import com.laytonsmith.core.events.Driver;
@@ -104,9 +105,8 @@ public class BukkitPlayerListener implements Listener {
 
 	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled=true)
 	public void onPlayerChat(final AsyncPlayerChatEvent event) {
-		if (CommandHelperBukkit.self.interpreterListener
-				.isInInterpreterMode(event.getPlayer().getName())){
-            //They are in interpreter mode, so we want it to handle this, not everything else.
+		if (CommandHelperCommon.self.isInInterpreterMode(event.getPlayer().getName())) {
+			//They are in interpreter mode, so we want it to handle this, not everything else.
             return;
         }
 		

@@ -1,5 +1,6 @@
 package com.laytonsmith.abstraction.sponge;
 
+import com.google.common.base.Optional;
 import com.laytonsmith.abstraction.MCCommandException;
 import com.laytonsmith.abstraction.MCCommandSender;
 import com.laytonsmith.abstraction.MCConsoleCommandSender;
@@ -15,10 +16,17 @@ import com.laytonsmith.abstraction.MCServer;
 import com.laytonsmith.abstraction.MCWorld;
 import com.laytonsmith.abstraction.enums.MCInventoryType;
 import com.laytonsmith.abstraction.pluginmessages.MCMessenger;
+import com.laytonsmith.abstraction.sponge.entities.SpongeMCPlayer;
 import org.spongepowered.api.Server;
+import org.spongepowered.api.entity.player.Player;
+import org.spongepowered.api.text.Texts;
+import org.spongepowered.api.util.command.CommandSource;
+import org.spongepowered.api.world.World;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -29,6 +37,29 @@ import java.util.UUID;
  * @author jb_aero
  */
 public class SpongeMCServer extends SpongeMCGame implements MCServer {
+
+	private final SpongeMCConsole console;
+	private final HashMap<String, SpongeMCPlayer> players;
+
+	public SpongeMCServer() {
+		console = new SpongeMCConsole(_Server().getConsole());
+		players = new HashMap<>();
+	}
+
+	public SpongeMCPlayer cachePlayer(Player player) {
+		SpongeMCPlayer ret = new SpongeMCPlayer(player);
+		players.put(player.getName(), ret);
+		return ret;
+	}
+
+	public void deCachePlayer(Player player) {
+		players.remove(player.getName());
+	}
+
+	public SpongeMCPlayer getPlayer(Player player) {
+		SpongeMCPlayer ret = players.get(player.getName());
+		return ret == null ? cachePlayer(player) : ret;
+	}
 
 	@Override
 	public Object getHandle() {
@@ -46,7 +77,11 @@ public class SpongeMCServer extends SpongeMCGame implements MCServer {
 
 	@Override
 	public Collection<MCPlayer> getOnlinePlayers() {
-		return null;
+		ArrayList<MCPlayer> ret = new ArrayList<>();
+		for (Player p : _Server().getOnlinePlayers()) {
+			ret.add(getPlayer(p));
+		}
+		return ret;
 	}
 
 	@Override
@@ -56,37 +91,57 @@ public class SpongeMCServer extends SpongeMCGame implements MCServer {
 
 	@Override
 	public MCPlayer getPlayer(String name) {
+		Optional<Player> p = _Server().getPlayer(name);
+		if (p.isPresent()) {
+			return getPlayer(p.get());
+		}
 		return null;
 	}
 
 	@Override
 	public MCPlayer getPlayer(UUID uuid) {
+		Optional<Player> p = _Server().getPlayer(uuid);
+		if (p.isPresent()) {
+			return getPlayer(p.get());
+		}
 		return null;
 	}
 
 	@Override
 	public MCWorld getWorld(String name) {
+		Optional<World> w = _Server().getWorld(name);
+		if (w.isPresent()) {
+			return new SpongeMCWorld(w.get());
+		}
 		return null;
 	}
 
 	@Override
 	public List<MCWorld> getWorlds() {
-		return null;
+		ArrayList<MCWorld> worlds = new ArrayList<>();
+		for (World w : _Server().getWorlds()) {
+			worlds.add(new SpongeMCWorld(w));
+		}
+		return worlds;
 	}
 
 	@Override
 	public void broadcastMessage(String message) {
-
+		_Server().getBroadcastSink().sendMessage(Texts.of(message));
 	}
 
 	@Override
 	public void broadcastMessage(String message, String permission) {
-
+		for (CommandSource recip : _Server().getBroadcastSink().getRecipients()) {
+			if (recip.hasPermission(permission)) {
+				recip.sendMessage(Texts.of(message));
+			}
+		}
 	}
 
 	@Override
 	public MCConsoleCommandSender getConsole() {
-		return null;
+		return console;
 	}
 
 	@Override
@@ -221,7 +276,7 @@ public class SpongeMCServer extends SpongeMCGame implements MCServer {
 
 	@Override
 	public MCMessenger getMessenger() {
-		return null;
+		return new SpongeMCMessenger();
 	}
 
 	@Override

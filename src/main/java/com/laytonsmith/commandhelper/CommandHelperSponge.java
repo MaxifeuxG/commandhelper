@@ -3,56 +3,68 @@ package com.laytonsmith.commandhelper;
 import com.google.inject.Inject;
 import com.laytonsmith.abstraction.Implementation;
 import com.laytonsmith.abstraction.StaticLayer;
+import com.laytonsmith.abstraction.enums.sponge.SpongeMCEntityType;
+import com.laytonsmith.abstraction.sponge.SpongeMCGame;
+import com.laytonsmith.core.PomData;
+import com.laytonsmith.core.SLLogger;
 import org.slf4j.Logger;
 import org.spongepowered.api.Game;
 import org.spongepowered.api.event.Subscribe;
 import org.spongepowered.api.event.state.InitializationEvent;
+import org.spongepowered.api.event.state.PostInitializationEvent;
 import org.spongepowered.api.event.state.PreInitializationEvent;
 import org.spongepowered.api.event.state.ServerStoppedEvent;
 import org.spongepowered.api.plugin.Plugin;
+import org.spongepowered.api.service.config.ConfigDir;
+
+import java.io.File;
 
 /**
- * Created by jb_aero on 4/5/2015.
+ * CommandHelperSponge, 4/5/2015
+ *
+ * @author jb_aero
  */
-@Plugin(id = "commandhelper", name = "CommandHelper", version = "3.4.0")
+@Plugin(id = PomData.ARTIFACT_ID, name = PomData.NAME, version = PomData.VERSION)
 public class CommandHelperSponge {
 
 	public static CommandHelperSponge self;
-	public CommandHelperMainClass common;
-	public final Game myGame;
+	public final CommandHelperCommon common;
+	public final Game theGame;
+	public final SpongeMCGame myGame;
+	public final File myFolder;
 
 	@Inject
-	public CommandHelperSponge(Logger logger, Game game) {
-		myGame = game;
+	public CommandHelperSponge(Logger logger, Game game, @ConfigDir(sharedRoot = false) File configDir) {
 		self = this;
-		common = new CommandHelperMainClass(new SLLogger(logger));
+		theGame = game;
+		myGame = new SpongeMCGame();
+		myFolder = configDir;
+		common = new CommandHelperCommon(new SLLogger(logger));
 	}
 
 	@Subscribe
 	public void onPreInit(PreInitializationEvent event) {
-
 		Implementation.setServerType(Implementation.Type.SPONGE);
-
+		CommandHelperFileLocations.setDefault(new CHSpongeFileLocations(myFolder));
 		common.firstSetup(Game.class);
 	}
 
 	@Subscribe
 	public void onInit(InitializationEvent event) {
 
-		//BukkitDirtyRegisteredListener.PlayDirty();
-		//registerEvents(playerListener);
+		common.secondSetup(this.getClass().getAnnotation(Plugin.class).version());
 
-		//interpreter events
-		//registerEvents(interpreterListener);
-		//registerEvents(serverListener);
+		theGame.getEventManager().register(this, new CHSInterpretationListener(common));
 
 		//Script events
 		StaticLayer.Startup(common);
 
-		//playerListener.loadGlobalAliases();
-		//interpreterListener.reload();
+		common.logger.info("{0} {1} enabled", PomData.NAME, CommandHelperCommon.version);
+	}
 
-		common.logger.info("[CommandHelper] CommandHelper {0} enabled", common.version);
+	@Subscribe
+	public void onPostInit(PostInitializationEvent event) {
+		SpongeMCEntityType.build(theGame.getRegistry());
 	}
 
 	@Subscribe

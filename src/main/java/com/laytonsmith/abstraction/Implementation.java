@@ -4,6 +4,7 @@ import com.laytonsmith.PureUtilities.ClassLoading.ClassDiscovery;
 import com.laytonsmith.PureUtilities.Common.ReflectionUtils;
 import com.laytonsmith.abstraction.enums.EnumConvertor;
 import com.laytonsmith.annotations.abstractionenum;
+import com.laytonsmith.core.PomData;
 import com.laytonsmith.core.Prefs;
 
 import java.lang.reflect.InvocationTargetException;
@@ -160,9 +161,9 @@ public final class Implementation {
 	public static enum Type {
 
 		TEST("test-backend"),
-		BUKKIT("CommandHelper"),
+		BUKKIT(PomData.NAME),
 		SHELL("MethodScript"),
-		SPONGE("CommandHelper");
+		SPONGE(PomData.NAME);
 		//GLOWSTONE,
 		//SINGLE_PLAYER
 		private final String branding;

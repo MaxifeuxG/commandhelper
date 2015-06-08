@@ -3,6 +3,7 @@ package com.laytonsmith.abstraction;
 
 import com.laytonsmith.abstraction.blocks.MCBlock;
 import com.laytonsmith.core.constructs.Target;
+
 import java.util.HashSet;
 import java.util.List;
 
@@ -10,7 +11,7 @@ import java.util.List;
  *
  * 
  */
-public interface MCLivingEntity extends MCEntity, MCProjectileSource {
+public interface MCLivingEntity extends MCEntity {
 
 	public void addEffect(int potionID, int strength, int seconds, boolean ambient, Target t);
 	public boolean removeEffect(int potionID);

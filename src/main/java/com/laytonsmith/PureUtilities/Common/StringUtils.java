@@ -45,10 +45,6 @@ public final class StringUtils {
 	 * @param elementGlue The glue to use between each key-value element pairs
 	 * in the map
 	 * @param lastElementGlue The glue for the last two elements
-	 * @param glueForTwoItems If only two items are in the map, then this glue
-	 * is used instead. If it is null, then lastElementGlue is used instead.
-	 * @param empty If the map is completely empty, this string is simply
-	 * returned. If null, an empty string is used.
 	 * @return The concatenated string
 	 */
 	public static String Join(Map map, String entryGlue, String elementGlue, String lastElementGlue) {
@@ -66,7 +62,7 @@ public final class StringUtils {
 	 * @param elementGlue The glue to use between each key-value element pairs
 	 * in the map
 	 * @param lastElementGlue The glue for the last two elements
-	 * @param glueForTwoItems If only two items are in the map, then this glue
+	 * @param elementGlueForTwoItems If only two items are in the map, then this glue
 	 * is used instead. If it is null, then lastElementGlue is used instead.
 	 * @return The concatenated string
 	 */
@@ -85,7 +81,7 @@ public final class StringUtils {
 	 * @param elementGlue The glue to use between each key-value element pairs
 	 * in the map
 	 * @param lastElementGlue The glue for the last two elements
-	 * @param glueForTwoItems If only two items are in the map, then this glue
+	 * @param elementGlueForTwoItems If only two items are in the map, then this glue
 	 * is used instead. If it is null, then lastElementGlue is used instead.
 	 * @param empty If the map is completely empty, this string is simply
 	 * returned. If null, an empty string is used.
@@ -107,7 +103,7 @@ public final class StringUtils {
 	 *
 	 * @see StringBuilder#append(Object)} method to "toString" the Object) using
 	 * the specified string for glue.
-	 * @param list The set to concatenate
+	 * @param set The set to concatenate
 	 * @param glue The glue to use
 	 * @return The concatenated string
 	 */
@@ -123,7 +119,7 @@ public final class StringUtils {
 	 * glue, but otherwise it is used to glue just the last two items together,
 	 * which is useful for sets that are being read by a human, to have a proper
 	 * conjunction at the end.
-	 * @param list The set to concatenate
+	 * @param set The set to concatenate
 	 * @param glue The glue to use
 	 * @param lastGlue The glue for the last two elements
 	 * @return The concatenated string
@@ -140,7 +136,7 @@ public final class StringUtils {
 	 * glue, but otherwise it is used to glue just the last two items together,
 	 * which is useful for sets that are being read by a human, to have a proper
 	 * conjunction at the end.
-	 * @param list The set to concatenate
+	 * @param set The set to concatenate
 	 * @param glue The glue to use
 	 * @param lastGlue The glue for the last two elements
 	 * @param glueForTwoItems If only two items are in the set, then this glue
@@ -159,7 +155,7 @@ public final class StringUtils {
 	 * glue, but otherwise it is used to glue just the last two items together,
 	 * which is useful for sets that are being read by a human, to have a proper
 	 * conjunction at the end.
-	 * @param list The set to concatenate
+	 * @param set The set to concatenate
 	 * @param glue The glue to use
 	 * @param lastGlue The glue for the last two elements
 	 * @param glueForTwoItems If only two items are in the set, then this glue
@@ -180,7 +176,7 @@ public final class StringUtils {
 	 * glue, but otherwise it is used to glue just the last two items together,
 	 * which is useful for sets that are being read by a human, to have a proper
 	 * conjunction at the end.
-	 * @param list The set to concatenate
+	 * @param set The set to concatenate
 	 * @param glue The glue to use
 	 * @param lastGlue The glue for the last two elements
 	 * @param glueForTwoItems If only two items are in the set, then this glue
@@ -938,5 +934,57 @@ public final class StringUtils {
 		}
 
 		return lines;
+	}
+
+	/**
+	 * Formats a single argument into a string using java.util.Logger style formatting
+	 *
+	 * @param format
+	 * @param arg
+	 */
+	public static String format(String format, Object arg) {
+		String ret = "";
+		if (format != null) {
+			ret = format;
+			if (arg != null) {
+				ret = format.replace("{0}", arg.toString());
+			}
+		} else if (arg != null) {
+			ret = arg.toString();
+		}
+		return ret;
+	}
+
+	/**
+	 * Formats two arguments into a string using java.util.Logger style formatting
+	 *
+	 * @param format
+	 * @param arg1
+	 * @param arg2
+	 */
+	public static String format(String format, Object arg1, Object arg2) {
+		return format.replace("{0}", arg1 == null ? "null" : arg1.toString())
+				.replace("{1}", arg2 == null ? "null" : arg2.toString());
+	}
+
+	/**
+	 * Formats two arguments into a string using java.util.Logger style formatting
+	 *
+	 * @param format
+	 * @param args
+	 */
+	public static String format(String format, Object... args) {
+		String ret = "";
+		if (format != null) {
+			ret = format;
+			for (int i = 0; i < args.length; i++) {
+				if (args[i] == null) {
+					ret = format.replace("{" + i + "}", "null");
+				} else {
+					ret = ret.replace("{" + i + "}", args[i].toString());
+				}
+			}
+		}
+		return ret;
 	}
 }

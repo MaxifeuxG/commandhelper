@@ -3,6 +3,7 @@ package com.laytonsmith.core.events.drivers;
 import com.laytonsmith.PureUtilities.Common.StringUtils;
 import com.laytonsmith.PureUtilities.Vector3D;
 import com.laytonsmith.PureUtilities.Version;
+import com.laytonsmith.abstraction.Implementation;
 import com.laytonsmith.abstraction.MCEntity;
 import com.laytonsmith.abstraction.MCHanging;
 import com.laytonsmith.abstraction.MCItemStack;
@@ -57,6 +58,7 @@ import com.laytonsmith.core.exceptions.EventException;
 import com.laytonsmith.core.exceptions.PrefilterNonMatchException;
 import com.laytonsmith.core.functions.Exceptions;
 import com.laytonsmith.core.functions.Exceptions.ExceptionType;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -409,7 +411,13 @@ public class EntityEvents {
 						int id = Static.getInt32(value, Target.UNKNOWN);
 						le = Static.getLivingEntity(id, Target.UNKNOWN);
 					}
-					e.getEntity().setShooter(le);
+					if (le instanceof MCProjectileSource) {
+						e.getEntity().setShooter((MCProjectileSource) le);
+					} else {
+						throw new ConfigRuntimeException(Target.UNKNOWN, ExceptionType.BadEntityTypeException,
+								"A capable ProjectileSource is expected, but {0} is not such in {1}.",
+								le.getType().concreteName(), Implementation.GetServerType().name());
+					}
 				}
 			}
 			return false;
