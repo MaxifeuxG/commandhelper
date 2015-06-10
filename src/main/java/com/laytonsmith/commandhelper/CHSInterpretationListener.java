@@ -18,13 +18,12 @@ import com.laytonsmith.core.events.EventUtils;
 import com.laytonsmith.core.exceptions.ConfigRuntimeException;
 import com.laytonsmith.persistence.DataSourceException;
 import org.spongepowered.api.entity.player.Player;
-import org.spongepowered.api.event.Cancellable;
 import org.spongepowered.api.event.Subscribe;
 import org.spongepowered.api.event.entity.player.PlayerChatEvent;
 import org.spongepowered.api.event.entity.player.PlayerJoinEvent;
 import org.spongepowered.api.event.entity.player.PlayerQuitEvent;
 import org.spongepowered.api.event.message.CommandEvent;
-import org.spongepowered.api.util.event.callback.EventCallback;
+import org.spongepowered.api.util.command.CommandResult;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -65,6 +64,7 @@ public class CHSInterpretationListener {
 			}
 			String id = ((Player) event.getSource()).getUniqueId().toString().replace("-", "");
 			userManager = UserManager.GetUserManager(id);
+			// leave this player-only until it can be proven to work serverside
 			if (event.getCommand().equals(".") || event.getCommand().equals("repeat")) {
 				return;
 			}
@@ -98,12 +98,8 @@ public class CHSInterpretationListener {
 			return;
 		}
 		if (match) {
-			// TODO cancelling neither the callback nor the event seems to remove the "unknown command" message
-			for (EventCallback eh : event.getCallbacks()) {
-				if (eh.isBaseGame() && eh instanceof Cancellable) {
-					((Cancellable) eh).setCancelled(true);
-				}
-			}
+			event.setCancelled(true);
+			event.setResult(CommandResult.success());
 		}
 	}
 
