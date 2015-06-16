@@ -71,7 +71,6 @@ public class CommandHelperBukkit extends JavaPlugin {
 
 	public static CommandHelperBukkit self;
 	public CommandHelperCommon common;
-	public long interpreterUnlockedUntil = 0;
 
 	public CommandHelperBukkit() {
 		self = this;
@@ -220,7 +219,7 @@ public class CommandHelperBukkit extends JavaPlugin {
 			if (sender instanceof ConsoleCommandSender) {
 				int interpreterTimeout = Prefs.InterpreterTimeout();
 				if (interpreterTimeout != 0) {
-					interpreterUnlockedUntil = (interpreterTimeout * 60 * 1000) + System.currentTimeMillis();
+					common.interpreterUnlockedUntil = (interpreterTimeout * 60 * 1000) + System.currentTimeMillis();
 					sender.sendMessage("Inpterpreter mode unlocked for " + interpreterTimeout + " minute" + (
 							interpreterTimeout == 1 ? "" : "s"));
 				}
@@ -365,7 +364,7 @@ public class CommandHelperBukkit extends JavaPlugin {
 			if (player.hasPermission("commandhelper.interpreter")) {
 				if (Prefs.EnableInterpreter()) {
 					if (Prefs.InterpreterTimeout() != 0) {
-						if (interpreterUnlockedUntil < System.currentTimeMillis()) {
+						if (common.interpreterUnlockedUntil < System.currentTimeMillis()) {
 							player.sendMessage(MCChatColor.RED + "Interpreter mode is currently locked. Run \"interpreter-on\" from console to unlock it."
 									+ " If you want to turn this off entirely, set the interpreter-timeout option to 0 in "
 									+ CommandHelperFileLocations.getDefault().getPreferencesFile().getName());

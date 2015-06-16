@@ -4,11 +4,14 @@ import com.google.inject.Inject;
 import com.laytonsmith.abstraction.Implementation;
 import com.laytonsmith.abstraction.MCPlayer;
 import com.laytonsmith.abstraction.StaticLayer;
+import com.laytonsmith.abstraction.enums.MCChatColor;
 import com.laytonsmith.abstraction.enums.sponge.SpongeMCEntityType;
 import com.laytonsmith.abstraction.sponge.SpongeMCGame;
 import com.laytonsmith.abstraction.sponge.entities.SpongeMCPlayer;
 import com.laytonsmith.core.PomData;
+import com.laytonsmith.core.Prefs;
 import com.laytonsmith.core.SLLogger;
+import com.laytonsmith.core.Static;
 import com.laytonsmith.core.UserManager;
 import org.slf4j.Logger;
 import org.spongepowered.api.Game;
@@ -27,6 +30,7 @@ import org.spongepowered.api.util.command.CommandResult;
 import org.spongepowered.api.util.command.CommandSource;
 import org.spongepowered.api.util.command.args.CommandContext;
 import org.spongepowered.api.util.command.args.GenericArguments;
+import org.spongepowered.api.util.command.source.ConsoleSource;
 import org.spongepowered.api.util.command.spec.CommandExecutor;
 import org.spongepowered.api.util.command.spec.CommandSpec;
 
@@ -104,6 +108,55 @@ public class CommandHelperSponge {
 						return CommandResult.success();
 					}
 				}).build(), "repeat", ".");
+
+		theGame.getCommandDispatcher().register(this, CommandSpec.builder()
+				.description(Texts.of("Unlocks interpreter mode for use ingame."))
+				.executor(new CommandExecutor() {
+					@Override
+					public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
+						if (src instanceof ConsoleSource) {
+							int interpreterTimeout = Prefs.InterpreterTimeout();
+							if (interpreterTimeout != 0) {
+								common.interpreterUnlockedUntil = (interpreterTimeout * 60 * 1000) + System.currentTimeMillis();
+								src.sendMessage(Texts.of("Inpterpreter mode unlocked for " + interpreterTimeout + " minute" + (
+										interpreterTimeout == 1 ? "" : "s")));
+							}
+						} else {
+							src.sendMessage(Texts.of(TextColors.RED, "This command can only be run from console."));
+						}
+						return CommandResult.success();
+					}
+				}).build(), "interpreter-on");
+
+		theGame.getCommandDispatcher().register(this, CommandSpec.builder()
+				.description(Texts.of())
+				.permission(PomData.ARTIFACT_ID + ".interpreter")
+				.executor(new CommandExecutor() {
+					@Override
+					public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
+						if (src instanceof Player) {
+							SpongeMCPlayer player = SpongeMCPlayer.Get((Player) src);
+							if (Prefs.EnableInterpreter()) {
+								if (Prefs.InterpreterTimeout() != 0) {
+									if (common.interpreterUnlockedUntil < System.currentTimeMillis()) {
+										player.sendMessage(MCChatColor.RED + "Interpreter mode is currently locked. Run \"interpreter-on\" from console to unlock it."
+												+ " If you want to turn this off entirely, set the interpreter-timeout option to 0 in "
+												+ CommandHelperFileLocations.getDefault().getPreferencesFile().getName());
+										return CommandResult.success();
+									}
+								}
+								common.startInterpret(player.getName());
+								Static.SendMessage(player, MCChatColor.YELLOW + "You are now in interpreter mode. Type a dash (-) on a line by itself to exit, and >>> to enter"
+										+ " multiline mode.");
+							} else {
+								Static.SendMessage(player, MCChatColor.RED + "The interpreter is currently disabled. Check your preferences file.");
+							}
+						} else {
+							src.sendMessage(Texts.of("Interpreter mode can only be used as a player at this time."));
+						}
+						return CommandResult.success();
+					}
+				}).build(), "interpreter");
 
 		common.logger.info("{0} {1} enabled", PomData.NAME, CommandHelperCommon.version);
 	}
