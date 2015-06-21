@@ -1,15 +1,23 @@
 package com.laytonsmith.abstraction.sponge;
 
+import com.google.common.base.Function;
+import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import com.laytonsmith.abstraction.MCCommandSender;
 import com.laytonsmith.abstraction.MCServer;
+import com.laytonsmith.commandhelper.CommandHelperSponge;
 import com.laytonsmith.core.Static;
+import org.spongepowered.api.service.permission.PermissionService;
+import org.spongepowered.api.service.permission.Subject;
+import org.spongepowered.api.service.permission.SubjectCollection;
 import org.spongepowered.api.text.TextBuilder;
 import org.spongepowered.api.util.Tristate;
 import org.spongepowered.api.util.command.CommandSource;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+
+import javax.annotation.Nullable;
 
 /**
  * SpongeMCCommandSender, 6/8/2015 1:45 AM
@@ -56,19 +64,28 @@ public class SpongeMCCommandSender implements MCCommandSender {
 
 	@Override
 	public List<String> getGroups() {
-		ArrayList<String> groups = new ArrayList<>();
-		for (Map.Entry<String, Boolean> e : getHandle().getSubjectData()
-				.getPermissions(getHandle().getActiveContexts()).entrySet()) {
-			if (e.getKey().startsWith(Static.groupPrefix) && e.getValue()) {
-				groups.add(e.getKey().substring(Static.groupPrefix.length(), e.getKey().length()));
+		final SubjectCollection groups = getGroupCollection();
+		return ImmutableList.copyOf(Iterables.transform(Iterables.filter(getHandle().getParents(), new Predicate<Subject>() {
+			@Override
+			public boolean apply(Subject input) {
+				return input.getContainingCollection().equals(groups);
 			}
-		}
-		return groups;
+		}), new Function<Subject, String>() {
+			@Nullable
+			@Override
+			public String apply(Subject input) {
+				return input.getIdentifier();
+			}
+		}));
 	}
 
 	@Override
 	public boolean inGroup(String groupName) {
-		return hasPermission(Static.groupPrefix + "." + groupName);
+		return getHandle().isChildOf(getGroupCollection().get(groupName));
+	}
+
+	private SubjectCollection getGroupCollection() {
+		return CommandHelperSponge.self.theGame.getServiceManager().provideUnchecked(PermissionService.class).getGroupSubjects();
 	}
 
 	@Override

@@ -20,9 +20,11 @@ import com.laytonsmith.abstraction.sponge.entities.SpongeMCPlayer;
 import org.spongepowered.api.Server;
 import org.spongepowered.api.entity.player.Player;
 import org.spongepowered.api.text.Texts;
+import org.spongepowered.api.text.sink.MessageSinks;
 import org.spongepowered.api.util.command.CommandSource;
 import org.spongepowered.api.world.World;
 
+import java.lang.reflect.Proxy;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -86,7 +88,7 @@ public class SpongeMCServer extends SpongeMCGame implements MCServer {
 
 	@Override
 	public boolean dispatchCommand(MCCommandSender cs, String string) throws MCCommandException {
-		return false;
+		return game.getCommandDispatcher().process((CommandSource) cs.getHandle(), string).isPresent();
 	}
 
 	@Override
@@ -132,11 +134,7 @@ public class SpongeMCServer extends SpongeMCGame implements MCServer {
 
 	@Override
 	public void broadcastMessage(String message, String permission) {
-		for (CommandSource recip : _Server().getBroadcastSink().getRecipients()) {
-			if (recip.hasPermission(permission)) {
-				recip.sendMessage(Texts.of(message));
-			}
-		}
+		MessageSinks.toPermission(permission).sendMessage(Texts.of(message));
 	}
 
 	@Override
@@ -271,12 +269,12 @@ public class SpongeMCServer extends SpongeMCGame implements MCServer {
 
 	@Override
 	public void runasConsole(String cmd) {
-
+		game.getCommandDispatcher().process(game.getServer().getConsole(), cmd);
 	}
 
 	@Override
 	public MCMessenger getMessenger() {
-		return new SpongeMCMessenger();
+		return new SpongeMCMessenger(game.getServer());
 	}
 
 	@Override
@@ -316,11 +314,13 @@ public class SpongeMCServer extends SpongeMCGame implements MCServer {
 
 	@Override
 	public void shutdown() {
-
+		game.getServer().shutdown();
 	}
 
 	@Override
 	public String dispatchAndCaptureCommand(MCCommandSender commandSender, String cmd) {
+		CommandSource src = ((CommandSource) commandSender.getHandle());
+		// todo proxy this to capture messages
 		return null;
 	}
 }

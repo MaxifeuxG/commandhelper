@@ -1,7 +1,10 @@
 package com.laytonsmith.abstraction.sponge;
 
+import com.google.common.collect.ImmutableSet;
 import com.laytonsmith.abstraction.pluginmessages.MCMessenger;
 import com.laytonsmith.abstraction.pluginmessages.MCPluginMessageListenerRegistration;
+import org.spongepowered.api.Server;
+import org.spongepowered.api.network.ChannelRegistrar;
 
 import java.util.Set;
 
@@ -11,29 +14,34 @@ import java.util.Set;
  * @author jb_aero
  */
 public class SpongeMCMessenger implements MCMessenger {
+	private final ChannelRegistrar registrar;
+
+	public SpongeMCMessenger(ChannelRegistrar registrar) {
+		this.registrar = registrar;
+	}
 
 	@Override
 	public MCPluginMessageListenerRegistration registerIncomingPluginChannel(String channel) {
+		//registrar.registerChannel();
 		return null;
 	}
 
 	@Override
 	public boolean isIncomingChannelRegistered(String channel) {
-		return false;
+		return registrar.getRegisteredChannels().contains(channel);
 	}
 
 	@Override
 	public void unregisterIncomingPluginChannel(String channel) {
-
+		// TODOO: is this exposed in API?
 	}
 
 	@Override
 	public Set<String> getIncomingChannels() {
-		return null;
+		return ImmutableSet.copyOf(registrar.getRegisteredChannels());
 	}
 
 	@Override
 	public void closeAllChannels() {
-
 	}
 }

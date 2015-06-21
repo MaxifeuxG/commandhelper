@@ -1,5 +1,9 @@
 package com.laytonsmith.abstraction.sponge.entities;
 
+import com.google.common.base.Function;
+import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import com.laytonsmith.abstraction.MCCommandSender;
 import com.laytonsmith.abstraction.MCItemStack;
 import com.laytonsmith.abstraction.MCLocation;
@@ -12,13 +16,22 @@ import com.laytonsmith.abstraction.enums.MCInstrument;
 import com.laytonsmith.abstraction.enums.MCSound;
 import com.laytonsmith.abstraction.enums.MCWeather;
 import com.laytonsmith.commandhelper.CommandHelperSponge;
+import org.spongepowered.api.data.manipulator.entity.ExperienceHolderData;
+import org.spongepowered.api.data.manipulator.entity.FlyingData;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.player.Player;
+import org.spongepowered.api.service.permission.PermissionService;
+import org.spongepowered.api.service.permission.Subject;
+import org.spongepowered.api.service.permission.SubjectCollection;
 import org.spongepowered.api.text.TextBuilder;
+import org.spongepowered.api.text.Texts;
+import org.spongepowered.api.util.Tristate;
 
 import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.UUID;
+
+import javax.annotation.Nullable;
 
 /**
  * SpongeMCPlayer, 6/5/2015 11:03 PM
@@ -50,7 +63,7 @@ public class SpongeMCPlayer extends SpongeMCHumanEntity implements MCPlayer, MCC
 
 	@Override
 	public void chat(String chat) {
-
+		getHandle().sendMessage(Texts.legacy().fromUnchecked(chat));
 	}
 
 	@Override
@@ -100,6 +113,7 @@ public class SpongeMCPlayer extends SpongeMCHumanEntity implements MCPlayer, MCC
 
 	@Override
 	public int getLevel() {
+		//return getHandle().getData(ExperienceHolderData.class).get().getLevel();
 		return 0;
 	}
 
@@ -160,7 +174,7 @@ public class SpongeMCPlayer extends SpongeMCHumanEntity implements MCPlayer, MCC
 
 	@Override
 	public void kickPlayer(String message) {
-
+		getHandle().kick(Texts.legacy().fromUnchecked(message));
 	}
 
 	@Override
@@ -335,32 +349,48 @@ public class SpongeMCPlayer extends SpongeMCHumanEntity implements MCPlayer, MCC
 
 	@Override
 	public boolean hasPermission(String perm) {
-		return false;
+		return getHandle().hasPermission(perm);
 	}
 
 	@Override
 	public boolean isPermissionSet(String perm) {
-		return false;
+		return getHandle().getPermissionValue(getHandle().getActiveContexts(), perm) != Tristate.UNDEFINED;
 	}
 
 	@Override
 	public List<String> getGroups() {
-		return null;
+		final SubjectCollection groups = getGroupCollection();
+		return ImmutableList.copyOf(Iterables.transform(Iterables.filter(getHandle().getParents(), new Predicate<Subject>() {
+			@Override
+			public boolean apply(Subject input) {
+				return input.getContainingCollection().equals(groups);
+			}
+		}), new Function<Subject, String>() {
+			@Nullable
+			@Override
+			public String apply(Subject input) {
+				return input.getIdentifier();
+			}
+		}));
 	}
 
 	@Override
 	public boolean inGroup(String groupName) {
-		return false;
+		return getHandle().isChildOf(getGroupCollection().get(groupName));
+	}
+
+	private SubjectCollection getGroupCollection() {
+		return CommandHelperSponge.self.theGame.getServiceManager().provideUnchecked(PermissionService.class).getGroupSubjects();
 	}
 
 	@Override
-	public void setOp(boolean bln) {
+	public void setOp(boolean bln) { // TODO: Do we want to expose default/root permission API in Sponge?
 
 	}
 
 	@Override
 	public boolean isFlying() {
-		return false;
+		return getHandle().getData(FlyingData.class).isPresent();
 	}
 
 	@Override

@@ -20,7 +20,7 @@ import org.spongepowered.api.event.Subscribe;
 import org.spongepowered.api.event.state.InitializationEvent;
 import org.spongepowered.api.event.state.PostInitializationEvent;
 import org.spongepowered.api.event.state.PreInitializationEvent;
-import org.spongepowered.api.event.state.ServerStoppedEvent;
+import org.spongepowered.api.event.state.ServerStoppingEvent;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.service.config.ConfigDir;
 import org.spongepowered.api.text.Texts;
@@ -87,7 +87,7 @@ public class CommandHelperSponge {
 						if (src instanceof Player) {
 							player = SpongeMCPlayer.Get((Player) src);
 						}
-						common.ac.reload(player, args.<String>getOne("settings").get().split(" "));
+						common.ac.reload(player, args.<String>getOne("settings").isPresent() ? args.<String>getOne("settings").get().split(" ") : null);
 						return CommandResult.success();
 					}
 				}).build(), "reloadaliases", "reloadalias", "recompile");
@@ -139,7 +139,8 @@ public class CommandHelperSponge {
 							if (Prefs.EnableInterpreter()) {
 								if (Prefs.InterpreterTimeout() != 0) {
 									if (common.interpreterUnlockedUntil < System.currentTimeMillis()) {
-										player.sendMessage(MCChatColor.RED + "Interpreter mode is currently locked. Run \"interpreter-on\" from console to unlock it."
+										player.sendMessage(MCChatColor.RED
+												+ "Interpreter mode is currently locked. Run \"interpreter-on\" from console to unlock it."
 												+ " If you want to turn this off entirely, set the interpreter-timeout option to 0 in "
 												+ CommandHelperFileLocations.getDefault().getPreferencesFile().getName());
 										return CommandResult.success();
@@ -167,7 +168,7 @@ public class CommandHelperSponge {
 	}
 
 	@Subscribe
-	public void onStop(ServerStoppedEvent event) {
+	public void onStop(ServerStoppingEvent event) {
 		common.disable();
 	}
 }

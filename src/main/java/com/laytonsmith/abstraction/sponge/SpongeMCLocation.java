@@ -75,7 +75,7 @@ public class SpongeMCLocation implements MCLocation, MCBlock {
 
 	@Override
 	public boolean isSign() {
-		return getHandle().getType() == BlockTypes.STANDING_SIGN || getHandle().getType() == BlockTypes.WALL_SIGN;
+		return getHandle().getBlockType() == BlockTypes.STANDING_SIGN || getHandle().getBlockType() == BlockTypes.WALL_SIGN;
 	}
 
 	@Override
@@ -85,7 +85,7 @@ public class SpongeMCLocation implements MCLocation, MCBlock {
 
 	@Override
 	public boolean isCommandBlock() {
-		return getHandle().getType() == BlockTypes.COMMAND_BLOCK;
+		return getHandle().getBlockType() == BlockTypes.COMMAND_BLOCK;
 	}
 
 	@Override
@@ -95,13 +95,13 @@ public class SpongeMCLocation implements MCLocation, MCBlock {
 
 	@Override
 	public boolean isSolid() {
-		return getHandle().getType().isSolidCube();
+		return getHandle().getBlockType().isSolidCube();
 	}
 
 	@Override
 	public boolean isFlammable() {
 		for (Direction d : Direction.values()) {
-			if (getHandle().isFaceFlammable(d)) {
+			if (getHandle().isBlockFaceFlammable(d)) {
 				return true;
 			}
 		}
@@ -145,7 +145,7 @@ public class SpongeMCLocation implements MCLocation, MCBlock {
 
 	@Override
 	public boolean isBlockPowered() {
-		return getHandle().isPowered();
+		return getHandle().isBlockPowered();
 	}
 
 	@Override
