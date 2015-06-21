@@ -16,6 +16,7 @@ import com.laytonsmith.abstraction.enums.MCInstrument;
 import com.laytonsmith.abstraction.enums.MCSound;
 import com.laytonsmith.abstraction.enums.MCWeather;
 import com.laytonsmith.commandhelper.CommandHelperSponge;
+import com.laytonsmith.core.Static;
 import org.spongepowered.api.data.manipulator.entity.ExperienceHolderData;
 import org.spongepowered.api.data.manipulator.entity.FlyingData;
 import org.spongepowered.api.entity.Entity;
@@ -63,7 +64,12 @@ public class SpongeMCPlayer extends SpongeMCHumanEntity implements MCPlayer, MCC
 
 	@Override
 	public void chat(String chat) {
-		getHandle().sendMessage(Texts.legacy().fromUnchecked(chat));
+		if (chat.startsWith("/")) {
+			Static.getServer().dispatchCommand(this, chat.substring(1));
+		} else {
+			getHandle().getMessageSink().sendMessage(Texts.legacy().fromUnchecked(chat)); // todo: either throw event or get this added to sponge
+			// (SpongePowered/SpongeAPI#733)
+		}
 	}
 
 	@Override
