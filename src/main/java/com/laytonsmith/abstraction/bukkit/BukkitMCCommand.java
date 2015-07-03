@@ -22,6 +22,7 @@ import com.laytonsmith.core.exceptions.ConfigRuntimeException;
 import com.laytonsmith.core.exceptions.FunctionReturnException;
 import com.laytonsmith.core.functions.Commands;
 import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.Plugin;
 
@@ -154,7 +155,12 @@ public class BukkitMCCommand implements MCCommand {
 	}
 
 	@Override
-	public MCPlugin getExecutor() {
+	public Object getExecutor() {
+		return null;
+	}
+
+	@Override
+	public MCPlugin getExecutingPlugin() {
 		// TODO Not all plugins execute commands in their main class, so this cast won't always work
 		if (!(cmd instanceof PluginCommand)) {
 			return null;
@@ -163,7 +169,12 @@ public class BukkitMCCommand implements MCCommand {
 	}
 
 	@Override
-	public MCPlugin getTabCompleter() {
+	public Object getTabCompleter() {
+		return null;
+	}
+
+	@Override
+	public MCPlugin getTabCompletingPlugin() {
 		// TODO see above
 		if (!(cmd instanceof PluginCommand)) {
 			return null;
@@ -172,7 +183,14 @@ public class BukkitMCCommand implements MCCommand {
 	}
 
 	@Override
-	public void setExecutor(MCPlugin plugin) {
+	public void setExecutor(Object executor) {
+		if (cmd instanceof PluginCommand && executor instanceof CommandExecutor) {
+			((PluginCommand) cmd).setExecutor((CommandExecutor) executor);
+		}
+	}
+
+	@Override
+	public void setExecutingPlugin(MCPlugin plugin) {
 		if (cmd instanceof PluginCommand) {
 			((PluginCommand) cmd).setExecutor(((BukkitMCPlugin) plugin).getHandle());
 		}

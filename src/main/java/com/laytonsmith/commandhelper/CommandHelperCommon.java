@@ -4,10 +4,13 @@ import com.laytonsmith.PureUtilities.ClassLoading.ClassDiscovery;
 import com.laytonsmith.PureUtilities.ClassLoading.ClassDiscoveryCache;
 import com.laytonsmith.PureUtilities.Common.FileUtil;
 import com.laytonsmith.PureUtilities.Common.OSUtils;
+import com.laytonsmith.PureUtilities.Common.StringUtils;
 import com.laytonsmith.PureUtilities.ExecutionQueue;
 import com.laytonsmith.PureUtilities.SimpleVersion;
 import com.laytonsmith.PureUtilities.TermColors;
 import com.laytonsmith.abstraction.Implementation;
+import com.laytonsmith.abstraction.MCBlockCommandSender;
+import com.laytonsmith.abstraction.MCCommandSender;
 import com.laytonsmith.abstraction.MCPlayer;
 import com.laytonsmith.abstraction.StaticLayer;
 import com.laytonsmith.abstraction.enums.MCChatColor;
@@ -27,6 +30,11 @@ import com.laytonsmith.core.Script;
 import com.laytonsmith.core.Static;
 import com.laytonsmith.core.UpgradeLog;
 import com.laytonsmith.core.UserManager;
+import com.laytonsmith.core.constructs.CArray;
+import com.laytonsmith.core.constructs.CBoolean;
+import com.laytonsmith.core.constructs.CClosure;
+import com.laytonsmith.core.constructs.CString;
+import com.laytonsmith.core.constructs.Construct;
 import com.laytonsmith.core.constructs.Target;
 import com.laytonsmith.core.constructs.Token;
 import com.laytonsmith.core.environments.CommandHelperEnvironment;
@@ -36,7 +44,9 @@ import com.laytonsmith.core.exceptions.CancelCommandException;
 import com.laytonsmith.core.exceptions.ConfigCompileException;
 import com.laytonsmith.core.exceptions.ConfigCompileGroupException;
 import com.laytonsmith.core.exceptions.ConfigRuntimeException;
+import com.laytonsmith.core.exceptions.FunctionReturnException;
 import com.laytonsmith.core.extensions.ExtensionManager;
+import com.laytonsmith.core.functions.Commands;
 import com.laytonsmith.core.profiler.Profiler;
 import com.laytonsmith.core.taskmanager.TaskManager;
 import com.laytonsmith.persistence.DataSourceException;
@@ -501,5 +511,40 @@ public class CommandHelperCommon {
 		ExtensionManager.Cleanup();
 
 		ac = null;
+	}
+
+	public boolean handleCustomCommand(String name, MCCommandSender sender, String label, String[] args) {
+		if (Commands.onCommand.containsKey(name.toLowerCase())) {
+			Target t = Target.UNKNOWN;
+			CArray cargs = new CArray(t);
+			for (String arg : args) {
+				cargs.push(new CString(arg, t));
+			}
+
+			CClosure closure = Commands.onCommand.get(name.toLowerCase());
+			CommandHelperEnvironment cEnv = closure.getEnv().getEnv(CommandHelperEnvironment.class);
+			cEnv.SetCommandSender(sender);
+			cEnv.SetCommand("/" + label + StringUtils.Join(args, " "));
+			if (sender instanceof MCBlockCommandSender) {
+				cEnv.SetBlockCommandSender((MCBlockCommandSender) sender);
+			}
+
+			try {
+				closure.execute(new CString(label, t), new CString(sender.getName(), t), cargs,
+						new CArray(t) // reserved for an obgen style command array
+				);
+			} catch (FunctionReturnException e) {
+				Construct fret = e.getReturn();
+				if (fret instanceof CBoolean) {
+					return ((CBoolean) fret).getBoolean();
+				}
+			} catch (ConfigRuntimeException cre) {
+				cre.setEnv(closure.getEnv());
+				ConfigRuntimeException.HandleUncaughtException(cre, closure.getEnv());
+			}
+			return true;
+		} else {
+			return false;
+		}
 	}
 }

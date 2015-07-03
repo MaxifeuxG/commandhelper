@@ -3,6 +3,8 @@ package com.laytonsmith.abstraction.sponge;
 import com.laytonsmith.abstraction.AbstractConvertor;
 import com.laytonsmith.abstraction.Implementation;
 import com.laytonsmith.abstraction.MCColor;
+import com.laytonsmith.abstraction.MCCommand;
+import com.laytonsmith.abstraction.MCCommandSender;
 import com.laytonsmith.abstraction.MCEnchantment;
 import com.laytonsmith.abstraction.MCEntity;
 import com.laytonsmith.abstraction.MCFireworkBuilder;
@@ -22,6 +24,7 @@ import com.laytonsmith.abstraction.blocks.MCMaterial;
 import com.laytonsmith.abstraction.enums.MCRecipeType;
 import com.laytonsmith.abstraction.enums.MCTone;
 import com.laytonsmith.abstraction.sponge.entities.SpongeMCEntity;
+import com.laytonsmith.abstraction.sponge.entities.SpongeMCPlayer;
 import com.laytonsmith.abstraction.sponge.events.SpongeAbstractEventMixin;
 import com.laytonsmith.annotations.convert;
 import com.laytonsmith.commandhelper.CommandHelperSponge;
@@ -30,6 +33,11 @@ import com.laytonsmith.core.LogLevel;
 import com.laytonsmith.core.constructs.Target;
 import com.laytonsmith.core.functions.Exceptions;
 import org.spongepowered.api.entity.Entity;
+import org.spongepowered.api.entity.player.Player;
+import org.spongepowered.api.util.command.CommandSource;
+import org.spongepowered.api.util.command.source.CommandBlockSource;
+import org.spongepowered.api.util.command.source.ConsoleSource;
+import org.spongepowered.api.util.command.spec.CommandSpec;
 
 import java.util.List;
 
@@ -73,6 +81,11 @@ public class SpongeConvertor extends AbstractConvertor {
 	@Override
 	public MCServer GetServer() {
 		return game.getServer();
+	}
+
+	@Override
+	public MCCommand getNewCommand(String name) {
+		return new SpongeMCCommand(name, CommandSpec.builder().build());
 	}
 
 	@Override
@@ -229,5 +242,24 @@ public class SpongeConvertor extends AbstractConvertor {
 	@Override
 	public MCPlugin GetPlugin() {
 		return null;
+	}
+
+	@Override
+	public MCCommandSender GetCorrectSender(MCCommandSender unspecific) {
+		return SpongeGetCorrectSender(unspecific instanceof SpongeMCCommandSender ? (CommandSource) unspecific.getHandle() : null);
+	}
+
+	public static MCCommandSender SpongeGetCorrectSender(CommandSource src) {
+		if (src == null) {
+			return null;
+		} else if (src instanceof Player) {
+			return new SpongeMCPlayer((Player) src);
+		} else if (src instanceof ConsoleSource) {
+			return new SpongeMCConsole((ConsoleSource) src);
+		} else if (src instanceof CommandBlockSource) {
+			return new SpongeMCCommandSender(src); // TODO
+		} else {
+			return new SpongeMCCommandSender(src);
+		}
 	}
 }

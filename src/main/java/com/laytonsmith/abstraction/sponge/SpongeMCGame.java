@@ -18,6 +18,7 @@ public class SpongeMCGame implements MCGame {
 
 	protected final Game game;
 	private final SpongeMCServer server;
+	private final SpongeMCCommandManager commandManager;
 	private MCVersion ver;
 
 	public SpongeMCGame() {
@@ -27,6 +28,7 @@ public class SpongeMCGame implements MCGame {
 		} else {
 			server = null;
 		}
+		commandManager = new SpongeMCCommandManager(game.getCommandDispatcher());
 	}
 
 	@Override
