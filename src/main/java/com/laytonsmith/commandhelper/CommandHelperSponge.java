@@ -117,9 +117,11 @@ public class CommandHelperSponge {
 						if (src instanceof ConsoleSource) {
 							int interpreterTimeout = Prefs.InterpreterTimeout();
 							if (interpreterTimeout != 0) {
-								common.interpreterUnlockedUntil = (interpreterTimeout * 60 * 1000) + System.currentTimeMillis();
-								src.sendMessage(Texts.of("Inpterpreter mode unlocked for " + interpreterTimeout + " minute" + (
-										interpreterTimeout == 1 ? "" : "s")));
+								common.interpreterUnlockedUntil =
+										(interpreterTimeout * 60 * 1000) + System.currentTimeMillis();
+								src.sendMessage(Texts.of(
+										"Inpterpreter mode unlocked for " + interpreterTimeout + " minute" + (
+												interpreterTimeout == 1 ? "" : "s")));
 							}
 						} else {
 							src.sendMessage(Texts.of(TextColors.RED, "This command can only be run from console."));
@@ -147,10 +149,12 @@ public class CommandHelperSponge {
 									}
 								}
 								common.startInterpret(player.getName());
-								Static.SendMessage(player, MCChatColor.YELLOW + "You are now in interpreter mode. Type a dash (-) on a line by itself to exit, and >>> to enter"
+								Static.SendMessage(player, MCChatColor.YELLOW
+										+ "You are now in interpreter mode. Type a dash (-) on a line by itself to exit, and >>> to enter"
 										+ " multiline mode.");
 							} else {
-								Static.SendMessage(player, MCChatColor.RED + "The interpreter is currently disabled. Check your preferences file.");
+								Static.SendMessage(player, MCChatColor.RED
+										+ "The interpreter is currently disabled. Check your preferences file.");
 							}
 						} else {
 							src.sendMessage(Texts.of("Interpreter mode can only be used as a player at this time."));
@@ -169,6 +173,6 @@ public class CommandHelperSponge {
 
 	@Subscribe
 	public void onStop(ServerStoppingEvent event) {
-		common.disable();
+		// common.disable();
 	}
 }

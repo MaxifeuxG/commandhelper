@@ -24,12 +24,15 @@ import org.spongepowered.api.text.sink.MessageSinks;
 import org.spongepowered.api.util.command.CommandSource;
 import org.spongepowered.api.world.World;
 
-import java.lang.reflect.Proxy;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 
@@ -42,10 +45,17 @@ public class SpongeMCServer extends SpongeMCGame implements MCServer {
 
 	private final SpongeMCConsole console;
 	private final HashMap<String, SpongeMCPlayer> players;
+	private final Properties props;
 
 	public SpongeMCServer() {
 		console = new SpongeMCConsole(_Server().getConsole());
 		players = new HashMap<>();
+		props = new Properties();
+		Reader reader = new StringReader("server.properties");
+		try {
+			props.load(reader);
+		} catch (IOException ignored) {
+		}
 	}
 
 	public SpongeMCPlayer cachePlayer(Player player) {
@@ -194,32 +204,32 @@ public class SpongeMCServer extends SpongeMCGame implements MCServer {
 
 	@Override
 	public Boolean getAllowFlight() {
-		return null;
+		return Boolean.valueOf(props.getProperty("allow-flight"));
 	}
 
 	@Override
 	public Boolean getAllowNether() {
-		return null;
+		return Boolean.valueOf(props.getProperty("allow-nether"));
 	}
 
 	@Override
 	public Boolean getAllowEnd() {
-		return null;
+		return getAllowNether();
 	}
 
 	@Override
 	public Boolean getOnlineMode() {
-		return null;
+		return _Server().getOnlineMode();
 	}
 
 	@Override
 	public int getViewDistance() {
-		return 0;
+		return Integer.valueOf(props.getProperty("view-distance"));
 	}
 
 	@Override
 	public String getWorldContainer() {
-		return null;
+		return props.getProperty("level-name");
 	}
 
 	@Override
@@ -239,7 +249,8 @@ public class SpongeMCServer extends SpongeMCGame implements MCServer {
 
 	@Override
 	public List<MCOfflinePlayer> getOperators() {
-		return null;
+
+		return new ArrayList<>();
 	}
 
 	@Override

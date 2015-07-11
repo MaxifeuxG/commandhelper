@@ -1,5 +1,6 @@
 package com.laytonsmith.abstraction.sponge;
 
+import com.laytonsmith.PureUtilities.Common.ReflectionUtils;
 import com.laytonsmith.abstraction.AbstractConvertor;
 import com.laytonsmith.abstraction.Implementation;
 import com.laytonsmith.abstraction.MCColor;
@@ -23,7 +24,10 @@ import com.laytonsmith.abstraction.MCWorld;
 import com.laytonsmith.abstraction.blocks.MCMaterial;
 import com.laytonsmith.abstraction.enums.MCRecipeType;
 import com.laytonsmith.abstraction.enums.MCTone;
+import com.laytonsmith.abstraction.enums.sponge.SpongeMCEntityType;
 import com.laytonsmith.abstraction.sponge.entities.SpongeMCEntity;
+import com.laytonsmith.abstraction.sponge.entities.SpongeMCHumanEntity;
+import com.laytonsmith.abstraction.sponge.entities.SpongeMCLivingEntity;
 import com.laytonsmith.abstraction.sponge.entities.SpongeMCPlayer;
 import com.laytonsmith.abstraction.sponge.events.SpongeAbstractEventMixin;
 import com.laytonsmith.annotations.convert;
@@ -33,11 +37,12 @@ import com.laytonsmith.core.LogLevel;
 import com.laytonsmith.core.constructs.Target;
 import com.laytonsmith.core.functions.Exceptions;
 import org.spongepowered.api.entity.Entity;
+import org.spongepowered.api.entity.living.Human;
+import org.spongepowered.api.entity.living.Living;
 import org.spongepowered.api.entity.player.Player;
 import org.spongepowered.api.util.command.CommandSource;
 import org.spongepowered.api.util.command.source.CommandBlockSource;
 import org.spongepowered.api.util.command.source.ConsoleSource;
-import org.spongepowered.api.util.command.spec.CommandSpec;
 
 import java.util.List;
 
@@ -85,7 +90,7 @@ public class SpongeConvertor extends AbstractConvertor {
 
 	@Override
 	public MCCommand getNewCommand(String name) {
-		return new SpongeMCCommand(name, CommandSpec.builder().build());
+		return new SpongeMCCommand(name);
 	}
 
 	@Override
@@ -161,7 +166,67 @@ public class SpongeConvertor extends AbstractConvertor {
 	}
 
 	public static MCEntity SpongeGetCorrectEntity(Entity se) {
-		return null;
+		if (se == null) {
+			return null;
+		}
+
+		SpongeMCEntityType type = SpongeMCEntityType.valueOfConcrete(se.getType());
+		if (type.getWrapperClass() != null) {
+			return ReflectionUtils.newInstance(type.getWrapperClass(), new Class[]{Entity.class}, new Object[]{se});
+		}
+
+//		if (se instanceof Hanging) {
+//			type.setWrapperClass(BukkitMCHanging.class);
+//			return new BukkitMCHanging(se);
+//		}
+//
+//		if (se instanceof Minecart) {
+//			// Must come before Vehicle
+//			type.setWrapperClass(BukkitMCMinecart.class);
+//			return new BukkitMCMinecart(se);
+//		}
+//
+//		if (se instanceof Projectile) {
+//			type.setWrapperClass(BukkitMCProjectile.class);
+//			return new BukkitMCProjectile(se);
+//		}
+//
+//		if (se instanceof Tameable) {
+//			// Must come before LivingEntity
+//			type.setWrapperClass(BukkitMCTameable.class);
+//			return new BukkitMCTameable(se);
+//		}
+
+		if (se instanceof Human) {
+			// Must come before LivingEntity
+			type.setWrapperClass(SpongeMCHumanEntity.class);
+			return new SpongeMCHumanEntity(se);
+		}
+
+//		if (se instanceof ComplexEntityPart) {
+//			type.setWrapperClass(BukkitMCComplexEntityPart.class);
+//			return new BukkitMCComplexEntityPart(se);
+//		}
+//
+//		if (se instanceof ComplexLivingEntity) {
+//			// Must come before LivingEntity
+//			type.setWrapperClass(BukkitMCComplexLivingEntity.class);
+//			return new BukkitMCComplexLivingEntity(se);
+//		}
+
+		if (se instanceof Living) {
+			type.setWrapperClass(SpongeMCLivingEntity.class);
+			return new SpongeMCLivingEntity(se);
+		}
+
+//		if (se instanceof Vehicle) {
+//			type.setWrapperClass(BukkitMCVehicle.class);
+//			return new BukkitMCVehicle(se);
+//		}
+
+		// Handle generically if we can't find a more specific type
+		type.setWrapperClass(SpongeMCEntity.class);
+		return new SpongeMCEntity(se);
 	}
 
 	@Override

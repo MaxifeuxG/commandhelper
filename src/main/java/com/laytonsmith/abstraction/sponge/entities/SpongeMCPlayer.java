@@ -17,10 +17,19 @@ import com.laytonsmith.abstraction.enums.MCSound;
 import com.laytonsmith.abstraction.enums.MCWeather;
 import com.laytonsmith.commandhelper.CommandHelperSponge;
 import com.laytonsmith.core.Static;
+import com.laytonsmith.core.constructs.CArray;
+import com.laytonsmith.core.constructs.Construct;
+import com.laytonsmith.core.constructs.Target;
+import com.laytonsmith.core.exceptions.MarshalException;
+import com.laytonsmith.core.functions.FileHandling;
+import org.spongepowered.api.data.manipulator.DisplayNameData;
 import org.spongepowered.api.data.manipulator.entity.ExperienceHolderData;
 import org.spongepowered.api.data.manipulator.entity.FlyingData;
+import org.spongepowered.api.data.manipulator.entity.FoodData;
+import org.spongepowered.api.data.manipulator.entity.SneakingData;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.player.Player;
+import org.spongepowered.api.resourcepack.ResourcePacks;
 import org.spongepowered.api.service.permission.PermissionService;
 import org.spongepowered.api.service.permission.Subject;
 import org.spongepowered.api.service.permission.SubjectCollection;
@@ -28,10 +37,13 @@ import org.spongepowered.api.text.TextBuilder;
 import org.spongepowered.api.text.Texts;
 import org.spongepowered.api.util.Tristate;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.net.InetSocketAddress;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 import java.util.UUID;
-
 import javax.annotation.Nullable;
 
 /**
@@ -74,7 +86,11 @@ public class SpongeMCPlayer extends SpongeMCHumanEntity implements MCPlayer, MCC
 
 	@Override
 	public InetSocketAddress getAddress() {
-		return getHandle().getConnection().getAddress();
+		try {
+			return getHandle().getConnection().getAddress();
+		} catch (ClassCastException e) {
+			return new InetSocketAddress("127.0.0.1", 0);
+		}
 	}
 
 	@Override
@@ -89,7 +105,7 @@ public class SpongeMCPlayer extends SpongeMCHumanEntity implements MCPlayer, MCC
 
 	@Override
 	public String getDisplayName() {
-		return getHandle().getDisplayNameData().getDisplayName().toString();
+		return getHandle().getOrCreate(DisplayNameData.class).get().getDisplayName().toString();
 	}
 
 	@Override
@@ -109,7 +125,7 @@ public class SpongeMCPlayer extends SpongeMCHumanEntity implements MCPlayer, MCC
 
 	@Override
 	public int getFoodLevel() {
-		return 0;
+		return (int) getHandle().getOrCreate(FoodData.class).get().getFoodLevel();
 	}
 
 	@Override
@@ -119,8 +135,7 @@ public class SpongeMCPlayer extends SpongeMCHumanEntity implements MCPlayer, MCC
 
 	@Override
 	public int getLevel() {
-		//return getHandle().getData(ExperienceHolderData.class).get().getLevel();
-		return 0;
+		return getHandle().getData(ExperienceHolderData.class).get().getLevel();
 	}
 
 	@Override
@@ -170,7 +185,7 @@ public class SpongeMCPlayer extends SpongeMCHumanEntity implements MCPlayer, MCC
 
 	@Override
 	public boolean isSneaking() {
-		return false;
+		return getHandle().getData(SneakingData.class).isPresent();
 	}
 
 	@Override
@@ -195,12 +210,16 @@ public class SpongeMCPlayer extends SpongeMCHumanEntity implements MCPlayer, MCC
 
 	@Override
 	public void sendTexturePack(String url) {
-
+		sendResourcePack(url);
 	}
 
 	@Override
 	public void sendResourcePack(String url) {
-
+		try {
+			getHandle().sendResourcePack(ResourcePacks.fromUrl(new URL(url)));
+		} catch (FileNotFoundException | MalformedURLException e) {
+			Static.getLogger().warn("Could not send ResourcePack: ", e);
+		}
 	}
 
 	@Override
@@ -230,12 +249,12 @@ public class SpongeMCPlayer extends SpongeMCHumanEntity implements MCPlayer, MCC
 
 	@Override
 	public void setFoodLevel(int f) {
-
+		getHandle().getOrCreate(FoodData.class).get().setFoodLevel(f);
 	}
 
 	@Override
 	public void setLevel(int xp) {
-
+		getHandle().getOrCreate(ExperienceHolderData.class).get().setLevel(xp);
 	}
 
 	@Override
@@ -315,12 +334,12 @@ public class SpongeMCPlayer extends SpongeMCHumanEntity implements MCPlayer, MCC
 
 	@Override
 	public int getHunger() {
-		return 0;
+		return (int) getHandle().getOrCreate(FoodData.class).get().getFoodLevel();
 	}
 
 	@Override
 	public void setHunger(int h) {
-
+		getHandle().getOrCreate(FoodData.class).get().setFoodLevel(h);
 	}
 
 	@Override
@@ -340,7 +359,7 @@ public class SpongeMCPlayer extends SpongeMCHumanEntity implements MCPlayer, MCC
 
 	@Override
 	public void sendPluginMessage(String channel, byte[] message) {
-
+		getHandle().getConnection().sendCustomPayload(CommandHelperSponge.self, channel, message);
 	}
 
 	@Override
@@ -350,6 +369,33 @@ public class SpongeMCPlayer extends SpongeMCHumanEntity implements MCPlayer, MCC
 
 	@Override
 	public boolean isOp() {
+		Target t = Target.UNKNOWN;
+		String read;
+		Construct opList;
+
+		try {
+			read = FileHandling.read.file_get_contents("ops.json");
+		} catch (Exception e) {
+			Static.getLogger().info("Folder location: " + (new File(".")).getAbsolutePath());
+			return false;
+		}
+		try {
+			opList = Construct.json_decode(read, t);
+		} catch (MarshalException e) {
+			return false;
+		}
+		if (opList instanceof CArray) {
+			for (Construct c : ((CArray) opList).asList()) {
+				if (c instanceof CArray) {
+					CArray op = (CArray) c;
+					if (op.isAssociative() && op.containsKey("uuid")) {
+						if (getUniqueID().toString().equals(op.get("uuid", t))) {
+							return true;
+						}
+					}
+				}
+			}
+		}
 		return false;
 	}
 

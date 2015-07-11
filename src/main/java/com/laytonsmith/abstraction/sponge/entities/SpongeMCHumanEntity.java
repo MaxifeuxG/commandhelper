@@ -10,6 +10,7 @@ import com.laytonsmith.abstraction.MCProjectile;
 import com.laytonsmith.abstraction.MCProjectileSource;
 import com.laytonsmith.abstraction.enums.MCGameMode;
 import com.laytonsmith.abstraction.enums.MCProjectileType;
+import com.laytonsmith.abstraction.sponge.SpongeMCItemStack;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.Human;
 
@@ -34,7 +35,7 @@ public class SpongeMCHumanEntity extends SpongeMCLivingEntity implements MCHuman
 
 	@Override
 	public void closeInventory() {
-
+		getHandle().closeInventory();
 	}
 
 	@Override
@@ -44,7 +45,9 @@ public class SpongeMCHumanEntity extends SpongeMCLivingEntity implements MCHuman
 
 	@Override
 	public MCItemStack getItemInHand() {
-		return null;
+		return getHandle().getItemInHand().isPresent()
+				? new SpongeMCItemStack(getHandle().getItemInHand().get())
+				: null;
 	}
 
 	@Override

@@ -14,6 +14,7 @@ import com.laytonsmith.abstraction.enums.MCEntityType;
 import com.laytonsmith.abstraction.enums.MCTeleportCause;
 import com.laytonsmith.abstraction.events.MCEntityDamageEvent;
 import com.laytonsmith.abstraction.sponge.SpongeMCLocation;
+import com.laytonsmith.abstraction.sponge.SpongeMCWorld;
 import org.spongepowered.api.data.manipulator.DisplayNameData;
 import org.spongepowered.api.data.manipulator.catalog.CatalogEntityData;
 import org.spongepowered.api.data.manipulator.entity.VehicleData;
@@ -114,7 +115,7 @@ public class SpongeMCEntity implements MCEntity {
 
 	@Override
 	public UUID getUniqueId() {
-		return null;
+		return getHandle().getUniqueId();
 	}
 
 	@Override
@@ -134,12 +135,12 @@ public class SpongeMCEntity implements MCEntity {
 
 	@Override
 	public MCWorld getWorld() {
-		return null;
+		return new SpongeMCWorld(getHandle().getWorld());
 	}
 
 	@Override
 	public boolean isDead() {
-		return false;
+		return getHandle().isRemoved();
 	}
 
 	@Override
@@ -154,7 +155,7 @@ public class SpongeMCEntity implements MCEntity {
 
 	@Override
 	public boolean isOnGround() {
-		return false;
+		return getHandle().isOnGround();
 	}
 
 	@Override
@@ -169,7 +170,7 @@ public class SpongeMCEntity implements MCEntity {
 
 	@Override
 	public void remove() {
-
+		getHandle().remove();
 	}
 
 	@Override

@@ -1,0 +1,17 @@
+[
+    {
+        "modid": "${project.artifactId}",
+        "name": "${project.name}",
+        "description": "${project.description}",
+        "version": "${project.version}",
+        "credits": "MethodScript engine (C) LadyCailin",
+        "logoFile": "/magic.png",
+        "mcversion": "1.8",
+        "url": "${project.organization.url}",
+        "updateUrl": "",
+        "authorList": [ "${project.organization.name}" ],
+        "parent":"",
+        "screenshots": [],
+        "dependencies": []
+    }
+]

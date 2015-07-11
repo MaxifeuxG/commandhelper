@@ -18,17 +18,21 @@ public class SpongeMCGame implements MCGame {
 
 	protected final Game game;
 	private final SpongeMCServer server;
-	private final SpongeMCCommandManager commandManager;
-	private MCVersion ver;
+	private SpongeMCCommandManager commandManager;
+	private final SpongeMCPluginManager pluginManager;
+	private final SpongeMCEventManager eventManager;
+	private final MCVersion ver;
 
 	public SpongeMCGame() {
 		game = CommandHelperSponge.self.theGame;
+		ver = MCVersion.match(_Game().getPlatform().getMinecraftVersion().getName().split("\\."));
 		if (!(this instanceof MCServer)) {
 			server = new SpongeMCServer();
 		} else {
 			server = null;
 		}
-		commandManager = new SpongeMCCommandManager(game.getCommandDispatcher());
+		pluginManager = new SpongeMCPluginManager(_Game().getPluginManager());
+		eventManager = new SpongeMCEventManager(_Game().getEventManager());
 	}
 
 	@Override
@@ -43,25 +47,25 @@ public class SpongeMCGame implements MCGame {
 
 	@Override
 	public MCVersion getMinecraftVersion() {
-		if (ver == null) {
-			ver = MCVersion.match(_Game().getPlatform().getMinecraftVersion().getName().split("."));
-		}
 		return ver;
 	}
 
 	@Override
 	public MCCommandManager getCommandManager() {
-		return null;
+		if (commandManager == null) {
+			commandManager = new SpongeMCCommandManager(_Game().getCommandDispatcher());
+		}
+		return commandManager;
 	}
 
 	@Override
 	public MCEventManager getEventManager() {
-		return null;
+		return eventManager;
 	}
 
 	@Override
 	public MCPluginManager getPluginManager() {
-		return null;
+		return pluginManager;
 	}
 
 	@Override

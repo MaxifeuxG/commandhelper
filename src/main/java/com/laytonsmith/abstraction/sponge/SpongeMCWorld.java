@@ -1,5 +1,6 @@
 package com.laytonsmith.abstraction.sponge;
 
+import com.google.common.base.Optional;
 import com.laytonsmith.abstraction.MCChunk;
 import com.laytonsmith.abstraction.MCEntity;
 import com.laytonsmith.abstraction.MCItem;
@@ -178,7 +179,12 @@ public class SpongeMCWorld implements MCWorld {
 
 	@Override
 	public MCEntity spawn(MCLocation l, MCEntityType entType) {
-		((SpongeMCEntityType) entType).getConcrete();
+		Optional<Entity> created = getHandle().createEntity(((SpongeMCEntityType) entType).getConcrete(),
+				((SpongeMCLocation) l).getHandle().getPosition());
+		if (created.isPresent()) {
+			getHandle().spawnEntity(created.get());
+			return SpongeConvertor.SpongeGetCorrectEntity(created.get());
+		}
 		return null;
 	}
 

@@ -6,7 +6,12 @@ import com.laytonsmith.abstraction.MCLivingEntity;
 import com.laytonsmith.abstraction.MCLocation;
 import com.laytonsmith.abstraction.MCPlayer;
 import com.laytonsmith.abstraction.blocks.MCBlock;
+import com.laytonsmith.abstraction.sponge.SpongeConvertor;
 import com.laytonsmith.core.constructs.Target;
+import org.spongepowered.api.data.manipulator.entity.DamageableData;
+import org.spongepowered.api.data.manipulator.entity.HealthData;
+import org.spongepowered.api.data.manipulator.entity.LeashData;
+import org.spongepowered.api.data.manipulator.entity.PersistingData;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.Living;
 
@@ -21,6 +26,8 @@ import java.util.List;
 public class SpongeMCLivingEntity extends SpongeMCEntity implements MCLivingEntity {
 
 	final Living living;
+	// original max health
+	private double omh = -1;
 
 	public SpongeMCLivingEntity(Entity param) {
 		super(param);
@@ -64,7 +71,7 @@ public class SpongeMCLivingEntity extends SpongeMCEntity implements MCLivingEnti
 
 	@Override
 	public boolean getRemoveWhenFarAway() {
-		return false;
+		return getHandle().getData(PersistingData.class).isPresent();
 	}
 
 	@Override
@@ -89,7 +96,7 @@ public class SpongeMCLivingEntity extends SpongeMCEntity implements MCLivingEnti
 
 	@Override
 	public double getHealth() {
-		return 0;
+		return getHandle().getOrCreate(HealthData.class).get().getHealth();
 	}
 
 	@Override
@@ -99,12 +106,14 @@ public class SpongeMCLivingEntity extends SpongeMCEntity implements MCLivingEnti
 
 	@Override
 	public double getLastDamage() {
-		return 0;
+		return getHandle().getOrCreate(DamageableData.class).get().getLastDamage().or(0D);
 	}
 
 	@Override
 	public MCEntity getLeashHolder() {
-		return null;
+		return isLeashed() ? SpongeConvertor.SpongeGetCorrectEntity(getHandle()
+				.getOrCreate(LeashData.class).get().getLeashHolder())
+				: null;
 	}
 
 	@Override
@@ -139,7 +148,7 @@ public class SpongeMCLivingEntity extends SpongeMCEntity implements MCLivingEnti
 
 	@Override
 	public double getMaxHealth() {
-		return 0;
+		return getHandle().getOrCreate(HealthData.class).get().getMaxHealth();
 	}
 
 	@Override
@@ -164,12 +173,14 @@ public class SpongeMCLivingEntity extends SpongeMCEntity implements MCLivingEnti
 
 	@Override
 	public boolean isLeashed() {
-		return false;
+		return getHandle().getData(LeashData.class).isPresent();
 	}
 
 	@Override
 	public void resetMaxHealth() {
-
+		if (omh != -1) {
+			getHandle().getOrCreate(HealthData.class).get().setMaxHealth(omh);
+		}
 	}
 
 	@Override
@@ -184,7 +195,7 @@ public class SpongeMCLivingEntity extends SpongeMCEntity implements MCLivingEnti
 
 	@Override
 	public void setHealth(double health) {
-
+		getHandle().getOrCreate(HealthData.class).get().setHealth(health);
 	}
 
 	@Override
@@ -199,7 +210,11 @@ public class SpongeMCLivingEntity extends SpongeMCEntity implements MCLivingEnti
 
 	@Override
 	public void setMaxHealth(double health) {
-
+		HealthData hd = getHandle().getOrCreate(HealthData.class).get();
+		if (omh == -1) {
+			omh = hd.getMaxHealth();
+		}
+		hd.setMaxHealth(health);
 	}
 
 	@Override

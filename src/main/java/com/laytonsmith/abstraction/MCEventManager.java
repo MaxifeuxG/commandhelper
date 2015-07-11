@@ -1,9 +1,11 @@
 package com.laytonsmith.abstraction;
 
 /**
- * Created by jb_aero on 4/8/2015.
+ * MCEventManager.java, 4/8/2015 12:41 AM
+ *
+ * @author jb_aero
  */
-public interface MCEventManager {
+public interface MCEventManager extends AbstractionObject {
 
 	boolean callEvent(Object event);
 

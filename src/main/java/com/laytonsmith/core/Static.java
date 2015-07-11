@@ -4,7 +4,6 @@ import com.laytonsmith.PureUtilities.Common.DateUtils;
 import com.laytonsmith.PureUtilities.SimpleVersion;
 import com.laytonsmith.PureUtilities.TermColors;
 import com.laytonsmith.PureUtilities.XMLDocument;
-import com.laytonsmith.abstraction.Implementation;
 import com.laytonsmith.abstraction.MCCommandSender;
 import com.laytonsmith.abstraction.MCConsoleCommandSender;
 import com.laytonsmith.abstraction.MCEntity;
@@ -1243,7 +1242,8 @@ public final class Static {
 		} else {
 			jarLocation = new File(".");
 		}
-		File platformFolder = new File(jarLocation, Implementation.GetServerType().getBranding() + "/");
+//		File platformFolder = new File(jarLocation, Implementation.GetServerType().getBranding() + "/");
+		File platformFolder = MethodScriptFileLocations.getDefault().getConfigDirectory();
 		Installer.Install(platformFolder);
 		ConnectionMixinFactory.ConnectionMixinOptions options = new ConnectionMixinFactory.ConnectionMixinOptions();
 		options.setWorkingDirectory(platformFolder);

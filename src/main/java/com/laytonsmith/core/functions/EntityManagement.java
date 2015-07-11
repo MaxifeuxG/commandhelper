@@ -1478,7 +1478,9 @@ public class EntityManagement {
 					default:
 						ent = l.getWorld().spawn(l, entType);
 				}
-				ret.push(new CInt(ent.getEntityId(), t));
+				if (ent != null) {
+					ret.push(new CInt(ent.getEntityId(), t));
+				}
 			}
 			return ret;
 		}

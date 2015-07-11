@@ -4,10 +4,17 @@ import com.laytonsmith.abstraction.MCCommand;
 import com.laytonsmith.abstraction.MCCommandManager;
 import com.laytonsmith.abstraction.MCCommandSender;
 import com.laytonsmith.abstraction.MCPlugin;
+import com.laytonsmith.commandhelper.CommandHelperCommon;
+import org.spongepowered.api.text.Texts;
+import org.spongepowered.api.util.command.CommandException;
+import org.spongepowered.api.util.command.CommandResult;
+import org.spongepowered.api.util.command.CommandSource;
+import org.spongepowered.api.util.command.args.CommandContext;
+import org.spongepowered.api.util.command.args.GenericArguments;
+import org.spongepowered.api.util.command.spec.CommandExecutor;
 import org.spongepowered.api.util.command.spec.CommandSpec;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -18,13 +25,17 @@ import java.util.List;
 public class SpongeMCCommand implements MCCommand {
 
 	private String name;
-	private ArrayList<String> aliases;
-	private CommandSpec spec;
+	private List<String> aliases;
+	private String permission;
+	private String description;
 
-	public SpongeMCCommand(String name, CommandSpec build) {
+	public SpongeMCCommand(String name) {
 		this.name = name;
-		this.aliases = (ArrayList<String>) Arrays.asList(name);
-		this.spec = build;
+		this.aliases = new ArrayList<>();
+	}
+
+	public SpongeMCCommand(CommandSpec source) {
+
 	}
 
 	@Override
@@ -34,8 +45,7 @@ public class SpongeMCCommand implements MCCommand {
 
 	@Override
 	public String getDescription() {
-		return spec.getShortDescription(null).isPresent() ? spec.getShortDescription(null).get().toString()
-				: "";
+		return description;
 	}
 
 	@Override
@@ -50,7 +60,7 @@ public class SpongeMCCommand implements MCCommand {
 
 	@Override
 	public String getPermission() {
-		return null;
+		return permission;
 	}
 
 	@Override
@@ -60,17 +70,20 @@ public class SpongeMCCommand implements MCCommand {
 
 	@Override
 	public String getUsage() {
-		return spec.getUsage(null).toString();
+		return null;
 	}
 
 	@Override
 	public MCCommand setAliases(List<String> aliases) {
-		return null;
+		this.aliases = aliases;
+		this.aliases.add(0, name);
+		return this;
 	}
 
 	@Override
 	public MCCommand setDescription(String desc) {
-		return null;
+		this.description = desc;
+		return this;
 	}
 
 	@Override
@@ -81,19 +94,18 @@ public class SpongeMCCommand implements MCCommand {
 
 	@Override
 	public MCCommand setPermission(String perm) {
-		// TODO the following will not work
-		spec = spec.builder().permission(perm).build();
+		this.permission = perm;
 		return this;
 	}
 
 	@Override
 	public MCCommand setPermissionMessage(String permmsg) {
-		return null;
+		return this;
 	}
 
 	@Override
 	public MCCommand setUsage(String example) {
-		return null;
+		return this;
 	}
 
 	@Override
@@ -173,6 +185,19 @@ public class SpongeMCCommand implements MCCommand {
 
 	@Override
 	public CommandSpec getHandle() {
-		return spec;
+		return CommandSpec.builder().arguments(GenericArguments.remainingJoinedStrings(Texts.of("args")))
+				.executor(new CommandExecutor() {
+					@Override
+					public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
+						return CommandHelperCommon.self.handleCustomCommand(getName(),
+								SpongeConvertor.SpongeGetCorrectSender(src), "unknown",
+								args.getOne("args").isPresent() ? args.getOne("args").get().toString().split(" ") : new String[0])
+								? CommandResult.success()
+								: CommandResult.empty();
+					}
+				})
+				.permission(getPermission())
+				.description(Texts.of(getDescription()))
+				.build();
 	}
 }

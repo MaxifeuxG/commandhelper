@@ -33,7 +33,7 @@ public class SpongeMCEntityType extends MCEntityType {
 		NULL = new SpongeMCEntityType(EntityTypes.UNKNOWN, MCEntityType.MCVanillaEntityType.UNKNOWN);
 		ArrayList<EntityType> counted = new ArrayList<>();
 		for (MCEntityType.MCVanillaEntityType v : MCEntityType.MCVanillaEntityType.values()) {
-			if (v.existsInCurrent()) {
+			if (v.existsInCurrent() && v != MCVanillaEntityType.UNKNOWN) {
 				EntityType type = getSpongeType(registry, v);
 				if (type == null) {
 					CHLog.GetLogger().e(CHLog.Tags.RUNTIME, "Could not find a matching entity type for " + v.name()
@@ -75,17 +75,17 @@ public class SpongeMCEntityType extends MCEntityType {
 				!= EntityTypes.UNKNOWN) : abstracted.isSpawnable();
 	}
 
-	public static MCEntityType valueOfConcrete(EntityType test) {
+	public static SpongeMCEntityType valueOfConcrete(EntityType test) {
 		return valueOfConcrete(test.getId());
 	}
 
-	public static MCEntityType valueOfConcrete(String test) {
+	public static SpongeMCEntityType valueOfConcrete(String test) {
 		for (MCEntityType t : mappings.values()) {
-			if (((SpongeMCEntityType) t).concreteName().equals(test)) {
-				return t;
+			if (t.concreteName().equals(test)) {
+				return (SpongeMCEntityType) t;
 			}
 		}
-		return NULL;
+		return (SpongeMCEntityType) NULL;
 	}
 
 	// Add exceptions here
@@ -107,8 +107,6 @@ public class SpongeMCEntityType extends MCEntityType {
 				return EntityTypes.MOB_SPAWNER_MINECART;
 			case MINECART_TNT:
 				return EntityTypes.TNT_MINECART;
-			case UNKNOWN:
-				return EntityTypes.UNKNOWN;
 		}
 		return reg.getType(CatalogTypes.ENTITY_TYPE, v.name()).orNull();
 	}

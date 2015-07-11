@@ -449,6 +449,7 @@
 				<directory>${basedir}/src/main/resources/</directory>
 				<includes>
 					<include>plugin.yml</include>
+					<include>mcmod.info</include>
 				</includes>
 			</resource>
 			<resource>
@@ -457,6 +458,7 @@
 				<directory>${basedir}/src/main/resources/</directory>
 				<excludes>
 					<exclude>plugin.yml</exclude>
+					<exclude>mcmod.info</exclude>
 				</excludes>
 			</resource>
 		</resources>
