@@ -1,4 +1,3 @@
-
 package com.laytonsmith.abstraction.enums;
 
 import com.laytonsmith.PureUtilities.ClassLoading.DynamicEnum;
@@ -15,10 +14,10 @@ import java.util.Set;
 
 /**
  *
- * 
+ *
  */
 @MDynamicEnum("EntityType")
-public abstract class MCEntityType extends DynamicEnum {
+public abstract class MCEntityType<Concrete> extends DynamicEnum<MCEntityType.MCVanillaEntityType,Concrete> {
 
 	@MEnum("VanillaEntityType")
 	public enum MCVanillaEntityType {
@@ -41,8 +40,8 @@ public abstract class MCEntityType extends DynamicEnum {
 		ENDERMITE(true, MCVersion.MC1_8),
 		ENDER_CRYSTAL(true),
 		ENDER_DRAGON(true),
+		ENDER_EYE(false),
 		ENDER_PEARL(false),
-		ENDER_SIGNAL(false),
 		EXPERIENCE_ORB(true),
 		/**
 		 * Spawn with world.spawnFallingBlock()
@@ -137,7 +136,6 @@ public abstract class MCEntityType extends DynamicEnum {
 	// To be filled by the implementer
 	protected static Map<String, MCEntityType> mappings;
 	protected static Map<MCVanillaEntityType, MCEntityType> vanilla;
-	protected static Map<MCVanillaEntityType, Class<? extends MCEntity>> classList;
 
 	public static MCEntityType NULL = null;
 
@@ -147,13 +145,12 @@ public abstract class MCEntityType extends DynamicEnum {
 
 	// Instance variable;
 	protected MCVanillaEntityType abstracted;
+	protected Class<? extends MCEntity> wrapperClass;
 
 	/**
 	 * @return always returns the concrete name
 	 */
 	public abstract String concreteName();
-
-	public abstract Object getConcrete();
 
 	/**
 	 * Utility method for spawn_entity
@@ -161,8 +158,8 @@ public abstract class MCEntityType extends DynamicEnum {
 	 */
 	public abstract boolean isSpawnable();
 
-	public MCVanillaEntityType getAbstracted() {
-		return abstracted;
+	public Class<? extends MCEntity> getWrapperClass() {
+		return wrapperClass;
 	}
 
 	public static MCEntityType valueOf(String test) {
