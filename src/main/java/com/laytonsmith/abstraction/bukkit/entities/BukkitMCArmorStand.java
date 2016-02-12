@@ -1,5 +1,6 @@
 package com.laytonsmith.abstraction.bukkit.entities;
 
+import com.laytonsmith.PureUtilities.Common.ReflectionUtils;
 import com.laytonsmith.PureUtilities.Vector3D;
 import com.laytonsmith.abstraction.MCArmorStand;
 import com.laytonsmith.abstraction.MCEntityEquipment;
@@ -259,6 +260,23 @@ public class BukkitMCArmorStand extends BukkitMCLivingEntity implements MCArmorS
 	@Override
 	public void setSmall(boolean small) {
 		as.setSmall(small);
+	}
+
+	@Override
+	public Boolean isMarker() {
+		// Added in 1.8.7
+		if(ReflectionUtils.hasMethod(as.getClass(), "isMarker", null)){
+			return as.isMarker();
+		}
+		return null;
+	}
+
+	@Override
+	public void setMarker(boolean marker) {
+		// Added in 1.8.7
+		if(ReflectionUtils.hasMethod(as.getClass(), "setMarker", null, boolean.class)){
+			as.setMarker(marker);
+		}
 	}
 
 	/**

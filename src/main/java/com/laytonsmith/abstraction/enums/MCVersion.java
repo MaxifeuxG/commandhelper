@@ -34,12 +34,16 @@ public enum MCVersion implements Version {
 	MC1_8,
 	MC1_8_3,
 	MC1_8_6,
+	MC1_8_7,
 	MC1_8_X,
 	MC1_9,
 	MC1_9_X,
 	MC1_X,
 	MC2_X,
-	MCX_X;
+	MCX_X,
+	CURRENT,
+	FUTURE,
+	NEVER;
 
 	public static MCVersion match(String[] source) {
 		String[] parts = new String[Math.min(3, source.length)];
@@ -122,7 +126,7 @@ public enum MCVersion implements Version {
 	@Override
 	public boolean lte(Version other) {
 		if (other instanceof MCVersion) {
-			return !(this.ordinal() < ((MCVersion) other).ordinal());
+			return !(this.ordinal() > ((MCVersion) other).ordinal());
 		}
 		return false;
 	}

@@ -70,6 +70,8 @@ public interface MCBlock extends MCMetadatable {
 	public int getBlockPower();
 	
 	public boolean isBlockPowered();
+	
+	public boolean isBlockIndirectlyPowered();
 
 	public MCBlock getRelative(MCBlockFace face);
 

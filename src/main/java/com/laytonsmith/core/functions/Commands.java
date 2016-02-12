@@ -1,10 +1,7 @@
 package com.laytonsmith.core.functions;
 
 import com.laytonsmith.PureUtilities.Version;
-import com.laytonsmith.abstraction.Implementation;
-import com.laytonsmith.abstraction.MCCommand;
-import com.laytonsmith.abstraction.MCCommandManager;
-import com.laytonsmith.abstraction.StaticLayer;
+import com.laytonsmith.abstraction.*;
 import com.laytonsmith.annotations.api;
 import com.laytonsmith.core.CHVersion;
 import com.laytonsmith.core.Static;
@@ -17,8 +14,11 @@ import com.laytonsmith.core.constructs.CVoid;
 import com.laytonsmith.core.constructs.Construct;
 import com.laytonsmith.core.constructs.Target;
 import com.laytonsmith.core.environments.Environment;
+import com.laytonsmith.core.exceptions.CRE.CREFormatException;
+import com.laytonsmith.core.exceptions.CRE.CRENotFoundException;
+import com.laytonsmith.core.exceptions.CRE.CREThrowable;
+import com.laytonsmith.core.exceptions.ConfigCompileException;
 import com.laytonsmith.core.exceptions.ConfigRuntimeException;
-import com.laytonsmith.core.functions.Exceptions.ExceptionType;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -43,8 +43,8 @@ public class Commands {
 	public static class set_tabcompleter extends AbstractFunction {
 
 		@Override
-		public ExceptionType[] thrown() {
-			return new ExceptionType[]{ExceptionType.FormatException, ExceptionType.NotFoundException};
+		public Class<? extends CREThrowable>[] thrown() {
+			return new Class[]{CREFormatException.class, CRENotFoundException.class};
 		}
 
 		@Override
@@ -59,10 +59,15 @@ public class Commands {
 
 		@Override
 		public Construct exec(Target t, Environment environment, Construct... args) throws ConfigRuntimeException {
-			MCCommand cmd = Static.getGame().getCommandManager().getCommand(args[0].val());
+			MCCommandManager map = Static.getGame().getCommandManager();
+			if (map == null) {
+				throw ConfigRuntimeException.BuildException(this.getName() + " is not supported in this mode (CommandMap not found).",
+						CRENotFoundException.class, t);
+			}
+			MCCommand cmd = map.getCommand(args[0].val());
 			if (cmd == null) {
-				throw new ConfigRuntimeException("Command not found, did you forget to register it?",
-						ExceptionType.NotFoundException, t);
+				throw ConfigRuntimeException.BuildException("Command not found, did you forget to register it?",
+						CRENotFoundException.class, t);
 			}
 			customExec(t, environment, cmd, args[1]);
 			return CVoid.VOID;
@@ -79,11 +84,9 @@ public class Commands {
 			if (arg instanceof CClosure) {
 				onTabComplete.remove(cmd.getName());
 				onTabComplete.put(cmd.getName(), (CClosure) arg);
-				cmd.setTabCompleter(Static.getGame().getPluginManager()
-						.getPlugin(Implementation.GetServerType().getBranding()));
 			} else {
-				throw new ConfigRuntimeException("At this time, only closures are accepted as tabcompleters",
-						ExceptionType.FormatException, t);
+				throw ConfigRuntimeException.BuildException("At this time, only closures are accepted as tabcompleters",
+						CREFormatException.class, t);
 			}
 		}
 
@@ -116,8 +119,8 @@ public class Commands {
 	public static class unregister_command extends AbstractFunction {
 
 		@Override
-		public ExceptionType[] thrown() {
-			return new ExceptionType[]{ExceptionType.NotFoundException};
+		public Class<? extends CREThrowable>[] thrown() {
+			return new Class[]{CRENotFoundException.class};
 		}
 
 		@Override
@@ -133,10 +136,14 @@ public class Commands {
 		@Override
 		public Construct exec(Target t, Environment environment, Construct... args) throws ConfigRuntimeException {
 			MCCommandManager map = Static.getGame().getCommandManager();
+			if (map == null) {
+				throw ConfigRuntimeException.BuildException(this.getName() + " is not supported in this mode (CommandMap not found).",
+						CRENotFoundException.class, t);
+			}
 			MCCommand cmd = map.getCommand(args[0].val());
 			if (cmd == null) {
-				throw new ConfigRuntimeException("Command not found, did you forget to register it?",
-						ExceptionType.NotFoundException, t);
+				throw ConfigRuntimeException.BuildException("Command not found, did you forget to register it?",
+						CRENotFoundException.class, t);
 			}
 			return CBoolean.get(map.unregister(cmd));
 		}
@@ -166,8 +173,9 @@ public class Commands {
 	public static class register_command extends AbstractFunction {
 
 		@Override
-		public ExceptionType[] thrown() {
-			return new ExceptionType[]{ExceptionType.FormatException};
+		public Class<? extends CREThrowable>[] thrown() {
+			return new Class[]{CREFormatException.class,
+					CRENotFoundException.class};
 		}
 
 		@Override
@@ -183,6 +191,10 @@ public class Commands {
 		@Override
 		public Construct exec(Target t, Environment environment, Construct... args) throws ConfigRuntimeException {
 			MCCommandManager map = Static.getGame().getCommandManager();
+			if (map == null) {
+				throw ConfigRuntimeException.BuildException(this.getName() + " is not supported in this mode (CommandMap not found).",
+						CRENotFoundException.class, t);
+			}
 			MCCommand cmd = map.getCommand(args[0].val().toLowerCase());
 			boolean isnew = false;
 			if (cmd == null) {
@@ -225,7 +237,7 @@ public class Commands {
 				}
 				return CBoolean.get(success);
 			} else {
-				throw new ConfigRuntimeException("Arg 2 was expected to be an array.", ExceptionType.FormatException, t);
+				throw ConfigRuntimeException.BuildException("Arg 2 was expected to be an array.", CREFormatException.class, t);
 			}
 		}
 
@@ -260,14 +272,49 @@ public class Commands {
 		public Version since() {
 			return CHVersion.V3_3_1;
 		}
+		
+		@Override
+		public ExampleScript[] examples() throws ConfigCompileException {
+			return new ExampleScript[]{
+				new ExampleScript("Register the /hug <player> command.",
+						"register_command('hug', array(\n"
+						+ "\t'description': 'Spread the love!',\n"
+						+ "\t'usage': '/hug <player>',\n"
+						+ "\t'permission': 'perms.hugs',\n"
+						+ "\t'noPermMsg': 'You do not have permission to give hugs to players (Sorry :o).',\n"
+						+ "\t'tabcompleter': closure(@alias, @sender, @args) {\n"
+						+ "\t\t\tif(array_size(@args) == 0) {\n"
+						+ "\t\t\t\treturn(all_players());\n"
+						+ "\t\t\t}\n"
+						+ "\t\t\t@search = @args[array_size(@args) - 1];\n"
+						+ "\t\t\treturn(array_filter(all_players(), closure(@index, @player) {\n"
+						+ "\t\t\t\treturn(equals_ic(@search, substr(@player, 0, length(@search))));\n"
+						+ "\t\t\t}));\n"
+						+ "\t\t},\n"
+						+ "\t'aliases':array('hugg', 'hugs'),\n"
+						+ "\t'executor': closure(@alias, @sender, @args) {\n"
+						+ "\t\t\tif(array_size(@args) == 1) {\n"
+						+ "\t\t\t\tif(ponline(@args[0])) {\n"
+						+ "\t\t\t\t\tbroadcast(colorize('&4'.@sender.' &6hugs &4'.@args[0]));\n"
+						+ "\t\t\t\t} else {\n"
+						+ "\t\t\t\t\ttmsg(@sender, colorize('&cThe given player is not online.'));\n"
+						+ "\t\t\t\t}\n"
+						+ "\t\t\t\treturn(true);\n"
+						+ "\t\t\t}\n"
+						+ "\t\t\treturn(false);\n"
+						+ "\t\t}\n"
+						+ "));",
+						"Registers the /hug command.")
+			};
+		}
 	}
 
 	@api
 	public static class set_executor extends AbstractFunction {
 
 		@Override
-		public ExceptionType[] thrown() {
-			return new ExceptionType[]{ExceptionType.FormatException, ExceptionType.NotFoundException};
+		public Class<? extends CREThrowable>[] thrown() {
+			return new Class[]{CREFormatException.class, CRENotFoundException.class};
 		}
 
 		@Override
@@ -282,10 +329,15 @@ public class Commands {
 
 		@Override
 		public Construct exec(Target t, Environment environment, Construct... args) throws ConfigRuntimeException {
-			MCCommand cmd = Static.getGame().getCommandManager().getCommand(args[0].val());
+			MCCommandManager map = Static.getGame().getCommandManager();
+			if (map == null) {
+				throw ConfigRuntimeException.BuildException(this.getName() + " is not supported in this mode (CommandMap not found).",
+						CRENotFoundException.class, t);
+			}
+			MCCommand cmd = map.getCommand(args[0].val());
 			if (cmd == null) {
-				throw new ConfigRuntimeException("Command not found did you forget to register it?",
-						ExceptionType.NotFoundException, t);
+				throw ConfigRuntimeException.BuildException("Command not found did you forget to register it?",
+						CRENotFoundException.class, t);
 			}
 			customExec(t, environment, cmd, args[1]);
 			return CVoid.VOID;
@@ -302,11 +354,9 @@ public class Commands {
 			if (arg instanceof CClosure) {
 				onCommand.remove(cmd.getName());
 				onCommand.put(cmd.getName(), (CClosure) arg);
-				cmd.setTabCompleter(Static.getGame().getPluginManager()
-						.getPlugin(Implementation.GetServerType().getBranding()));
 			} else {
-				throw new ConfigRuntimeException("At this time, only closures are accepted as command executors.",
-						ExceptionType.FormatException, t);
+				throw ConfigRuntimeException.BuildException("At this time, only closures are accepted as command executors.",
+						CREFormatException.class, t);
 			}
 		}
 
@@ -338,8 +388,8 @@ public class Commands {
 	public static class get_commands extends AbstractFunction {
 
 		@Override
-		public ExceptionType[] thrown() {
-			return new ExceptionType[0];
+		public Class<? extends CREThrowable>[] thrown() {
+			return new Class[]{};
 		}
 
 		@Override
@@ -355,6 +405,9 @@ public class Commands {
 		@Override
 		public Construct exec(Target t, Environment environment, Construct... args) throws ConfigRuntimeException {
 			MCCommandManager map = Static.getGame().getCommandManager();
+			if (map == null) {
+				return CNull.NULL;
+			}
 			Collection<MCCommand> commands = map.getCommands();
 			CArray ret = CArray.GetAssociativeArray(t);
 			for(MCCommand command : commands) {
@@ -372,7 +425,7 @@ public class Commands {
 				ca.set("usage", new CString(command.getUsage(), t), t);
 				CArray aliases = new CArray(t);
 				for (String a : command.getAliases()) {
-					aliases.push(new CString(a, t));
+					aliases.push(new CString(a, t), t);
 				}
 				ca.set("aliases", aliases, t);
 				ret.set(command.getName(), ca, t);
@@ -392,7 +445,7 @@ public class Commands {
 
 		@Override
 		public String docs() {
-			return "array {} Returns an array of command arrays in the format register_command expects."
+			return "array {} Returns an array of command arrays in the format register_command expects or null if no commands could be found."
 					+ " This does not include " + Implementation.GetServerType().getBranding() + " aliases, as they are not registered commands.";
 		}
 
@@ -406,8 +459,8 @@ public class Commands {
 	public static class clear_commands extends AbstractFunction {
 
 		@Override
-		public ExceptionType[] thrown() {
-			return new ExceptionType[0];
+		public Class<? extends CREThrowable>[] thrown() {
+			return new Class[]{};
 		}
 
 		@Override
@@ -424,7 +477,9 @@ public class Commands {
 		@Override
 		public Construct exec(Target t, Environment environment, Construct... args) throws ConfigRuntimeException {
 			MCCommandManager map = Static.getGame().getCommandManager();
-			map.clearCommands();
+			if (map != null) {
+				map.clearCommands();
+			}
 			return CVoid.VOID;
 		}
 

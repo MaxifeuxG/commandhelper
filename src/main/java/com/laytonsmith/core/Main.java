@@ -5,9 +5,11 @@ import com.laytonsmith.PureUtilities.ArgumentSuite;
 import com.laytonsmith.PureUtilities.ClassLoading.ClassDiscovery;
 import com.laytonsmith.PureUtilities.ClassLoading.ClassDiscoveryCache;
 import com.laytonsmith.PureUtilities.CommandExecutor;
+import com.laytonsmith.PureUtilities.Common.Annotations.AnnotationChecks;
 import com.laytonsmith.PureUtilities.Common.FileUtil;
 import com.laytonsmith.PureUtilities.Common.Misc;
 import com.laytonsmith.PureUtilities.Common.RSAEncrypt;
+import com.laytonsmith.PureUtilities.Common.StreamUtils;
 import com.laytonsmith.PureUtilities.Common.StringUtils;
 import com.laytonsmith.PureUtilities.TermColors;
 import com.laytonsmith.abstraction.Implementation;
@@ -225,6 +227,8 @@ public class Main {
 			if (args.length == 0) {
 				args = new String[]{"--help"};
 			}
+			
+			AnnotationChecks.checkForceImplementation();
 
 			ArgumentParser mode;
 			ArgumentParser.ArgumentParserResults parsedArgs;
@@ -234,7 +238,7 @@ public class Main {
 				mode = results.getMode();
 				parsedArgs = results.getResults();
 			} catch (ArgumentParser.ResultUseException | ArgumentParser.ValidationException e) {
-				System.out.println(TermColors.RED + e.getMessage() + TermColors.RESET);
+				StreamUtils.GetSystemOut().println(TermColors.RED + e.getMessage() + TermColors.RESET);
 				mode = helpMode;
 				parsedArgs = null;
 			}
@@ -247,12 +251,12 @@ public class Main {
 				modeForHelp = ARGUMENT_SUITE.getModeFromAlias(modeForHelp);
 				if (modeForHelp == null) {
 					//Display the general help
-					System.out.println(ARGUMENT_SUITE.getBuiltDescription());
+					StreamUtils.GetSystemOut().println(ARGUMENT_SUITE.getBuiltDescription());
 					System.exit(0);
 					return;
 				} else {
 					//Display the help for this mode
-					System.out.println(ARGUMENT_SUITE.getModeFromName(modeForHelp).getBuiltDescription());
+					StreamUtils.GetSystemOut().println(ARGUMENT_SUITE.getModeFromName(modeForHelp).getBuiltDescription());
 					return;
 				}
 			}
@@ -274,7 +278,7 @@ public class Main {
 					}
 				}
 				Collections.sort(core);
-				System.out.println(StringUtils.Join(core, ", "));
+				StreamUtils.GetSystemOut().println(StringUtils.Join(core, ", "));
 				System.exit(0);
 			} else if (mode == interpreterMode) {
 				new Interpreter(parsedArgs.getStringListArgument(), parsedArgs.getStringArgument("location-----"));
@@ -291,16 +295,16 @@ public class Main {
 			} else if (mode == mslpMode) {
 				String mslp = parsedArgs.getStringArgument();
 				if (mslp.isEmpty()) {
-					System.out.println("Usage: --mslp path/to/folder");
+					StreamUtils.GetSystemOut().println("Usage: --mslp path/to/folder");
 					System.exit(0);
 				}
 				MSLPMaker.start(mslp);
 				System.exit(0);
 			} else if (mode == versionMode) {
-				System.out.println("You are running " + Implementation.GetServerType().getBranding() + " version " + loadSelfVersion());
+				StreamUtils.GetSystemOut().println("You are running " + Implementation.GetServerType().getBranding() + " version " + loadSelfVersion());
 				System.exit(0);
 			} else if (mode == copyrightMode) {
-				System.out.println("The MIT License (MIT)\n"
+				StreamUtils.GetSystemOut().println("The MIT License (MIT)\n"
 						+ "\n"
 						+ "Copyright (c) 2012 Layton Smith, sk89q, Deaygo, \n"
 						+ "t3hk0d3, zml2008, EntityReborn, and albatrossen\n"
@@ -328,10 +332,10 @@ public class Main {
 				PersistenceNetwork pn = new PersistenceNetwork(MethodScriptFileLocations.getDefault().getPersistenceConfig(),
 						new URI("sqlite://" + MethodScriptFileLocations.getDefault().getDefaultPersistenceDBFile().getCanonicalPath()
 								//This replace is required on Windows.
-								.replace("\\", "/")), options);
+								.replace('\\', '/')), options);
 				Map<String[], String> values = pn.getNamespace(new String[]{});
 				for(String [] s : values.keySet()){
-					System.out.println(StringUtils.Join(s, ".") + "=" + values.get(s));
+					StreamUtils.GetSystemOut().println(StringUtils.Join(s, ".") + "=" + values.get(s));
 				}
 				System.exit(0);
 			} else if (mode == docsMode) {
@@ -339,27 +343,27 @@ public class Main {
 				try {
 					docs = DocGen.MarkupType.valueOf(parsedArgs.getStringArgument().toUpperCase());
 				} catch(IllegalArgumentException e){
-					System.out.println("The type of documentation must be one of the following: " + StringUtils.Join(DocGen.MarkupType.values(), ", ", ", or "));
+					StreamUtils.GetSystemOut().println("The type of documentation must be one of the following: " + StringUtils.Join(DocGen.MarkupType.values(), ", ", ", or "));
 					System.exit(1);
 					return;
 				}
 				//Documentation generator
-				System.err.print("Creating " + docs + " documentation...");
+				StreamUtils.GetSystemErr().print("Creating " + docs + " documentation...");
 				DocGen.functions(docs, api.Platforms.INTERPRETER_JAVA, true);
-				System.err.println("Done.");
+				StreamUtils.GetSystemErr().println("Done.");
 				System.exit(0);
 			} else if (mode == examplesMode) {
 				ExampleLocalPackageInstaller.run(MethodScriptFileLocations.getDefault().getJarDirectory(),
 						parsedArgs.getStringArgument());
 			} else if (mode == verifyMode) {
-				System.out.println("This functionality is not currently implemented!");
+				StreamUtils.GetSystemOut().println("This functionality is not currently implemented!");
 //                    File f = new File(".");
 //                    for (File a : f.listFiles()) {
 //                        if (a.getName().equals("CommandHelper.jar")) {
 //                            //We are in the plugins folder
 //                            f = new File("CommandHelper/bukkit.jar");
 //                            if (!f.exists()) {
-//                                System.out.println("In order to run the --test-compile command, you must include the latest build of bukkit (not craftbukkit)"
+//                                StreamUtils.GetSystemOut().println("In order to run the --test-compile command, you must include the latest build of bukkit (not craftbukkit)"
 //                                        + " in the CommandHelper folder. You MUST rename it to bukkit.jar. See the wiki for more information.");
 //                                System.exit(1);
 //                            }
@@ -372,14 +376,14 @@ public class Main {
 			} else if (mode == apiMode) {
 				String function = parsedArgs.getStringArgument();
 				if ("".equals(function)) {
-					System.err.println("Usage: java -jar CommandHelper.jar --api <function name>");
+					StreamUtils.GetSystemErr().println("Usage: java -jar CommandHelper.jar --api <function name>");
 					System.exit(1);
 				}
 				FunctionBase f;
 				try {
 					f = FunctionList.getFunction(function, Target.UNKNOWN);
 				} catch (ConfigCompileException e) {
-					System.err.println("The function '" + function + "' was not found.");
+					StreamUtils.GetSystemErr().println("The function '" + function + "' was not found.");
 					System.exit(1);
 					throw new Error();
 				}
@@ -387,7 +391,7 @@ public class Main {
 				String ret = di.ret.replaceAll("</?[a-z].*?>", "");
 				String args2 = di.args.replaceAll("</?[a-z].*?>", "");
 				String desc = (di.desc + (di.extendedDesc != null ? "\n\n" + di.extendedDesc : "")).replaceAll("</?[a-z].*?>", "");
-				System.out.println(StringUtils.Join(new String[]{
+				StreamUtils.GetSystemOut().println(StringUtils.Join(new String[]{
 							function,
 							"Returns " + ret,
 							"Expects " + args2,
@@ -399,7 +403,7 @@ public class Main {
 				List<String> syntax = parsedArgs.getStringListArgument();
 				String type = (syntax.size() >= 1 ? syntax.get(0) : null);
 				String theme = (syntax.size() >= 2 ? syntax.get(1) : null);
-				System.out.println(SyntaxHighlighters.generate(type, theme));
+				StreamUtils.GetSystemOut().println(SyntaxHighlighters.generate(type, theme));
 				System.exit(0);
 			} else if (mode == optimizerTestMode) {
 				String path = parsedArgs.getStringArgument();
@@ -407,7 +411,7 @@ public class Main {
 				String plain = FileUtil.read(source);
 				Security.setSecurityEnabled(false);
 				String optimized = OptimizationUtilities.optimize(plain, source);
-				System.out.println(optimized);
+				StreamUtils.GetSystemOut().println(optimized);
 				System.exit(0);
 			} else if(mode == cmdlineMode){
 				//We actually can't use the parsedArgs, because there may be cmdline switches in
@@ -417,7 +421,7 @@ public class Main {
 				//The 0th arg is the cmdline verb though, so remove that.
 				allArgs.remove(0);
 				if(allArgs.isEmpty()){
-					System.err.println("Usage: path/to/file.ms [arg1 arg2]");
+					StreamUtils.GetSystemErr().println("Usage: path/to/file.ms [arg1 arg2]");
 					System.exit(1);
 				}
 				String fileName = allArgs.get(0);
@@ -425,7 +429,7 @@ public class Main {
 				try {
 					Interpreter.startWithTTY(fileName, allArgs);
 				} catch(Profiles.InvalidProfileException ex){
-					System.err.println("Invalid profile file at " + MethodScriptFileLocations.getDefault().getProfilesFile()
+					StreamUtils.GetSystemErr().println("Invalid profile file at " + MethodScriptFileLocations.getDefault().getProfilesFile()
 						+ ": " + ex.getMessage());
 					System.exit(1);
 				}
@@ -435,11 +439,11 @@ public class Main {
 				String inputJarS = parsedArgs.getStringArgument("input-jar");
 				String outputFileS = parsedArgs.getStringArgument("output-file");
 				if(inputJarS == null){
-					System.out.println("Usage: --input-jar extension-docs path/to/extension.jar [--output-file path/to/output.md]\n\tIf the output is blank, it is printed to stdout.");
+					StreamUtils.GetSystemOut().println("Usage: --input-jar extension-docs path/to/extension.jar [--output-file path/to/output.md]\n\tIf the output is blank, it is printed to stdout.");
 					System.exit(1);
 				}
 				File inputJar = new File(inputJarS);
-				OutputStream outputFile = System.out;
+				OutputStream outputFile = StreamUtils.GetSystemOut();
 				if(outputFileS != null){
 					outputFile = new FileOutputStream(new File(outputFileS));
 				}
@@ -447,7 +451,7 @@ public class Main {
 			} else if(mode == docExportMode){
 				String extensionDirS = parsedArgs.getStringArgument("extension-dir");
 				String outputFileS = parsedArgs.getStringArgument("output-file");
-				OutputStream outputFile = System.out;
+				OutputStream outputFile = StreamUtils.GetSystemOut();
 				if(outputFileS != null){
 					outputFile = new FileOutputStream(new File(outputFileS));
 				}
@@ -462,14 +466,14 @@ public class Main {
 						}
 					}
 				} else {
-					System.err.println("Extension directory specificed doesn't exist: "
+					StreamUtils.GetSystemErr().println("Extension directory specificed doesn't exist: "
 							+ extensionDirS + ". Continuing anyways.");
 				}
 				new DocGenExportTool(cd, outputFile).export();
 			} else if(mode == profilerSummaryMode){
 				String input = parsedArgs.getStringArgument();
 				if("".equals(input)){
-					System.err.println(TermColors.RED + "No input file specified! Run `help profiler-summary' for usage." + TermColors.RESET);
+					StreamUtils.GetSystemErr().println(TermColors.RED + "No input file specified! Run `help profiler-summary' for usage." + TermColors.RESET);
 					System.exit(1);
 				}
 				double ignorePercentage = parsedArgs.getNumberArgument("ignore-percentage");
@@ -477,10 +481,10 @@ public class Main {
 				try {
 					summary.setIgnorePercentage(ignorePercentage);
 				} catch(IllegalArgumentException ex){
-					System.err.println(TermColors.RED + ex.getMessage() + TermColors.RESET);
+					StreamUtils.GetSystemErr().println(TermColors.RED + ex.getMessage() + TermColors.RESET);
 					System.exit(1);
 				}
-				System.out.println(summary.getAnalysis());
+				StreamUtils.GetSystemOut().println(summary.getAnalysis());
 				System.exit(0);
 			} else if(mode == rsaKeyGenMode){
 				String outputFileString = parsedArgs.getStringArgument('o');
@@ -488,7 +492,7 @@ public class Main {
 				File pubOutputFile = new File(outputFileString + ".pub");
 				String label = parsedArgs.getStringArgument('l');
 				if(privOutputFile.exists() || pubOutputFile.exists()){
-					System.err.println("Either the public key or private key file already exists. This utility will not overwrite any existing files.");
+					StreamUtils.GetSystemErr().println("Either the public key or private key file already exists. This utility will not overwrite any existing files.");
 					System.exit(1);
 				}
 				RSAEncrypt enc = RSAEncrypt.generateKey(label);
@@ -498,12 +502,12 @@ public class Main {
 			} else if(mode == pnViewerMode){
 				if(parsedArgs.isFlagSet("server")){
 					if(parsedArgs.getNumberArgument("port") == null){
-						System.err.println("When running as a server, port is required.");
+						StreamUtils.GetSystemErr().println("When running as a server, port is required.");
 						System.exit(1);
 					}
 					int port = parsedArgs.getNumberArgument("port").intValue();
 					if(port > 65535 || port < 1){
-						System.err.println("Port must be between 1 and 65535.");
+						StreamUtils.GetSystemErr().println("Port must be between 1 and 65535.");
 						System.exit(1);
 					}
 					String password = parsedArgs.getStringArgument("password");
@@ -521,20 +525,20 @@ public class Main {
 						}
 					}
 					if(password == null){
-						System.err.println("Warning! Running server with no password, anyone will be able to connect!");
+						StreamUtils.GetSystemErr().println("Warning! Running server with no password, anyone will be able to connect!");
 						password = "";
 					}
 					try {
 						PNViewer.startServer(port, password);
 					} catch(IOException ex){
-						System.err.println(ex.getMessage());
+						StreamUtils.GetSystemErr().println(ex.getMessage());
 						System.exit(1);
 					}
 				} else {
 					try {
 						PNViewer.main(parsedArgs.getStringListArgument().toArray(new String[0]));
 					} catch(HeadlessException ex){
-						System.err.println("The Persistence Network Viewer may not be run from a headless environment.");
+						StreamUtils.GetSystemErr().println("The Persistence Network Viewer may not be run from a headless environment.");
 						System.exit(1);
 					}
 				}
@@ -555,7 +559,7 @@ public class Main {
 				throw new Error("Should not have gotten here");
 			}
 		} catch (NoClassDefFoundError error) {
-			System.err.println(getNoClassDefFoundErrorMessage(error));
+			StreamUtils.GetSystemErr().println(getNoClassDefFoundErrorMessage(error));
 		}
 	}
 

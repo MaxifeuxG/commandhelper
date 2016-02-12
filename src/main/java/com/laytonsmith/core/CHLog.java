@@ -1,6 +1,7 @@
 package com.laytonsmith.core;
 
 import com.laytonsmith.PureUtilities.Common.StackTraceUtils;
+import com.laytonsmith.PureUtilities.Common.StreamUtils;
 import com.laytonsmith.PureUtilities.Preferences;
 import com.laytonsmith.PureUtilities.Preferences.Preference;
 import com.laytonsmith.abstraction.Implementation;
@@ -19,7 +20,7 @@ import java.util.List;
  * is to use the preferences file and output to the debug log file.
  * 
  */
-public final class CHLog {
+public class CHLog {
     
     private CHLog(){}
     
@@ -70,6 +71,7 @@ public final class CHLog {
     }
     
 	private static File root = null;
+	// Do not rename this field, it is used reflectively in tests
 	private static CHLog instance = null;
     
 	public static CHLog GetLogger(){
@@ -286,7 +288,7 @@ public final class CHLog {
                 if(level.level <= 1){
                     Static.getLogger().error("Was going to print information to the log, but instead, there was"
                             + " an IOException: ");
-                    e.printStackTrace(System.err);
+                    e.printStackTrace(StreamUtils.GetSystemErr());
                 }
             }
         }

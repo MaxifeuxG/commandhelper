@@ -1,8 +1,6 @@
-
 package com.laytonsmith.abstraction.enums.bukkit;
 
 import com.laytonsmith.abstraction.MCEntity;
-import com.laytonsmith.abstraction.bukkit.entities.BukkitMCFallingBlock;
 import com.laytonsmith.abstraction.bukkit.entities.BukkitMCCommandMinecart;
 import com.laytonsmith.abstraction.bukkit.entities.BukkitMCEntity;
 import com.laytonsmith.abstraction.bukkit.entities.BukkitMCFishHook;
@@ -21,15 +19,12 @@ import java.util.HashMap;
 
 /**
  *
- * 
+ *
  */
-public class BukkitMCEntityType extends MCEntityType {
-
-	private EntityType concrete;
+public class BukkitMCEntityType extends MCEntityType<EntityType> {
 
 	public BukkitMCEntityType(EntityType concreteType, MCVanillaEntityType abstractedType) {
-		super(abstractedType);
-		concrete = concreteType;
+		super(abstractedType, concreteType);
 	}
 
 	// This way we don't take up extra memory on non-bukkit implementations
@@ -62,23 +57,18 @@ public class BukkitMCEntityType extends MCEntityType {
 
 	@Override
 	public String name() {
-		return abstracted == MCVanillaEntityType.UNKNOWN ? concrete.name() : abstracted.name();
+		return getAbstracted() == MCVanillaEntityType.UNKNOWN ? getConcrete().name() : getAbstracted().name();
 	}
 
 	@Override
 	public String concreteName() {
-		return concrete.name();
-	}
-
-	@Override
-	public EntityType getConcrete() {
-		return concrete;
+		return getConcrete().name();
 	}
 
 	@Override
 	public boolean isSpawnable() {
-		return (abstracted == MCVanillaEntityType.UNKNOWN) ? (concrete
-				!= EntityType.UNKNOWN) : abstracted.isSpawnable();
+		return (getAbstracted() == MCVanillaEntityType.UNKNOWN) ? (getConcrete()
+				!= EntityType.UNKNOWN) : getAbstracted().isSpawnable();
 	}
 
 	public static BukkitMCEntityType valueOfConcrete(EntityType test) {
@@ -118,7 +108,7 @@ public class BukkitMCEntityType extends MCEntityType {
 
 	// run once on setup
 	private void setWrapperClass() {
-		switch (abstracted) {
+		switch (getAbstracted()) {
 			case UNKNOWN:
 				wrapperClass = BukkitMCEntity.class;
 				break;
@@ -130,9 +120,6 @@ public class BukkitMCEntityType extends MCEntityType {
 				break;
 			case LIGHTNING:
 				wrapperClass = BukkitMCLightningStrike.class;
-				break;
-			case FALLING_BLOCK:
-				wrapperClass = BukkitMCFallingBlock.class;
 				break;
 			case SPLASH_POTION:
 				wrapperClass = BukkitMCThrownPotion.class;
@@ -165,7 +152,7 @@ public class BukkitMCEntityType extends MCEntityType {
 					String url = "https://github.com/sk89q/CommandHelper/tree/master/src/main/java/"
 							+ "com/laytonsmith/abstraction/bukkit/entities";
 					CHLog.GetLogger().d(CHLog.Tags.RUNTIME, "While trying to find the correct entity class for "
-							+ abstracted.name() + "(attempted " + name + "), we were unable to find a wrapper class."
+							+ getAbstracted().name() + "(attempted " + name + "), we could not find a wrapper class."
 							+ " This is not necessarily an error, we just don't have any special handling for"
 							+ " this entity yet, and will treat it generically. If there is a matching file at"
 							+ url + ", please alert the developers of this notice.", Target.UNKNOWN);

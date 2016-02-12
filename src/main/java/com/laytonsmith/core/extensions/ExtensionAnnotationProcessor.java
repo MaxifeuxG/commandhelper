@@ -2,7 +2,7 @@ package com.laytonsmith.core.extensions;
 
 import com.laytonsmith.PureUtilities.Common.ClassUtils;
 import com.laytonsmith.core.Static;
-
+import com.laytonsmith.PureUtilities.Common.StreamUtils;
 import java.lang.annotation.Annotation;
 import java.util.Set;
 import java.util.logging.Level;
@@ -55,6 +55,7 @@ public class ExtensionAnnotationProcessor extends AbstractProcessor {
 		
 		// Find all annotations in this environment with the MSExtension annotation.
 		for (Element possible : roundEnv.getElementsAnnotatedWith(MSExtension.class)) {
+
 			Static.getLogger().info("Processing " + possible);
 			
 			// Make sure this compile unit exposes only one lifecycle class

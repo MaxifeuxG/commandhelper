@@ -1,6 +1,7 @@
 package com.laytonsmith.core;
 
 import com.laytonsmith.PureUtilities.ArgumentParser;
+import com.laytonsmith.PureUtilities.Common.StreamUtils;
 import com.laytonsmith.PureUtilities.Common.StringUtils;
 import com.laytonsmith.PureUtilities.TermColors;
 import com.laytonsmith.abstraction.MCBlockCommandSender;
@@ -31,6 +32,7 @@ import com.laytonsmith.persistence.DataSourceFactory;
 import com.laytonsmith.persistence.MemoryDataSource;
 import com.laytonsmith.persistence.PersistenceNetwork;
 import com.laytonsmith.persistence.io.ConnectionMixinFactory;
+import org.bukkit.command.CommandException;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -78,12 +80,11 @@ public class AliasCore {
 	/*
 	 * Old javadoc... maybe reimplement these somewhere?
 	 *
-	 * @param allowCustomAliases Whether or not to allow users to add their own
-	 * personal aliases
-	 * @param maxCustomAliases How many aliases a player is allowed to have. -1
-	 * is unlimited.
-	 * @param maxCommands How many commands an alias may contain. Since aliases
-	 * can be used like a macro, this can help prevent command spamming.
+	 * @param aliasConfig
+	 * @param auxAliases
+	 * @param prefFile
+	 * @param mainFile
+	 * @param parent
 	 */
 
 	/**
@@ -112,24 +113,13 @@ public class AliasCore {
 	 * @param command
 	 * @return
 	 */
-	public boolean alias(String command, final MCCommandSender player, List<Script> playerCommands) {
-
-		GlobalEnv gEnv;
-		try {
-			gEnv = new GlobalEnv(parent.getExecutionQueue(), parent.getProfiler(), parent.getPersistenceNetwork(),
-					MethodScriptFileLocations.getDefault().getConfigDirectory(),
-					new Profiles(MethodScriptFileLocations.getDefault().getSQLProfilesFile()),
-					new TaskManager());
-		} catch (IOException ex) {
-			Logger.getLogger(AliasCore.class.getName()).log(Level.SEVERE, null, ex);
-			return false;
-		} catch (Profiles.InvalidProfileException ex) {
-			throw ConfigRuntimeException.CreateUncatchableException(ex.getMessage(), Target.UNKNOWN);
-		}
+	public boolean alias(String command, final MCCommandSender player) {
+		GlobalEnv gEnv = new GlobalEnv(parent.getExecutionQueue(), parent.getProfiler(), parent.getPersistenceNetwork(),
+				MethodScriptFileLocations.getDefault().getConfigDirectory(),
+				parent.profiles, new TaskManager());
 		CommandHelperEnvironment cEnv = new CommandHelperEnvironment();
 		cEnv.SetCommandSender(player);
 		Environment env = Environment.createEnvironment(gEnv, cEnv);
-
 		if (player instanceof MCBlockCommandSender) {
 			cEnv.SetBlockCommandSender((MCBlockCommandSender) player);
 		}
@@ -146,8 +136,6 @@ public class AliasCore {
 				//we are running one of the expanded commands, so exit with false
 				return false;
 			}
-
-			//Global aliases override personal ones, so check the list first
 			for (Script s : scripts) {
 				try {
 					if (s.match(command)) {
@@ -223,57 +211,6 @@ public class AliasCore {
 					e.printStackTrace();
 				}
 			}
-
-			if (player instanceof MCPlayer) {
-				if (match == false && playerCommands != null) {
-					//if we are still looking, look in the aliases for this player
-					for (Script ac : playerCommands) {
-						//RunnableAlias b = ac.getRunnableAliases(command, player);
-						try {
-
-							ac.compile();
-
-							if (ac.match(command)) {
-								Static.getAliasCore().addPlayerReference(player);
-								ProfilePoint alias = env.getEnv(GlobalEnv.class).GetProfiler().start("User Alias (" + player.getName() + ") - \"" + command + "\"", LogLevel.ERROR);
-								try {
-									ac.run(ac.getVariables(command), env, new MethodScriptComplete() {
-										@Override
-										public void done(String output) {
-											if (output != null) {
-												if (!output.trim().isEmpty() && output.trim().startsWith("/")) {
-													if (Prefs.DebugMode()) {
-														Static.getLogger().info("[CommandHelper]: Executing command on "
-																+ ((MCPlayer) player).getName() + ": " + output.trim());
-													}
-													((MCPlayer) player).chat(output.trim());
-												}
-											}
-											Static.getAliasCore().removePlayerReference(player);
-										}
-									});
-								} finally {
-									alias.stop();
-								}
-								match = true;
-								break;
-							}
-						} catch (ConfigRuntimeException e) {
-							//Unlike system scripts, this should just report the problem to the player
-							//env.getEnv(CommandHelperEnvironment.class).SetCommandSender(player);
-							Static.getAliasCore().removePlayerReference(player);
-							e.setEnv(env);
-							ConfigRuntimeException.HandleUncaughtException(e, env);
-							match = true;
-						} catch (ConfigCompileException e) {
-							//Something strange happened, and a bad alias was added
-							//to the database. Our best course of action is to just
-							//skip it.
-						}
-					}
-
-				}
-			}
 		} catch (Throwable e) {
 			//Not only did an error happen, an error happened in our error handler
 			throw new InternalException(TermColors.RED + "An unexpected error occured in the CommandHelper plugin. "
@@ -286,22 +223,6 @@ public class AliasCore {
 		return match;
 	}
 
-	private static final ArgumentParser reloadOptions;
-
-	static {
-		reloadOptions = ArgumentParser.GetParser().addFlag("whitelist", "Sets the list of arguments to be a whitelist, that is,"
-				+ " only the specified modules get reloaded, the rest will be skipped. Without this option, the specified modules"
-				+ " don't get reloaded.")
-				.addFlag('g', "globals", "Specifies that globals memory (values stored with export/import) should be preserved.")
-				.addFlag('t', "tasks", "Specifies that tasks registered with set_interval/set_timeout should be preserved.")
-				.addFlag('e', "execution-queue", "Specifies that tasks registered in execution queues should be preserved.")
-				.addFlag('r', "persistence-config", "Specifies that the persistence config file should not be reloaded.")
-				.addFlag('f', "profiler", "Specifies that the profiler config should not be reloaded.")
-				.addFlag('s', "scripts", "Specifies that scripts should not be reloaded.")
-				.addFlag('x', "extensions", "Specifies that extensions should not be reloaded.")
-				.addFlag('h', "help", "Prints this list and returns. Nothing is reloaded if this option is set.");
-	}
-
 	/**
 	 * Loads the global alias file in from the file system. If a player is
 	 * running the command, send a reference to them, and they will see compile
@@ -309,63 +230,19 @@ public class AliasCore {
 	 *
 	 * @param player
 	 * @param settings The argument list for the settings.
+	 * @param firstLoad Indicates that CH is loading
 	 */
-	public final void reload(MCPlayer player, String[] settings) {
-		boolean reloadGlobals = true;
-		boolean reloadTimeouts = true;
-		boolean reloadExecutionQueue = true;
-		boolean reloadPersistenceConfig = true;
-		boolean reloadProfiler = true;
-		boolean reloadScripts = true;
-		boolean reloadExtensions = true;
-
-		if (settings != null) {
-			ArgumentParser.ArgumentParserResults results;
-			try {
-				results = reloadOptions.match(settings);
-			} catch (ArgumentParser.ValidationException ex) {
-				Logger.getLogger(AliasCore.class.getName()).log(Level.SEVERE, null, ex);
-				return;
+	public final void reload(MCPlayer player, String[] settings, boolean firstLoad) {
+		ReloadOptions options;
+		try {
+			options = new ReloadOptions(settings);
+		} catch(Exception ex){
+			if (player != null) {
+				player.sendMessage(ex.getMessage());
+			} else {
+				StreamUtils.GetSystemOut().println(ex.getMessage());
 			}
-			if (results.isFlagSet('h')) {
-				if (player != null) {
-					player.sendMessage(reloadOptions.getBuiltDescription());
-				} else {
-					Static.getLogger().info(reloadOptions.getBuiltDescription());
-				}
-				return;
-			}
-			if (results.isFlagSet("whitelist")) {
-				//Invert the results
-				reloadGlobals = false;
-				reloadTimeouts = false;
-				reloadExecutionQueue = false;
-				reloadPersistenceConfig = false;
-				reloadProfiler = false;
-				reloadScripts = false;
-				reloadExtensions = false;
-			}
-			if (results.isFlagSet('g')) {
-				reloadGlobals = !reloadGlobals;
-			}
-			if (results.isFlagSet('t')) {
-				reloadTimeouts = !reloadTimeouts;
-			}
-			if (results.isFlagSet('e')) {
-				reloadExecutionQueue = !reloadExecutionQueue;
-			}
-			if (results.isFlagSet('r') || results.isFlagSet("persistence-config")) {
-				reloadPersistenceConfig = !reloadPersistenceConfig;
-			}
-			if (results.isFlagSet('f')) {
-				reloadProfiler = !reloadProfiler;
-			}
-			if (results.isFlagSet('s')) {
-				reloadScripts = !reloadScripts;
-			}
-			if (results.isFlagSet('x')) {
-				reloadExtensions = !reloadExtensions;
-			}
+			return;
 		}
 		try {
 			if (Prefs.AllowDynamicShell()) {
@@ -373,16 +250,14 @@ public class AliasCore {
 						+ CommandHelperFileLocations.getDefault().getProfilerConfigFile().getName() + " you should set this to false, except during development.", Target.UNKNOWN);
 			}
 
-			if (parent.getProfiler() == null || reloadProfiler) {
-				parent.setProfiler(new Profiler(MethodScriptFileLocations.getDefault().getProfilerConfigFile()));
+			if (parent.profiler == null || options.reloadProfiler()) {
+				parent.profiler = new Profiler(MethodScriptFileLocations.getDefault().getProfilerConfigFile());
 			}
 
 			ProfilePoint extensionPreReload = parent.getProfiler().start("Extension PreReloadAliases call", LogLevel.VERBOSE);
 			try {
 				// Allow new-style extensions know we are about to reload aliases.
-				ExtensionManager.PreReloadAliases(reloadGlobals, reloadTimeouts,
-					reloadExecutionQueue, reloadPersistenceConfig, true, // TODO: This should be an object, not a bunch of booleans
-					reloadProfiler, reloadScripts, reloadExtensions);    // and this hardcoded true should be removed then.
+				ExtensionManager.PreReloadAliases(options);
 			} finally {
 				extensionPreReload.stop();
 			}
@@ -393,6 +268,16 @@ public class AliasCore {
 			} finally {
 				shutdownHooks.stop();
 			}
+
+			if (!firstLoad && options.reloadExtensions()) {
+				ProfilePoint extensionManagerShutdown = parent.profiler.start("Extension manager shutdown", LogLevel.VERBOSE);
+				try {
+					ExtensionManager.Shutdown();
+				} finally {
+					extensionManagerShutdown.stop();
+				}
+			}
+
 			CHLog.initialize(MethodScriptFileLocations.getDefault().getConfigDirectory());
 
 			//Clear out the data source cache
@@ -400,8 +285,8 @@ public class AliasCore {
 
 			PacketJumper.startup();
 
-			if (reloadExtensions) {
-				ProfilePoint extensionManagerStartup = parent.getProfiler().start("Extension manager startup", LogLevel.VERBOSE);
+			if (options.reloadExtensions()) {
+				ProfilePoint extensionManagerStartup = parent.profiler.start("Extension manager startup", LogLevel.VERBOSE);
 				try {
 					ExtensionManager.Startup();
 				} finally {
@@ -409,32 +294,32 @@ public class AliasCore {
 				}
 			}
 			CHLog.GetLogger().Log(CHLog.Tags.GENERAL, LogLevel.VERBOSE, "Scripts reloading...", Target.UNKNOWN);
-			if (parent.getPersistenceNetwork() == null || reloadPersistenceConfig) {
+
+			if (parent.getPersistenceNetwork() == null || options.reloadPersistenceConfig()) {
 				ProfilePoint persistenceConfigReload = parent.getProfiler().start("Reloading persistence configuration", LogLevel.VERBOSE);
 				try {
 					MemoryDataSource.ClearDatabases();
-					ConnectionMixinFactory.ConnectionMixinOptions options = new ConnectionMixinFactory.ConnectionMixinOptions();
-					options.setWorkingDirectory(MethodScriptFileLocations.getDefault().getConfigDirectory());
+					ConnectionMixinFactory.ConnectionMixinOptions mixinOptions = new ConnectionMixinFactory.ConnectionMixinOptions();
+					mixinOptions.setWorkingDirectory(MethodScriptFileLocations.getDefault().getConfigDirectory());
 					parent.setPersistenceNetwork(new PersistenceNetwork(MethodScriptFileLocations.getDefault().getPersistenceConfig(),
 							new URI("sqlite:/" + MethodScriptFileLocations.getDefault().getDefaultPersistenceDBFile()
-									.getCanonicalFile().toURI().getRawSchemeSpecificPart().replace("\\", "/")), options));
+									.getCanonicalFile().toURI().getRawSchemeSpecificPart().replace("\\", "/")), mixinOptions));
 				} finally {
 					persistenceConfigReload.stop();
 				}
 			}
-			GlobalEnv gEnv;
 			try {
-				gEnv = new GlobalEnv(parent.getExecutionQueue(), parent.getProfiler(), parent.getPersistenceNetwork(),
-						MethodScriptFileLocations.getDefault().getConfigDirectory(),
-						new Profiles(MethodScriptFileLocations.getDefault().getSQLProfilesFile()),
-						new TaskManager());
-				gEnv.SetLabel(Static.GLOBAL_PERMISSION);
-			} catch (Profiles.InvalidProfileException ex) {
+				parent.profiles = new Profiles(MethodScriptFileLocations.getDefault().getProfilesFile());
+			} catch (IOException | Profiles.InvalidProfileException ex) {
 				CHLog.GetLogger().e(CHLog.Tags.GENERAL, ex.getMessage(), Target.UNKNOWN);
 				return;
 			}
-			if (reloadExecutionQueue) {
-				ProfilePoint stoppingExecutionQueue = parent.getProfiler().start("Stopping execution queues", LogLevel.VERBOSE);
+			GlobalEnv gEnv = new GlobalEnv(parent.executionQueue, parent.profiler, parent.persistenceNetwork,
+					MethodScriptFileLocations.getDefault().getConfigDirectory(),
+					parent.profiles, new TaskManager());
+			gEnv.SetLabel(Static.GLOBAL_PERMISSION);
+			if (options.reloadExecutionQueue()) {
+				ProfilePoint stoppingExecutionQueue = parent.profiler.start("Stopping execution queues", LogLevel.VERBOSE);
 				try {
 					parent.getExecutionQueue().stopAllNow();
 				} finally {
@@ -443,16 +328,16 @@ public class AliasCore {
 			}
 			CommandHelperEnvironment cEnv = new CommandHelperEnvironment();
 			Environment env = Environment.createEnvironment(gEnv, cEnv);
-			if (reloadGlobals) {
-				ProfilePoint clearingGlobals = parent.getProfiler().start("Clearing globals", LogLevel.VERBOSE);
+			if (options.reloadGlobals()) {
+				ProfilePoint clearingGlobals = parent.profiler.start("Clearing globals", LogLevel.VERBOSE);
 				try {
 					Globals.clear();
 				} finally {
 					clearingGlobals.stop();
 				}
 			}
-			if (reloadTimeouts) {
-				ProfilePoint clearingTimeouts = parent.getProfiler().start("Clearing timeouts/intervals", LogLevel.VERBOSE);
+			if (options.reloadTimeouts()) {
+				ProfilePoint clearingTimeouts = parent.profiler.start("Clearing timeouts/intervals", LogLevel.VERBOSE);
 				try {
 					Scheduling.ClearScheduledRunners();
 				} finally {
@@ -489,8 +374,9 @@ public class AliasCore {
 				Prefs.init(prefFile);
 			}
 
-			if (reloadScripts) {
+			if (options.reloadScripts()) {
 				ProfilePoint unregisteringEvents = parent.getProfiler().start("Unregistering events", LogLevel.VERBOSE);
+
 				try {
 					EventUtils.UnregisterAll();
 				} finally {
@@ -516,6 +402,11 @@ public class AliasCore {
 				String alias_config = file_get_contents(aliasConfig.getAbsolutePath()); //get the file again
 				localPackages.appendMSA(alias_config, aliasConfig);
 
+				File auto_include = new File(env.getEnv(GlobalEnv.class).GetRootFolder(), "auto_include.ms");
+				if (auto_include.exists()) {
+					localPackages.addAutoInclude(auto_include);
+				}
+
 				//Now that we've included the default files, search the local_packages directory
 				GetAuxAliases(auxAliases, localPackages);
 
@@ -523,8 +414,11 @@ public class AliasCore {
 
 				ProfilePoint compilerMS = parent.getProfiler().start("Compilation of MS files in Local Packages", LogLevel.VERBOSE);
 				try {
+					env.getEnv(CommandHelperEnvironment.class).SetCommandSender(Static.getServer().getConsole());
+					MethodScriptCompiler.registerAutoIncludes(env, null);
 					localPackages.compileMS(player, env);
 				} finally {
+					env.getEnv(CommandHelperEnvironment.class).SetCommandSender(null);
 					compilerMS.stop();
 				}
 				ProfilePoint compilerMSA = parent.getProfiler().start("Compilation of MSA files in Local Packages", LogLevel.VERBOSE);
@@ -546,6 +440,109 @@ public class AliasCore {
 			ExtensionManager.PostReloadAliases();
 		} finally {
 			postReloadAliases.stop();
+		}
+	}
+
+	/**
+	 * Holder for recompile command options
+	 */
+	public class ReloadOptions {
+		boolean globals;
+		boolean timeouts;
+		boolean executionQueue;
+		boolean persistenceConfig;
+		boolean profiler;
+		boolean scripts;
+		boolean extensions;
+
+		private final ArgumentParser options = ArgumentParser.GetParser()
+				.addFlag("whitelist", "Sets the list of arguments to be a whitelist, that is,"
+				+ " only the specified modules get reloaded, the rest will be skipped. Without this option,"
+				+ " the specified modules don't get reloaded.")
+				.addFlag('g', "globals", "Specifies that globals memory (values stored with export/import) should be preserved.")
+				.addFlag('t', "tasks", "Specifies that tasks registered with set_interval/set_timeout should be preserved.")
+				.addFlag('e', "execution-queue", "Specifies that tasks registered in execution queues should be preserved.")
+				.addFlag('r', "persistence-config", "Specifies that the persistence config file should not be reloaded.")
+				.addFlag('f', "profiler", "Specifies that the profiler config should not be reloaded.")
+				.addFlag('s', "scripts", "Specifies that scripts should not be reloaded.")
+				.addFlag('x', "extensions", "Specifies that extensions should not be reloaded.")
+				.addFlag('h', "help", "Prints this list and returns. Nothing is reloaded if this option is set.");
+
+		public ReloadOptions(String[] settings) throws ArgumentParser.ValidationException {
+			globals = true;
+			timeouts = true;
+			executionQueue = true;
+			persistenceConfig = true;
+			profiler = true;
+			scripts = true;
+			extensions = true;
+
+			if (settings != null) {
+				ArgumentParser.ArgumentParserResults results;
+				results = options.match(settings);
+				if (results.isFlagSet('h')) {
+					throw new CommandException(options.getBuiltDescription());
+				}
+				if (results.isFlagSet("whitelist")) {
+					//Invert the results
+					globals = false;
+					timeouts = false;
+					executionQueue = false;
+					persistenceConfig = false;
+					profiler = false;
+					scripts = false;
+					extensions = false;
+				}
+				if (results.isFlagSet('g')) {
+					globals = !globals;
+				}
+				if (results.isFlagSet('t')) {
+					timeouts = !timeouts;
+				}
+				if (results.isFlagSet('e')) {
+					executionQueue = !executionQueue;
+				}
+				if (results.isFlagSet('r') || results.isFlagSet("persistence-config")) {
+					persistenceConfig = !persistenceConfig;
+				}
+				if (results.isFlagSet('f')) {
+					profiler = !profiler;
+				}
+				if (results.isFlagSet('s')) {
+					scripts = !scripts;
+				}
+				if (results.isFlagSet('x')) {
+					extensions = !extensions;
+				}
+			}
+		}
+
+		public boolean reloadGlobals() {
+			return globals;
+		}
+
+		public boolean reloadTimeouts() {
+			return timeouts;
+		}
+
+		public boolean reloadExecutionQueue() {
+			return executionQueue;
+		}
+
+		public boolean reloadPersistenceConfig() {
+			return persistenceConfig;
+		}
+
+		public boolean reloadProfiler() {
+			return profiler;
+		}
+
+		public boolean reloadScripts() {
+			return scripts;
+		}
+
+		public boolean reloadExtensions() {
+			return extensions;
 		}
 	}
 
@@ -753,8 +750,6 @@ public class AliasCore {
 			for (FileInfo fi : ms) {
 				boolean exception = false;
 				try {
-					env.getEnv(CommandHelperEnvironment.class).SetCommandSender(Static.getServer().getConsole());
-					MethodScriptCompiler.registerAutoIncludes(env, null);
 					MethodScriptCompiler.execute(MethodScriptCompiler.compile(MethodScriptCompiler.lex(fi.contents, fi.file, true)), env, null, null);
 				} catch (ConfigCompileGroupException e){
 					exception = true;
@@ -772,8 +767,6 @@ public class AliasCore {
 				} catch (ProgramFlowManipulationException e) {
 					exception = true;
 					ConfigRuntimeException.HandleUncaughtException(ConfigRuntimeException.CreateUncatchableException("Cannot break program flow in main files.", e.getTarget()), env);
-				} finally {
-					env.getEnv(CommandHelperEnvironment.class).SetCommandSender(null);
 				}
 				if (exception) {
 					if (Prefs.HaltOnFailure()) {

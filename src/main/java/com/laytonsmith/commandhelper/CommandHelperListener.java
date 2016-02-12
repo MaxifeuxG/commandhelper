@@ -26,18 +26,17 @@ import com.laytonsmith.abstraction.events.MCPlayerCommandEvent;
 import com.laytonsmith.core.InternalException;
 import com.laytonsmith.core.Prefs;
 import com.laytonsmith.core.Static;
-import com.laytonsmith.core.UserManager;
 import com.laytonsmith.core.events.Driver;
 import com.laytonsmith.core.events.EventUtils;
 import com.laytonsmith.core.exceptions.ConfigRuntimeException;
-import org.bukkit.entity.Player;
+import com.laytonsmith.persistence.DataSourceException;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
+import java.util.logging.Logger;
 
 /**
  * Event listener for Hey0's server mod.
@@ -72,11 +71,6 @@ public class CommandHelperListener implements Listener {
         String cmd = event.getMessage();        
         MCPlayer player = new BukkitMCPlayer(event.getPlayer());
         BukkitDirtyRegisteredListener.PlayDirty();
-        if (cmd.equals("/.") || cmd.equals("/repeat")) {
-            return;
-        }
-        
-        UserManager.GetUserManager(player.getName()).setLastCommand(cmd);
 
         if (!Prefs.PlayDirty()) {
             if (event.isCancelled()) {
@@ -102,17 +96,6 @@ public class CommandHelperListener implements Listener {
             event.setCancelled(true);
             e.printStackTrace();
         }
-    }
-
-    /**
-     * Called when a player leaves a server
-     *
-     * @param event Relevant event details
-     */
-    @EventHandler(priority= EventPriority.NORMAL)
-    public void onPlayerQuit(PlayerQuitEvent event) {
-        Player player = event.getPlayer();
-        UserManager.ClearUser(player.getName());
     }
 
     @EventHandler(priority= EventPriority.NORMAL)

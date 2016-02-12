@@ -3,10 +3,13 @@ package com.laytonsmith.abstraction;
 
 import com.laytonsmith.PureUtilities.DaemonManager;
 import com.laytonsmith.abstraction.blocks.MCMaterial;
+import com.laytonsmith.abstraction.enums.MCDyeColor;
+import com.laytonsmith.abstraction.enums.MCPatternShape;
 import com.laytonsmith.abstraction.enums.MCRecipeType;
 import com.laytonsmith.abstraction.enums.MCTone;
 import com.laytonsmith.core.constructs.Target;
-import com.laytonsmith.core.functions.Exceptions;
+import com.laytonsmith.core.environments.Environment;
+import com.laytonsmith.core.exceptions.CRE.CREFormatException;
 
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -109,10 +112,10 @@ public interface Convertor {
 	/**
 	 * Gets the inventory of the specified entity, or null if the entity id
 	 * is invalid
-	 * @param entityID
+	 * @param entity
 	 * @return
 	 */
-	public MCInventory GetEntityInventory(int entityID);
+	public MCInventory GetEntityInventory(MCEntity entity);
 
 	/**
 	 * Returns the inventory of the block at the specified location, if it is
@@ -175,27 +178,6 @@ public interface Convertor {
 	public MCNote GetNote(int octave, MCTone tone, boolean sharp);
 
 	/**
-	 * Returns the max block ID number supported by this server.
-	 * @return
-	 */
-	@Deprecated
-	public int getMaxBlockID();
-
-	/**
-	 * Returns the max item ID number supported by this server.
-	 * @return
-	 */
-	@Deprecated
-	public int getMaxItemID();
-
-	/**
-	 * Returns the max record ID number supported by this server.
-	 * @return
-	 */
-	@Deprecated
-	public int getMaxRecordID();
-
-	/**
 	 * Returns a color object for this server.
 	 * @param red
 	 * @param green
@@ -212,7 +194,14 @@ public interface Convertor {
 	 * @param t
 	 * @return
 	 */
-	public MCColor GetColor(String colorName, Target t) throws Exceptions.FormatException;
+	public MCColor GetColor(String colorName, Target t) throws CREFormatException;
+
+	/**
+	 * Returns a pattern object
+	 * @param color
+	 * @param shape
+	 */
+	public MCPattern GetPattern(MCDyeColor color, MCPatternShape shape);
 
 	/**
 	 * Returns an MCFirework which can be built.
@@ -248,7 +237,7 @@ public interface Convertor {
 
 	/**
 	 *
-	 * @param an ambiguous MCCommandSender
+	 * @param unspecific an ambiguous MCCommandSender
 	 * @return a properly typed MCCommandSender
 	 */
 	public MCCommandSender GetCorrectSender(MCCommandSender unspecific);
@@ -264,4 +253,11 @@ public interface Convertor {
 	 * @return
 	 */
 	public MCPlugin GetPlugin();
+
+	/**
+	 * Returns the name of the current user, or null if this doesn't make sense in the given platform.
+	 * @param env The runtime environment, in case the convertor needs it
+	 * @return The username
+	 */
+	public String GetUser(Environment env);
 }

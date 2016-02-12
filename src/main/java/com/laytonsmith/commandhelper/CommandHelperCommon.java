@@ -26,10 +26,8 @@ import com.laytonsmith.core.MethodScriptFileLocations;
 import com.laytonsmith.core.ParseTree;
 import com.laytonsmith.core.Prefs;
 import com.laytonsmith.core.Profiles;
-import com.laytonsmith.core.Script;
 import com.laytonsmith.core.Static;
 import com.laytonsmith.core.UpgradeLog;
-import com.laytonsmith.core.UserManager;
 import com.laytonsmith.core.constructs.CArray;
 import com.laytonsmith.core.constructs.CBoolean;
 import com.laytonsmith.core.constructs.CClosure;
@@ -49,7 +47,6 @@ import com.laytonsmith.core.extensions.ExtensionManager;
 import com.laytonsmith.core.functions.Commands;
 import com.laytonsmith.core.profiler.Profiler;
 import com.laytonsmith.core.taskmanager.TaskManager;
-import com.laytonsmith.persistence.DataSourceException;
 import com.laytonsmith.persistence.PersistenceNetwork;
 
 import java.io.File;
@@ -75,6 +72,7 @@ public class CommandHelperCommon {
 	public static CommandHelperCommon self;
 	public final AbstractLogger logger;
 	public Profiler profiler;
+	public Profiles profiles;
 	public static SimpleVersion version;
 	public long interpreterUnlockedUntil = 0;
 	public final ExecutionQueue executionQueue = new MethodScriptExecutionQueue("CommandHelperExecutionQueue", "default");
@@ -135,20 +133,6 @@ public class CommandHelperCommon {
 		interpreterMode.remove(playerName);
 	}
 
-	/**
-	 * Find and run aliases for a player for a given command.
-	 *
-	 * @param command
-	 *
-	 * @return
-	 */
-	public boolean runAlias(String command, MCPlayer player) throws DataSourceException {
-		UserManager um = UserManager.GetUserManager(player.getName());
-		List<Script> scripts = um.getAllScripts(persistenceNetwork);
-
-		return getCore().alias(command, player, scripts);
-	}
-
 	public void textLine(MCPlayer p, String line) {
 		if (line.equals("-")) {
 			//Exit interpreter mode
@@ -206,7 +190,7 @@ public class CommandHelperCommon {
 		try {
 			gEnv = new GlobalEnv(executionQueue, profiler, persistenceNetwork,
 					CommandHelperFileLocations.getDefault().getConfigDirectory(),
-					new Profiles(MethodScriptFileLocations.getDefault().getSQLProfilesFile()),
+					new Profiles(MethodScriptFileLocations.getDefault().getProfilesFile()),
 					new TaskManager());
 		} catch (IOException ex) {
 			CHLog.GetLogger().e(CHLog.Tags.GENERAL, ex.getMessage(), Target.UNKNOWN);
@@ -347,7 +331,7 @@ public class CommandHelperCommon {
 					logger.error(null, ex);
 				}
 				try {
-					FileUtil.move(new File(cd, "sql-profiles.xml"), p.getSQLProfilesFile());
+					FileUtil.move(new File(cd, "sql-profiles.xml"), p.getProfilesFile());
 				} catch (IOException ex) {
 					logger.error(null, ex);
 				}
@@ -471,7 +455,7 @@ public class CommandHelperCommon {
 				CommandHelperFileLocations.getDefault().getLocalPackagesDirectory(),
 				CommandHelperFileLocations.getDefault().getPreferencesFile(),
 				new File(CommandHelperFileLocations.getDefault().getConfigDirectory(), main_file), this);
-		ac.reload(null, null);
+		ac.reload(null, null, true);
 
 		hostnameLookupCache = new ConcurrentHashMap<>();
 		hostnameLookupThreadPool = Executors.newFixedThreadPool(3, new ThreadFactory() {
@@ -518,7 +502,7 @@ public class CommandHelperCommon {
 			Target t = Target.UNKNOWN;
 			CArray cargs = new CArray(t);
 			for (String arg : args) {
-				cargs.push(new CString(arg, t));
+				cargs.push(new CString(arg, t), t);
 			}
 
 			CClosure closure = Commands.onCommand.get(name.toLowerCase());

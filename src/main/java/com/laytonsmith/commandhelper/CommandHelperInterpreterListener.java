@@ -1,5 +1,3 @@
-
-
 package com.laytonsmith.commandhelper;
 
 import com.laytonsmith.abstraction.MCPlayer;

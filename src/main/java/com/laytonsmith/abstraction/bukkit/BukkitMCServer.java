@@ -19,6 +19,7 @@ import com.laytonsmith.abstraction.bukkit.entities.BukkitMCHumanEntity;
 import com.laytonsmith.abstraction.bukkit.entities.BukkitMCPlayer;
 import com.laytonsmith.abstraction.bukkit.pluginmessages.BukkitMCMessenger;
 import com.laytonsmith.abstraction.enums.MCInventoryType;
+import com.laytonsmith.abstraction.enums.MCVersion;
 import com.laytonsmith.abstraction.pluginmessages.MCMessenger;
 import com.laytonsmith.core.Static;
 import com.laytonsmith.core.constructs.Target;
@@ -262,6 +263,7 @@ public class BukkitMCServer extends BukkitMCGame implements MCServer {
 	}
 
     /* Boring information get methods -.- */
+
 	@Override
     public int getPort() {
 		return server.getPort();
@@ -273,24 +275,24 @@ public class BukkitMCServer extends BukkitMCGame implements MCServer {
 	}
 
 	@Override
-    public Boolean getAllowEnd() {
+	public boolean getAllowEnd() {
 		return server.getAllowEnd();
-	}
+    }
 
 	@Override
-    public Boolean getAllowFlight() {
+	public boolean getAllowFlight() {
 		return server.getAllowFlight();
-	}
+    }
 
 	@Override
-    public Boolean getAllowNether() {
+	public boolean getAllowNether() {
 		return server.getAllowNether();
-	}
+    }
 
 	@Override
-    public Boolean getOnlineMode() {
+	public boolean getOnlineMode() {
 		return server.getOnlineMode();
-	}
+    }
 
 	@Override
 	public int getViewDistance() {
