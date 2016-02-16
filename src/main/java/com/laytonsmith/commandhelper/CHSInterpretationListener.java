@@ -12,18 +12,18 @@ import com.laytonsmith.abstraction.sponge.events.SpongeMiscEvents;
 import com.laytonsmith.core.InternalException;
 import com.laytonsmith.core.Script;
 import com.laytonsmith.core.Static;
-import com.laytonsmith.core.UserManager;
 import com.laytonsmith.core.events.Driver;
 import com.laytonsmith.core.events.EventUtils;
 import com.laytonsmith.core.exceptions.ConfigRuntimeException;
 import com.laytonsmith.persistence.DataSourceException;
-import org.spongepowered.api.entity.player.Player;
-import org.spongepowered.api.event.Subscribe;
-import org.spongepowered.api.event.entity.player.PlayerChatEvent;
+import org.spongepowered.api.command.CommandSource;
+import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.event.Listener;
+import org.spongepowered.api.event.message.MessageChannelEvent.Chat;
 import org.spongepowered.api.event.entity.player.PlayerJoinEvent;
 import org.spongepowered.api.event.entity.player.PlayerQuitEvent;
-import org.spongepowered.api.event.message.CommandEvent;
-import org.spongepowered.api.util.command.CommandResult;
+import org.spongepowered.api.event.command.SendCommandEvent;
+import org.spongepowered.api.command.CommandResult;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,19 +41,18 @@ public class CHSInterpretationListener {
 		this.common = common;
 	}
 
-	@Subscribe
-	public void onCommand(CommandEvent event) {
+	@Listener
+	public void onCommand(SendCommandEvent event) {
 		//Run this first, so external events can intercept it.
 		SpongeMiscEvents.SpongeMCCommandEvent cce = new SpongeMiscEvents.SpongeMCCommandEvent(event);
 		EventUtils.TriggerExternal(cce);
 		List<Script> userScripts;
-		UserManager userManager;
 		MCCommandSender user;
-		if (event.getSource() instanceof Player) {
-			user = new SpongeMCPlayer((Player) event.getSource());
+		if (event.getCause().first(Player.class).isPresent()) {
+			user = new SpongeMCPlayer(event.getCause().first(Player.class).get());
 			// They are in interpreter mode, so we want it to handle this, not everything else.
 			// This was the original spec behavior, but I don't see any reason for it - jb_aero
-			if (common.isInInterpreterMode(event.getSource().getName())) {
+			if (common.isInInterpreterMode(user.getName())) {
 				common.textLine((MCPlayer) user, format("/{0} {1}", event.getCommand(), event.getArguments()));
 				event.setCancelled(true);
 				return;
@@ -62,31 +61,14 @@ public class CHSInterpretationListener {
 			if (cce.isCancelled()) {
 				return;
 			}
-			String id = ((Player) event.getSource()).getUniqueId().toString().replace("-", "");
-			userManager = UserManager.GetUserManager(id);
-			// leave this player-only until it can be proven to work serverside
-			if (event.getCommand().equals(".") || event.getCommand().equals("repeat")) {
-				return;
-			}
-			userManager.setLastCommand(event.getCommand());
 		} else {
 			// commandblocks && remote will share with console
-			userManager = UserManager.GetUserManager("CONSOLE");
-			user = new SpongeMCCommandSender(event.getSource());
-		}
-
-		try {
-			userScripts = userManager.getAllScripts(common.getPersistenceNetwork());
-		} catch (DataSourceException e) {
-			common.logger.error(e.getMessage());
-			// fall back to global aliases
-			userScripts = new ArrayList<>();
+			user = new SpongeMCCommandSender(event.getCause().first(CommandSource.class).get());
 		}
 
 		boolean match = false;
 		try {
-			match = Static.getAliasCore().alias(format("/{0} {1}", event.getCommand(), event.getArguments(),
-					user, userScripts), user, userScripts);
+			match = Static.getAliasCore().alias(format("/{0} {1}", event.getCommand(), event.getArguments()), user);
 		} catch (InternalException e) {
 			Static.getLogger().error(e.getMessage());
 		} catch (ConfigRuntimeException e) {
@@ -103,9 +85,10 @@ public class CHSInterpretationListener {
 		}
 	}
 
-	@Subscribe
-	public void onPlayerChat(final PlayerChatEvent event) {
-		if (common.isInInterpreterMode(event.getUser().getName())) {
+	@Listener
+	public void onPlayerChat(final Chat event) {
+		if (event.getCause().containsType(Player.class)
+				&& common.isInInterpreterMode(event.get.getUser().getName())) {
 			final MCPlayer p = new SpongeMCPlayer(event.getUser());
 			event.setCancelled(true);
 			StaticLayer.SetFutureRunnable(null, 0, new Runnable() {

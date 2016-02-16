@@ -2,7 +2,7 @@ package com.laytonsmith.abstraction.sponge;
 
 import com.laytonsmith.abstraction.MCEventManager;
 import com.laytonsmith.abstraction.MCPlugin;
-import org.spongepowered.api.service.event.EventManager;
+import org.spongepowered.api.event.EventManager;
 
 /**
  * SpongeMCEventManager, 7/11/2015 12:38 AM

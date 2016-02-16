@@ -37,12 +37,12 @@ public class SpongeMCGame implements MCGame {
 
 	@Override
 	public String getAPIVersion() {
-		return _Game().getPlatform().getApiVersion();
+		return _Game().getPlatform().getApi().getVersion();
 	}
 
 	@Override
 	public String getImplementationVersion() {
-		return _Game().getPlatform().getVersion();
+		return _Game().getPlatform().getImplementation().getVersion();
 	}
 
 	@Override
@@ -53,7 +53,7 @@ public class SpongeMCGame implements MCGame {
 	@Override
 	public MCCommandManager getCommandManager() {
 		if (commandManager == null) {
-			commandManager = new SpongeMCCommandManager(_Game().getCommandDispatcher());
+			commandManager = new SpongeMCCommandManager(_Game().getCommandManager());
 		}
 		return commandManager;
 	}

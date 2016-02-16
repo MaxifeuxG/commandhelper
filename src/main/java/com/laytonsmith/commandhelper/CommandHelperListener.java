@@ -79,12 +79,11 @@ public class CommandHelperListener implements Listener {
         } //If we are playing dirty, ignore the cancelled flag
 
         try {
-            if (common.runAlias(event.getMessage(), player)) {
-                event.setCancelled(true);
-                if(Prefs.PlayDirty()){
-                    //Super cancel the event
-                    BukkitDirtyRegisteredListener.setCancelled(event);
-                }
+            common.execute(event.getMessage(), player);
+            event.setCancelled(true);
+            if(Prefs.PlayDirty()){
+                //Super cancel the event
+                BukkitDirtyRegisteredListener.setCancelled(event);
             }
         } catch (InternalException e) {
             common.logger.error(e.getMessage());

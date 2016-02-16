@@ -1,6 +1,5 @@
 package com.laytonsmith.abstraction.sponge;
 
-import com.google.common.base.Optional;
 import com.laytonsmith.abstraction.MCCommandException;
 import com.laytonsmith.abstraction.MCCommandSender;
 import com.laytonsmith.abstraction.MCConsoleCommandSender;
@@ -18,10 +17,9 @@ import com.laytonsmith.abstraction.enums.MCInventoryType;
 import com.laytonsmith.abstraction.pluginmessages.MCMessenger;
 import com.laytonsmith.abstraction.sponge.entities.SpongeMCPlayer;
 import org.spongepowered.api.Server;
-import org.spongepowered.api.entity.player.Player;
-import org.spongepowered.api.text.Texts;
-import org.spongepowered.api.text.sink.MessageSinks;
-import org.spongepowered.api.util.command.CommandSource;
+import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.text.Text;
+import org.spongepowered.api.command.CommandSource;
 import org.spongepowered.api.world.World;
 
 import java.io.IOException;
@@ -32,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
@@ -84,7 +83,7 @@ public class SpongeMCServer extends SpongeMCGame implements MCServer {
 
 	@Override
 	public String getName() {
-		return _Game().getPlatform().getName();
+		return _Game().getPlatform().getImplementation().getName();
 	}
 
 	@Override
@@ -98,7 +97,7 @@ public class SpongeMCServer extends SpongeMCGame implements MCServer {
 
 	@Override
 	public boolean dispatchCommand(MCCommandSender cs, String string) throws MCCommandException {
-		return game.getCommandDispatcher().process((CommandSource) cs.getHandle(), string).isPresent();
+		return game.getCommandManager().process((CommandSource) cs.getHandle(), string).getSuccessCount().orElse(0) > 0;
 	}
 
 	@Override
@@ -139,12 +138,16 @@ public class SpongeMCServer extends SpongeMCGame implements MCServer {
 
 	@Override
 	public void broadcastMessage(String message) {
-		_Server().getBroadcastSink().sendMessage(Texts.of(message));
+		_Server().getBroadcastChannel().send(Text.of(message));
 	}
 
 	@Override
 	public void broadcastMessage(String message, String permission) {
-		MessageSinks.toPermission(permission).sendMessage(Texts.of(message));
+		for (Player p : _Server().getOnlinePlayers()) {
+			if (p.hasPermission(permission)) {
+				p.sendMessage(Text.of(message));
+			}
+		}
 	}
 
 	@Override
@@ -194,31 +197,31 @@ public class SpongeMCServer extends SpongeMCGame implements MCServer {
 
 	@Override
 	public int getPort() {
-		return _Server().getBoundAddress().or(InetSocketAddress.createUnresolved("0.0.0.0", 25565)).getPort();
+		return _Server().getBoundAddress().orElse(InetSocketAddress.createUnresolved("0.0.0.0", 25565)).getPort();
 	}
 
 	@Override
 	public String getIp() {
-		return _Server().getBoundAddress().or(InetSocketAddress.createUnresolved("0.0.0.0", 25565)).getHostString();
+		return _Server().getBoundAddress().orElse(InetSocketAddress.createUnresolved("0.0.0.0", 25565)).getHostString();
 	}
 
 	@Override
-	public Boolean getAllowFlight() {
+	public boolean getAllowFlight() {
 		return Boolean.valueOf(props.getProperty("allow-flight"));
 	}
 
 	@Override
-	public Boolean getAllowNether() {
+	public boolean getAllowNether() {
 		return Boolean.valueOf(props.getProperty("allow-nether"));
 	}
 
 	@Override
-	public Boolean getAllowEnd() {
+	public boolean getAllowEnd() {
 		return getAllowNether();
 	}
 
 	@Override
-	public Boolean getOnlineMode() {
+	public boolean getOnlineMode() {
 		return _Server().getOnlineMode();
 	}
 
@@ -280,12 +283,12 @@ public class SpongeMCServer extends SpongeMCGame implements MCServer {
 
 	@Override
 	public void runasConsole(String cmd) {
-		game.getCommandDispatcher().process(game.getServer().getConsole(), cmd);
+		game.getCommandManager().process(game.getServer().getConsole(), cmd);
 	}
 
 	@Override
 	public MCMessenger getMessenger() {
-		return new SpongeMCMessenger(game.getServer());
+		return new SpongeMCMessenger(game.getChannelRegistrar());
 	}
 
 	@Override

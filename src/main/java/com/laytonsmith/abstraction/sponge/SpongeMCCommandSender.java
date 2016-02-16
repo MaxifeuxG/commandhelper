@@ -11,9 +11,9 @@ import com.laytonsmith.core.Static;
 import org.spongepowered.api.service.permission.PermissionService;
 import org.spongepowered.api.service.permission.Subject;
 import org.spongepowered.api.service.permission.SubjectCollection;
-import org.spongepowered.api.text.TextBuilder;
+import org.spongepowered.api.text.Text;
 import org.spongepowered.api.util.Tristate;
-import org.spongepowered.api.util.command.CommandSource;
+import org.spongepowered.api.command.CommandSource;
 
 import java.util.List;
 
@@ -34,7 +34,7 @@ public class SpongeMCCommandSender implements MCCommandSender {
 
 	@Override
 	public void sendMessage(String string) {
-		getHandle().sendMessage((new TextBuilder.Literal(string)).build());
+		getHandle().sendMessage(Text.of(string));
 	}
 
 	@Override

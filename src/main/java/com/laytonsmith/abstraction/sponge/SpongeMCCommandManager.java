@@ -1,14 +1,14 @@
 package com.laytonsmith.abstraction.sponge;
 
-import com.google.common.base.Optional;
 import com.laytonsmith.abstraction.MCCommand;
 import com.laytonsmith.abstraction.MCCommandManager;
 import com.laytonsmith.commandhelper.CommandHelperSponge;
-import org.spongepowered.api.service.command.CommandService;
-import org.spongepowered.api.util.command.CommandCallable;
-import org.spongepowered.api.util.command.CommandMapping;
+import org.spongepowered.api.command.CommandManager;
+import org.spongepowered.api.command.CommandCallable;
+import org.spongepowered.api.command.CommandMapping;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * SpongeMCCommandManager, 6/22/2015 2:55 PM
@@ -17,9 +17,9 @@ import java.util.List;
  */
 public class SpongeMCCommandManager implements MCCommandManager {
 
-	private final CommandService field;
+	private final CommandManager field;
 
-	public SpongeMCCommandManager(CommandService commandDispatcher) {
+	public SpongeMCCommandManager(CommandManager commandDispatcher) {
 		this.field = commandDispatcher;
 	}
 
@@ -65,7 +65,7 @@ public class SpongeMCCommandManager implements MCCommandManager {
 	}
 
 	@Override
-	public CommandService getHandle() {
+	public CommandManager getHandle() {
 		return field;
 	}
 }

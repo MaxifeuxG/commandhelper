@@ -3,10 +3,7 @@ package com.laytonsmith.abstraction.sponge.events;
 import com.laytonsmith.abstraction.MCPlayer;
 import com.laytonsmith.abstraction.events.MCConsoleCommandEvent;
 import com.laytonsmith.abstraction.events.MCPlayerCommandEvent;
-import org.spongepowered.api.event.Cancellable;
-import org.spongepowered.api.event.Order;
-import org.spongepowered.api.event.message.CommandEvent;
-import org.spongepowered.api.util.event.callback.EventCallback;
+import org.spongepowered.api.event.command.SendCommandEvent;
 
 /**
  * SpongeMiscEvents, 6/7/2015 8:37 PM
@@ -17,25 +14,26 @@ public class SpongeMiscEvents {
 
 	public static class SpongeMCCommandEvent implements MCPlayerCommandEvent, MCConsoleCommandEvent {
 
-		final CommandEvent event;
+		final SendCommandEvent event;
 
-		public SpongeMCCommandEvent(CommandEvent event) {
+		public SpongeMCCommandEvent(SendCommandEvent event) {
 			this.event = event;
 		}
 
 		@Override
 		public String getCommand() {
-			return event.getCommand();
+			return _GetObject().getCommand();
 		}
 
 		@Override
 		public void cancel() {
-
+			_GetObject().setCancelled(true);
 		}
 
 		@Override
 		public void setCommand(String val) {
-			for (EventCallback ec : event.getCallbacks()) {
+			// Currently not possible in Sponge
+			/*for (EventCallback ec : event..getCallbacks()) {
 				if (ec.isBaseGame() && ec instanceof Cancellable) {
 					((Cancellable) ec).setCancelled(true);
 				}
@@ -56,12 +54,12 @@ public class SpongeMiscEvents {
 					event.getGame().getCommandDispatcher().process(event.getSource(),
 							event.getCommand() + " " + event.getArguments());
 				}
-			});
+			});*/
 		}
 
 		@Override
 		public boolean isCancelled() {
-			return false;
+			return _GetObject().isCancelled();
 		}
 
 		@Override
@@ -70,7 +68,7 @@ public class SpongeMiscEvents {
 		}
 
 		@Override
-		public CommandEvent _GetObject() {
+		public SendCommandEvent _GetObject() {
 			return event;
 		}
 	}

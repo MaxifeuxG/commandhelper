@@ -1,7 +1,7 @@
 package com.laytonsmith.abstraction.sponge;
 
 import com.laytonsmith.abstraction.MCConsoleCommandSender;
-import org.spongepowered.api.util.command.source.ConsoleSource;
+import org.spongepowered.api.command.source.ConsoleSource;
 
 /**
  * SpongeMCConsole, 6/8/2015 3:46 AM

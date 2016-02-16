@@ -28,7 +28,7 @@ import org.spongepowered.api.data.manipulator.entity.FlyingData;
 import org.spongepowered.api.data.manipulator.entity.FoodData;
 import org.spongepowered.api.data.manipulator.entity.SneakingData;
 import org.spongepowered.api.entity.Entity;
-import org.spongepowered.api.entity.player.Player;
+import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.resourcepack.ResourcePacks;
 import org.spongepowered.api.service.permission.PermissionService;
 import org.spongepowered.api.service.permission.Subject;

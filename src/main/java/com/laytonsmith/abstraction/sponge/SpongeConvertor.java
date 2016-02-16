@@ -35,14 +35,14 @@ import com.laytonsmith.commandhelper.CommandHelperSponge;
 import com.laytonsmith.core.CHLog;
 import com.laytonsmith.core.LogLevel;
 import com.laytonsmith.core.constructs.Target;
-import com.laytonsmith.core.functions.Exceptions;
+import com.laytonsmith.core.exceptions.CRE.CREFormatException;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.entity.living.Human;
 import org.spongepowered.api.entity.living.Living;
-import org.spongepowered.api.entity.player.Player;
-import org.spongepowered.api.util.command.CommandSource;
-import org.spongepowered.api.util.command.source.CommandBlockSource;
-import org.spongepowered.api.util.command.source.ConsoleSource;
+import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.command.CommandSource;
+import org.spongepowered.api.command.source.CommandBlockSource;
+import org.spongepowered.api.command.source.ConsoleSource;
 
 import java.util.List;
 
@@ -255,27 +255,12 @@ public class SpongeConvertor extends AbstractConvertor {
 	}
 
 	@Override
-	public int getMaxBlockID() {
-		return 0;
-	}
-
-	@Override
-	public int getMaxItemID() {
-		return 0;
-	}
-
-	@Override
-	public int getMaxRecordID() {
-		return 0;
-	}
-
-	@Override
 	public MCColor GetColor(int red, int green, int blue) {
 		return null;
 	}
 
 	@Override
-	public MCColor GetColor(String colorName, Target t) throws Exceptions.FormatException {
+	public MCColor GetColor(String colorName, Target t) throws CREFormatException {
 		return null;
 	}
 

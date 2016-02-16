@@ -5,14 +5,14 @@ import com.laytonsmith.abstraction.MCCommandManager;
 import com.laytonsmith.abstraction.MCCommandSender;
 import com.laytonsmith.abstraction.MCPlugin;
 import com.laytonsmith.commandhelper.CommandHelperCommon;
-import org.spongepowered.api.text.Texts;
-import org.spongepowered.api.util.command.CommandException;
-import org.spongepowered.api.util.command.CommandResult;
-import org.spongepowered.api.util.command.CommandSource;
-import org.spongepowered.api.util.command.args.CommandContext;
-import org.spongepowered.api.util.command.args.GenericArguments;
-import org.spongepowered.api.util.command.spec.CommandExecutor;
-import org.spongepowered.api.util.command.spec.CommandSpec;
+import org.spongepowered.api.text.Text;
+import org.spongepowered.api.command.CommandException;
+import org.spongepowered.api.command.CommandResult;
+import org.spongepowered.api.command.CommandSource;
+import org.spongepowered.api.command.args.CommandContext;
+import org.spongepowered.api.command.args.GenericArguments;
+import org.spongepowered.api.command.spec.CommandExecutor;
+import org.spongepowered.api.command.spec.CommandSpec;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -185,7 +185,7 @@ public class SpongeMCCommand implements MCCommand {
 
 	@Override
 	public CommandSpec getHandle() {
-		return CommandSpec.builder().arguments(GenericArguments.remainingJoinedStrings(Texts.of("args")))
+		return CommandSpec.builder().arguments(GenericArguments.remainingJoinedStrings(Text.of("args")))
 				.executor(new CommandExecutor() {
 					@Override
 					public CommandResult execute(CommandSource src, CommandContext args) throws CommandException {
@@ -197,7 +197,7 @@ public class SpongeMCCommand implements MCCommand {
 					}
 				})
 				.permission(getPermission())
-				.description(Texts.of(getDescription()))
+				.description(Text.of(getDescription()))
 				.build();
 	}
 }

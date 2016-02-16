@@ -1,6 +1,5 @@
 package com.laytonsmith.abstraction.sponge;
 
-import com.google.common.base.Optional;
 import com.laytonsmith.abstraction.MCChunk;
 import com.laytonsmith.abstraction.MCEntity;
 import com.laytonsmith.abstraction.MCItem;
@@ -25,14 +24,17 @@ import com.laytonsmith.abstraction.enums.MCTreeType;
 import com.laytonsmith.abstraction.enums.MCWorldEnvironment;
 import com.laytonsmith.abstraction.enums.MCWorldType;
 import com.laytonsmith.abstraction.enums.sponge.SpongeMCEntityType;
+import com.laytonsmith.commandhelper.CommandHelperSponge;
 import com.laytonsmith.core.Static;
 import com.laytonsmith.core.constructs.CArray;
 import com.laytonsmith.core.constructs.Target;
 import org.spongepowered.api.entity.Entity;
+import org.spongepowered.api.event.cause.Cause;
 import org.spongepowered.api.world.World;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * SpongeWorld, 4/7/2015 7:09 PM
@@ -182,7 +184,7 @@ public class SpongeMCWorld implements MCWorld {
 		Optional<Entity> created = getHandle().createEntity(((SpongeMCEntityType) entType).getConcrete(),
 				((SpongeMCLocation) l).getHandle().getPosition());
 		if (created.isPresent()) {
-			getHandle().spawnEntity(created.get());
+			getHandle().spawnEntity(created.get(), Cause.of(CommandHelperSponge.self));
 			return SpongeConvertor.SpongeGetCorrectEntity(created.get());
 		}
 		return null;
